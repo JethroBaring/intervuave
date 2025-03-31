@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+pydantic
+requests
+numpy
+opencv-python
+deepface
+mediapipe
+librosa
+faster-whisper
