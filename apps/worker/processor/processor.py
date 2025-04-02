@@ -3,7 +3,7 @@
 from datetime import datetime
 import time
 import os
-from .helpers.video_utils import extract_audio, slice_video, slice_audio, convert_webm_to_mp4
+from .helpers.video_utils import extract_audio, slice_video, slice_audio, convert_webm_to_mp4, download_video
 from .helpers.audio_utils import analyze_audio
 from .helpers.vision_utils import analyze_emotions, analyze_body_language
 from .helpers.metrics import compute_engagement, compute_emotional_tone, compute_speech_clarity, estimate_confidence
@@ -17,22 +17,51 @@ def process_interview(interview_id: str, metadata: dict) -> dict:
     results = []
     error_log = []
     start_time = time.time()
+    
+    temp_files = []  # Keep track of temp files
+    chunk_files = []  # Keep track of temp files
 
     try:
         video_url = metadata["videoUrl"]
         timestamps = metadata["timestamps"]
 
         # Handle video path & conversion
-        if video_url.endswith(".webm"):
-            mp4_path = video_url.replace(".webm", ".mp4")
-            convert_webm_to_mp4(video_url, mp4_path)
+        # if video_url.endswith(".webm"):
+        #     mp4_path = video_url.replace(".webm", ".mp4")
+        #     convert_webm_to_mp4(video_url, mp4_path)
+        #     video_path = mp4_path
+        # else:
+        #     video_path = os.path.abspath(video_url)
+        #     if not os.path.exists(video_path):
+        #         raise FileNotFoundError(f"Video file not found: {video_path}")
+        
+        video_path = video_url
+        # if not os.path.exists(video_url):
+        #     video_path = download_video(video_url)
+
+        # if video_path.endswith(".webm"):
+        #     mp4_path = video_path.replace(".webm", ".mp4")
+        #     convert_webm_to_mp4(video_path, mp4_path)
+        #     video_path = mp4_path
+        
+        # audio_path = extract_audio(video_path)
+        
+        
+        downloaded = False
+
+        if not os.path.exists(video_url):
+            video_path = download_video(video_url)
+            downloaded = True
+            temp_files.append(video_path)
+
+        if video_path.endswith(".webm"):
+            mp4_path = video_path.replace(".webm", ".mp4")
+            convert_webm_to_mp4(video_path, mp4_path)
             video_path = mp4_path
-        else:
-            video_path = os.path.abspath(video_url)
-            if not os.path.exists(video_path):
-                raise FileNotFoundError(f"Video file not found: {video_path}")
+            temp_files.append(mp4_path)
 
         audio_path = extract_audio(video_path)
+        temp_files.append(audio_path)
 
         for timestamp in timestamps:
             question_id = timestamp["questionId"]
@@ -42,7 +71,10 @@ def process_interview(interview_id: str, metadata: dict) -> dict:
             try:
                 saved_video = os.path.join(CHUNK_SAVE_DIR, f"{interview_id}_{question_id}.mp4")
                 saved_audio = os.path.join(CHUNK_SAVE_DIR, f"{interview_id}_{question_id}.wav")
-
+                
+                chunk_files.append(saved_video)
+                chunk_files.append(saved_audio)
+                
                 slice_video(video_path, start_ms / 1000.0, end_ms / 1000.0, saved_video)
                 slice_audio(audio_path, start_ms / 1000.0, end_ms / 1000.0, saved_audio)
 
@@ -110,16 +142,17 @@ def process_interview(interview_id: str, metadata: dict) -> dict:
                 })
                 error_log.append(f"Error processing question {question_id}: {str(e)}")
 
-        os.unlink(video_path)
-        os.unlink(audio_path)
+        # os.unlink(video_path)
+        # os.unlink(audio_path)
 
-        return {
-            "interviewId": interview_id,
-            "responses": results,
-            "errors": error_log,
-            "processingTime": time.time() - start_time,
-            "processedAt": datetime.now().isoformat()
-        }
+        # return {
+        #     "interviewId": interview_id,
+        #     "responses": results,
+        #     "errors": error_log,
+        #     "processingTime": time.time() - start_time,
+        #     "processedAt": datetime.now().isoformat()
+        # }
+        return results
 
     except Exception as e:
         return {
@@ -127,3 +160,19 @@ def process_interview(interview_id: str, metadata: dict) -> dict:
             "message": str(e),
             "interviewId": interview_id
         }
+    
+    finally:
+        for file in temp_files:
+            try:
+                if os.path.exists(file):
+                    os.remove(file)
+            except Exception as cleanup_err:
+                print(f"Failed to remove temp file {file}: {str(cleanup_err)}")
+                
+        # Ensure any remaining chunk files are cleaned up
+        for chunk_file in chunk_files:
+            try:
+                if os.path.exists(chunk_file):
+                    os.remove(chunk_file)
+            except Exception as chunk_cleanup_err:
+                print(f"Failed to remove chunk file {chunk_file}: {str(chunk_cleanup_err)}")

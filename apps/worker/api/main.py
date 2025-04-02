@@ -17,29 +17,32 @@ app = FastAPI(
 )
 
 class InterviewRequest(BaseModel):
+    interview_id: str
     video_url: str
     timestamps: List[Dict[str, Any]]
     questions: Dict[str, str]
     callback_url: Optional[str] = None
+    status_callback_url: Optional[str] = None
+
 
 class InterviewResponse(BaseModel):
-    job_id: str
+    interview_id: str
     status: str
     submitted_at: str
 
 @app.post("/process-interview", response_model=InterviewResponse)
 # @app.post("/process-interview")
 async def create_processing_job(request: InterviewRequest, background_tasks: BackgroundTasks):
-    job_id = str(uuid.uuid4())
     submitted_at = datetime.now().isoformat()
 
     background_tasks.add_task(
         submit_processing_job,
-        job_id,
+        request.interview_id,
         request.video_url,
         request.timestamps,
         request.questions,
-        request.callback_url
+        request.callback_url,
+        request.status_callback_url
     )
     
     # result = process_interview(job_id, {
@@ -55,9 +58,9 @@ async def create_processing_job(request: InterviewRequest, background_tasks: Bac
     #     "result": result
     # }
     
-    logger.info(f"Created job {job_id} for video {request.video_url}")
+    logger.info(f"Created job {request.interview_id} for video {request.video_url}")
     return InterviewResponse(
-        job_id=job_id,
+        interview_id=request.interview_id,
         status="submitted",
         submitted_at=submitted_at,
     )
