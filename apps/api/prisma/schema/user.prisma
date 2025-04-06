@@ -1,0 +1,18 @@
+model User {
+  id           String  @id @default(cuid())
+  email        String  @unique
+  password     String
+  refreshToken String?
+  role         UserType    @default(COMPANY)
+
+  company Company?
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
+
+enum UserType {
+  ADMIN
+  COMPANY
+}

@@ -1,0 +1,43 @@
+model InterviewTemplate {
+  id        String     @id @default(cuid())
+  name      String
+  companyId String
+  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  questions Question[]
+  metrics   Metric[]
+  roles     Role[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+}
+
+model Metric {
+  id                  String            @id @default(cuid())
+  name                String
+  description         String
+  weight              Float             @default(0.2) // Optional weight
+  interviewTemplateId String
+  interviewTemplate   InterviewTemplate @relation(fields: [interviewTemplateId], references: [id], onDelete: Cascade)
+}
+
+model Question {
+  id           String            @id @default(cuid())
+  questionText String
+  alignedWith  AlignmentTag? // "mission", "vision", "culture" (nullable)
+  order        Int
+  templateId   String
+  template     InterviewTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
+  evaluates    String // plain text, stored for audit + display
+  coreValueId  String? // optional FK for search and UI
+  coreValue    CoreValue?        @relation(fields: [coreValueId], references: [id])
+
+  responses Response[]
+  createdAt DateTime   @default(now())
+  updatedAt DateTime   @updatedAt
+  deletedAt DateTime?
+}
+
+enum AlignmentTag {
+  MISSION
+  VISION
+  CULTURE
+}

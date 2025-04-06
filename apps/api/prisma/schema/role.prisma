@@ -1,0 +1,12 @@
+model Role {
+  id                  String            @id @default(cuid())
+  title               String
+  companyId           String
+  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  interviews          Interview[]
+  interviewTemplateId String
+  interviewTemplate   InterviewTemplate @relation(fields: [interviewTemplateId], references: [id], onDelete: Cascade)
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+  deletedAt           DateTime?
+}

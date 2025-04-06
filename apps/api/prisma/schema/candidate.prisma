@@ -1,0 +1,132 @@
+model Candidate {
+  id         String      @id @default(cuid())
+  firstName  String
+  lastName   String
+  email      String      @unique
+  companyId  String
+  company    Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  interviews Interview[]
+  createdAt  DateTime    @default(now())
+  updatedAt  DateTime    @updatedAt
+  deletedAt  DateTime?
+
+  @@unique([email, companyId])
+}
+
+model Interview {
+  id            String          @id @default(cuid())
+  candidateId   String
+  companyId     String
+  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  roleId        String
+  interviewLink String?         @unique
+  expiresAt     DateTime?
+  timestamps    Json?
+  videoUrl      String?
+  cameraType    InputType?
+  micType       InputType?
+  noiseLevel    Float?
+  deviceType    DeviceType?
+  candidate     Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  role          Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
+  responses     Response[]
+  evaluation    Evaluation?
+  status        InterviewStatus @default(PENDING)
+  createdAt     DateTime        @default(now())
+  updatedAt     DateTime        @updatedAt
+  deletedAt     DateTime?
+}
+
+model Response {
+  id               String   @id @default(cuid())
+  interviewId      String
+  questionId       String
+  videoChunkUrl    String
+  
+  // Transcripts
+  transcript       String
+  
+  // Timing
+  startTime        Float
+  endTime          Float
+  
+  // Video Analysis
+  emotion          String
+  tone             String
+  eyeGaze          Float
+  posture          Float
+  gestures         Int
+  movement         Float
+  
+  // Metrics
+  metrics          Json
+  metricsConfidence Json
+  
+  // Word timing information
+  wordTimings      Json
+  
+  // Emotion Timeline
+  emotionTimeline  Json
+  
+  // Posture Timeline
+  postureTimeline  Json
+  
+  // Gaze Timeline
+  gazeTimeline     Json
+  
+  // Pause locations
+  pauseLocations   Json
+  
+  // Disfluencies
+  disfluencies     Json
+  
+  // Expressiveness Timeline
+  expressivenessTimeline Json
+  
+  // General expressiveness score
+  expressiveness   Float
+  
+  // Speech Features
+  speechFeatures   Json
+  
+  // Processing version
+  processingVersion String
+  
+  // Quality flag
+  qualityFlag      String
+  
+  interview        Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  question         Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  
+  createdAt        DateTime  @default(now())
+  updatedAt        DateTime  @updatedAt
+  deletedAt        DateTime?
+}
+
+
+enum InterviewStatus {
+  DRAFT
+  PENDING
+  IN_PROGRESS
+  SUBMITTED
+  PROCESSING
+  EVALUATED
+  EXPIRED
+}
+
+enum DeviceType {
+  LAPTOP
+  DESKTOP
+  MOBILE
+  TABLET
+}
+
+enum InputType {
+  BUILT_IN
+  EXTERNAL
+}
+
+enum Decision {
+  APPROVED
+  REJECTED
+}
