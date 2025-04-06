@@ -4,8 +4,8 @@ model InterviewTemplate {
   companyId String
   company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
   questions Question[]
+  interviews Interview[]
   metrics   Metric[]
-  roles     Role[]
   createdAt DateTime   @default(now())
   updatedAt DateTime   @updatedAt
 }

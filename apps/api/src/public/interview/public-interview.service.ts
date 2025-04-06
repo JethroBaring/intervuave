@@ -29,13 +29,9 @@ export class PublicInterviewService {
         where: { id },
         include: {
           candidate: true,
-          role: {
+          interviewTemplate: {
             include: {
-              interviewTemplate: {
-                include: {
-                  questions: true,
-                },
-              },
+              questions: true,
             },
           },
         },

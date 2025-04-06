@@ -49,11 +49,6 @@ const navItems: NavItem[] = [
     path: "/templates",
   },
   {
-    icon: <BriefcaseBusiness className="h-5 w-5" />,
-    name: "Roles",
-    path: "/roles",
-  },
-  {
     name: "Candidates",
     icon: <Users className="h-5 w-5" />,
     path: "/candidates",

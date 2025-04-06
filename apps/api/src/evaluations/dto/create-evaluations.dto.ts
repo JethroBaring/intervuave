@@ -9,6 +9,7 @@ export class CreateEvaluationsDto {
   visionAlignment: number;
   cultureFit: number;
   overallFitScore: number;
+  responseQuality: number;
 
   speechClarity: number;
   confidence: number;

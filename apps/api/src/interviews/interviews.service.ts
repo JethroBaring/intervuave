@@ -23,7 +23,11 @@ export class InterviewsService {
   ) {}
 
   async create(companyId: string, createDto: CreateInterviewsDto) {
-    const { candidate: candidateDto, roleId } = createDto;
+    const {
+      candidate: candidateDto,
+      position,
+      interviewTemplateId,
+    } = createDto;
     let candidateId = candidateDto.id;
 
     if (!candidateId) {
@@ -40,8 +44,9 @@ export class InterviewsService {
 
     return this.prisma.interview.create({
       data: {
-        roleId,
+        position,
         candidateId,
+        interviewTemplateId,
         status: InterviewStatus.DRAFT,
         companyId,
       },
@@ -61,11 +66,7 @@ export class InterviewsService {
         },
         include: {
           candidate: true,
-          role: {
-            include: {
-              interviewTemplate: true,
-            },
-          },
+          interviewTemplate: true,
         },
       });
     } catch (error) {
@@ -104,13 +105,9 @@ export class InterviewsService {
         data: updateData,
         include: {
           candidate: true,
-          role: {
+          interviewTemplate: {
             include: {
-              interviewTemplate: {
-                include: {
-                  questions: true,
-                },
-              },
+              questions: true,
             },
           },
           company: true,
@@ -149,7 +146,7 @@ export class InterviewsService {
           candidateName: interview.candidate.firstName,
           candidateEmail: interview.candidate.email,
           companyName: interview.company.name,
-          roleName: interview.role.title,
+          roleName: interview.position,
           interviewLink: interview.interviewLink,
         });
         break;

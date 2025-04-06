@@ -87,6 +87,7 @@ export function Column({ column }: { column: TColumn }) {
   const [state, setState] = useState<TColumnState>(idle);
   const [isExistingCandidate, setIsExistingCandidate] = useState(false);
   const candidates = useCompanyStore((state) => state.candidates);
+  const interviewTemplates = useCompanyStore((state) => state.templates);
   const roles = useCompanyStore((state) => state.roles);
 
   useEffect(() => {
@@ -265,13 +266,15 @@ export function Column({ column }: { column: TColumn }) {
     email: "",
   });
 
-  const [roleId, setRoleId] = useState("");
-  const companyId = useCompanyStore((state) => state.companyId)
+  const [position, setPosition] = useState("");
+  const [interviewTemplateId, setInterviewTemplateId] = useState("");
+  const companyId = useCompanyStore((state) => state.companyId);
   const handleSubmit = async () => {
-    await api.post(
-      `${endpoints.interviews.create(companyId)}`,
-      { candidate, roleId }
-    );
+    await api.post(`${endpoints.interviews.create(companyId)}`, {
+      candidate,
+      position,
+      interviewTemplateId
+    });
   };
 
   return (
@@ -429,25 +432,34 @@ export function Column({ column }: { column: TColumn }) {
                   </div>
                 )}
                 <div className="col-span-2">
-                  <Label>Role</Label>
-                  <div className="relative">
-                    <Select
-                      className="pr-8"
-                      placeholder="Select role"
-                      options={roles
-                        .filter((role) => role.id !== undefined)
-                        .map((role) => ({
-                          value: role.id as string,
-                          label: role.title,
-                        }))}
-                      onChange={(value) => setRoleId(value)}
-                      // onChange={(value) =>
-                      //   setDraftSelectedInterviewerVoice(value)
-                      // }
-                    />
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                  </div>
+                  <Label>Position</Label>
+                  <Input
+                    type="text"
+                    value={position}
+                    onChange={(e) =>
+                      setPosition(e.target.value)
+                    }
+                  />
                 </div>
+                <div className="col-span-2">
+                    <Label>Interview Template</Label>
+                    <div className="relative">
+                      <Select
+                        className="pr-8"
+                        placeholder="Select candidate"
+                        options={interviewTemplates
+                          .filter((interviewTemplate) => interviewTemplate.id !== undefined)
+                          .map((interviewTemplate) => ({
+                            value: interviewTemplate.id as string,
+                            label: interviewTemplate.name,
+                          }))}
+                        onChange={(value) =>
+                          setInterviewTemplateId(value)
+                        }
+                      />
+                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
+                    </div>
+                  </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 lg:justify-end">

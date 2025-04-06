@@ -271,8 +271,8 @@ export const useInterviewFinalStore = create<InterviewState>((set, get) => ({
         set({
           interview: data.interview,
           candidate: data.interview.candidate,
-          questions: data.interview.role.interviewTemplate.questions,
-          role: data.interview.role.title,
+          questions: data.interview.interviewTemplate.questions,
+          role: data.interview.position,
           isValid: true,
           isExpired: false,
           isVerifying: false,

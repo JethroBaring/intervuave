@@ -13,7 +13,8 @@ export type InterviewStatus =
 
 export class CreateInterviewsDto {
   candidate: CreateCandidatesDto;
-  roleId: string;
+  position: string;
+  interviewTemplateId: string;
   interviewLink?: string;
   expiresAt?: any; // ISO string format (Date)
   timestamps?: any;

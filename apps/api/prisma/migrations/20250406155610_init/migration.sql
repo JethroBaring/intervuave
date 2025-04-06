@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "InterviewStatus" AS ENUM ('DRAFT', 'PENDING', 'IN_PROGRESS', 'COMPLETED', 'PROCESSING', 'EVALUATED', 'EXPIRED');
+CREATE TYPE "InterviewStatus" AS ENUM ('DRAFT', 'PENDING', 'IN_PROGRESS', 'SUBMITTED', 'PROCESSING', 'EVALUATED', 'EXPIRED');
 
 -- CreateEnum
 CREATE TYPE "DeviceType" AS ENUM ('LAPTOP', 'DESKTOP', 'MOBILE', 'TABLET');
@@ -37,14 +37,16 @@ CREATE TABLE "Candidate" (
 CREATE TABLE "Interview" (
     "id" TEXT NOT NULL,
     "candidateId" TEXT NOT NULL,
-    "roleId" TEXT NOT NULL,
-    "interviewLink" TEXT NOT NULL,
-    "expiresAt" TIMESTAMP(3) NOT NULL,
-    "videoUrl" TEXT NOT NULL,
-    "cameraType" "InputType" NOT NULL,
-    "micType" "InputType" NOT NULL,
+    "companyId" TEXT NOT NULL,
+    "position" TEXT NOT NULL,
+    "interviewLink" TEXT,
+    "expiresAt" TIMESTAMP(3),
+    "timestamps" JSONB,
+    "videoUrl" TEXT,
+    "cameraType" "InputType",
+    "micType" "InputType",
     "noiseLevel" DOUBLE PRECISION,
-    "deviceType" "DeviceType" NOT NULL,
+    "deviceType" "DeviceType",
     "status" "InterviewStatus" NOT NULL DEFAULT 'PENDING',
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
@@ -58,17 +60,29 @@ CREATE TABLE "Response" (
     "id" TEXT NOT NULL,
     "interviewId" TEXT NOT NULL,
     "questionId" TEXT NOT NULL,
-    "transcriptWeb" TEXT NOT NULL,
-    "transcriptWhisper" TEXT NOT NULL,
-    "finalTranscript" TEXT NOT NULL,
+    "videoChunkUrl" TEXT NOT NULL,
+    "transcript" TEXT NOT NULL,
     "startTime" DOUBLE PRECISION NOT NULL,
     "endTime" DOUBLE PRECISION NOT NULL,
-    "videoChunkUrl" TEXT NOT NULL,
     "emotion" TEXT NOT NULL,
     "tone" TEXT NOT NULL,
-    "eyeGaze" TEXT NOT NULL,
-    "posture" TEXT NOT NULL,
+    "eyeGaze" DOUBLE PRECISION NOT NULL,
+    "posture" DOUBLE PRECISION NOT NULL,
+    "gestures" INTEGER NOT NULL,
+    "movement" DOUBLE PRECISION NOT NULL,
     "metrics" JSONB NOT NULL,
+    "metricsConfidence" JSONB NOT NULL,
+    "wordTimings" JSONB NOT NULL,
+    "emotionTimeline" JSONB NOT NULL,
+    "postureTimeline" JSONB NOT NULL,
+    "gazeTimeline" JSONB NOT NULL,
+    "pauseLocations" JSONB NOT NULL,
+    "disfluencies" JSONB NOT NULL,
+    "expressivenessTimeline" JSONB NOT NULL,
+    "expressiveness" DOUBLE PRECISION NOT NULL,
+    "speechFeatures" JSONB NOT NULL,
+    "processingVersion" TEXT NOT NULL,
+    "qualityFlag" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updatedAt" TIMESTAMP(3) NOT NULL,
     "deletedAt" TIMESTAMP(3),
@@ -108,17 +122,12 @@ CREATE TABLE "CoreValue" (
 CREATE TABLE "Evaluation" (
     "id" TEXT NOT NULL,
     "interviewId" TEXT NOT NULL,
-    "positionFit" DOUBLE PRECISION NOT NULL,
+    "responseQuality" DOUBLE PRECISION NOT NULL,
     "valuesFit" DOUBLE PRECISION NOT NULL,
     "missionAlignment" DOUBLE PRECISION NOT NULL,
     "visionAlignment" DOUBLE PRECISION NOT NULL,
     "cultureFit" DOUBLE PRECISION NOT NULL,
     "overallFitScore" DOUBLE PRECISION NOT NULL,
-    "speechClarity" DOUBLE PRECISION NOT NULL,
-    "confidence" DOUBLE PRECISION NOT NULL,
-    "emotionalTone" DOUBLE PRECISION NOT NULL,
-    "engagement" DOUBLE PRECISION NOT NULL,
-    "bodyLanguage" DOUBLE PRECISION NOT NULL,
     "perQuestionResults" JSONB NOT NULL,
     "perValueBreakdown" JSONB NOT NULL,
     "aiDecision" "Decision",
@@ -136,19 +145,6 @@ CREATE TABLE "InterviewFeedback" (
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "InterviewFeedback_pkey" PRIMARY KEY ("id")
-);
-
--- CreateTable
-CREATE TABLE "Role" (
-    "id" TEXT NOT NULL,
-    "title" TEXT NOT NULL,
-    "companyId" TEXT NOT NULL,
-    "interviewTemplateId" TEXT NOT NULL,
-    "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "updatedAt" TIMESTAMP(3) NOT NULL,
-    "deletedAt" TIMESTAMP(3),
-
-    CONSTRAINT "Role_pkey" PRIMARY KEY ("id")
 );
 
 -- CreateTable
@@ -207,6 +203,9 @@ CREATE TABLE "User" (
 CREATE UNIQUE INDEX "Candidate_email_key" ON "Candidate"("email");
 
 -- CreateIndex
+CREATE UNIQUE INDEX "Candidate_email_companyId_key" ON "Candidate"("email", "companyId");
+
+-- CreateIndex
 CREATE UNIQUE INDEX "Interview_interviewLink_key" ON "Interview"("interviewLink");
 
 -- CreateIndex
@@ -225,10 +224,10 @@ CREATE UNIQUE INDEX "User_email_key" ON "User"("email");
 ALTER TABLE "Candidate" ADD CONSTRAINT "Candidate_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Interview" ADD CONSTRAINT "Interview_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "Candidate"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Interview" ADD CONSTRAINT "Interview_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "Interview" ADD CONSTRAINT "Interview_roleId_fkey" FOREIGN KEY ("roleId") REFERENCES "Role"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "Interview" ADD CONSTRAINT "Interview_candidateId_fkey" FOREIGN KEY ("candidateId") REFERENCES "Candidate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "Response" ADD CONSTRAINT "Response_interviewId_fkey" FOREIGN KEY ("interviewId") REFERENCES "Interview"("id") ON DELETE CASCADE ON UPDATE CASCADE;
@@ -247,12 +246,6 @@ ALTER TABLE "Evaluation" ADD CONSTRAINT "Evaluation_interviewId_fkey" FOREIGN KE
 
 -- AddForeignKey
 ALTER TABLE "InterviewFeedback" ADD CONSTRAINT "InterviewFeedback_evaluationId_fkey" FOREIGN KEY ("evaluationId") REFERENCES "Evaluation"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Role" ADD CONSTRAINT "Role_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;
-
--- AddForeignKey
-ALTER TABLE "Role" ADD CONSTRAINT "Role_interviewTemplateId_fkey" FOREIGN KEY ("interviewTemplateId") REFERENCES "InterviewTemplate"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "InterviewTemplate" ADD CONSTRAINT "InterviewTemplate_companyId_fkey" FOREIGN KEY ("companyId") REFERENCES "Company"("id") ON DELETE CASCADE ON UPDATE CASCADE;

@@ -23,6 +23,7 @@
     "prisma:seed": "pnpx prisma db seed"
   },
   "dependencies": {
+    "@google-cloud/secret-manager": "^6.0.1",
     "@google-cloud/storage": "^7.15.2",
     "@google-cloud/tasks": "^6.0.1",
     "@nestjs-modules/mailer": "^2.0.2",

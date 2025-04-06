@@ -30,6 +30,7 @@ interface InterviewState {
   toggleCamera: () => Promise<void>;
   setVideoRef: (ref: React.RefObject<HTMLVideoElement | null>) => void;
   verifyToken: (token: string) => Promise<void>;
+  getStreamRef: () => MediaStream | null;
 }
 
 let videoRef: React.RefObject<HTMLVideoElement | null> | null = null;
@@ -172,7 +173,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       500
     );
 
-    // await get().nextQuestion();
+    await get().nextQuestion();
   },
 
   nextQuestion: async () => {
@@ -229,8 +230,8 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
         set({
           interview: data.interview,
           candidate: data.interview.candidate,
-          questions: data.interview.role.interviewTemplate.questions,
-          role: data.interview.role.title,
+          questions: data.interview.interviewTemplate.questions,
+          role: data.interview.position,
           isValid: true,
           isExpired: false,
           isVerifying: false,
@@ -253,4 +254,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       });
     }
   },
+  getStreamRef: () => {
+    return streamRef
+  }
 }));

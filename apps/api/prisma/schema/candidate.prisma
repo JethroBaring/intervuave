@@ -18,7 +18,9 @@ model Interview {
   candidateId   String
   companyId     String
   company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  roleId        String
+  interviewTemplateId String
+  interviewTemplate InterviewTemplate @relation(fields: [interviewTemplateId], references: [id], onDelete: Cascade)
+  position        String
   interviewLink String?         @unique
   expiresAt     DateTime?
   timestamps    Json?
@@ -28,7 +30,6 @@ model Interview {
   noiseLevel    Float?
   deviceType    DeviceType?
   candidate     Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  role          Role            @relation(fields: [roleId], references: [id], onDelete: Cascade)
   responses     Response[]
   evaluation    Evaluation?
   status        InterviewStatus @default(PENDING)

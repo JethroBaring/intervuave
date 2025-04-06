@@ -183,7 +183,7 @@ const Templates: React.FC<TemplatesProps> = () => {
               </div>
               <div className="px-2 flex flex-col gap-3">
                 <div>
-                  <Label className="text-base">Metric Weights</Label>
+                  <Label className="text-base">Response Quality Weights</Label>
                   {isEditTemplateModalOpen && (
                     <Label>
                       Adjust the importance of each metric. Total should equal
@@ -341,7 +341,7 @@ const Templates: React.FC<TemplatesProps> = () => {
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
               Create a question set with customizable metrics to evaluate
               candidates based on your culture and values. You can reuse this
-              across multiple roles.
+              across multiple interviews.
             </p>
           </div>
           <div className="flex flex-col gap-6">
@@ -382,15 +382,16 @@ const Templates: React.FC<TemplatesProps> = () => {
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
               Create a question set with customizable metrics to evaluate
               candidates based on your culture and values. You can reuse this
-              across multiple roles.
+              across multiple interviews.
             </p>
           </div>
           <div className="flex flex-col gap-6">
             <div className="px-2 flex flex-col gap-3">
               <div>
-                <Label className="text-base">Metric Weights</Label>
+                <Label className="text-base">Response Quality Weights</Label>
                 <Label>
-                  Adjust the importance of each metric. Total should equal 100%.
+                  Customize how much each metric affects candidate evaluation
+                  (30% of total fit score).
                 </Label>
               </div>
               {metrics.map((metric) => (
@@ -484,10 +485,11 @@ const Templates: React.FC<TemplatesProps> = () => {
           <div className="flex flex-col gap-6">
             <div className="px-2 flex flex-col gap-3">
               <div>
-                <Label className="text-base">Questions</Label>
+                <Label className="text-base">Interview Questions</Label>
                 <Label>
-                  Add questions that reflect your company’s mission, vision,
-                  culture, or values. These will be asked during the interview.
+                  Add questions linked to your company's core values and aligned
+                  with either its mission, vision, or culture (70% of total fit
+                  score)
                 </Label>
               </div>
               {questions.map((question) => (

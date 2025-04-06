@@ -48,11 +48,6 @@ export class CompaniesService {
               questions: true,
             },
           },
-          roles: {
-            include: {
-              interviewTemplate: true,
-            },
-          },
           candidates: true,
           interviews: {
             include: {

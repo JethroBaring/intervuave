@@ -12,7 +12,6 @@ import { CoreValuesModule } from './core-values/core-values.module';
 import { TemplatesModule } from './templates/templates.module';
 import { FeedbackModule } from './feedback/feedback.module';
 import { UploadModule } from './upload/upload.module';
-import { RolesModule } from './roles/roles.module';
 import { MailModule } from './mail/mail.module';
 import { PublicModule } from './public/public.module';
 import { ResponsesModule } from './responses/responses.module';
@@ -40,7 +39,6 @@ import { ResponsesModule } from './responses/responses.module';
     FeedbackModule,
     EvaluationsModule,
     UploadModule,
-    RolesModule,
     PublicModule,
     ResponsesModule,
   ],

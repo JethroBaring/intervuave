@@ -2,17 +2,12 @@ model Evaluation {
   id                 String             @id @default(cuid())
   interview          Interview          @relation(fields: [interviewId], references: [id])
   interviewId        String             @unique
-  positionFit        Float
+  responseQuality    Float
   valuesFit          Float
   missionAlignment   Float
   visionAlignment    Float
   cultureFit         Float
   overallFitScore    Float
-  speechClarity      Float
-  confidence         Float
-  emotionalTone      Float
-  engagement         Float
-  bodyLanguage       Float
   perQuestionResults Json // Detailed score breakdown per question
   perValueBreakdown  Json // Score breakdown per core value
   aiDecision         Decision? // Moved from Interview to here
