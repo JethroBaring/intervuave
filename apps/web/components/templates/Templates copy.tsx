@@ -1,14 +1,14 @@
 "use client";
 
 import React, { useState } from "react";
-import ComponentCard from "../common/ComponentCard";
-import CardWithActions from "../common/CardWithActions";
+import ComponentCard from "../ui/common/ComponentCard";
+import CardWithActions from "../ui/common/CardWithActions";
 import { Percent, PuzzleIcon } from "lucide-react";
 import { Modal } from "../ui/modal";
-import Label from "../form/Label";
-import TextArea from "../form/input/TextArea";
+import Label from "../ui/form/Label";
+import TextArea from "../ui/form/input/TextArea";
 import Button from "../ui/button/Button";
-import Input from "../form/input/InputField";
+import Input from "../ui/form/input/InputField";
 
 interface TemplatesProps {}
 
@@ -80,7 +80,7 @@ const Templates: React.FC<TemplatesProps> = () => {
     <>
       <ComponentCard header={header}>
         <div className="grid grid-cols-4 gap-6">
-          <CardWithActions title="Culture Fit Template">
+          {/* <CardWithActions title="Culture Fit Template"> */}
             <div className="flex flex-col mt-1 gap-2">
               <div className="flex gap-2 items-center">
                 <PuzzleIcon className="h-4 w-4 text-blue-500" />
@@ -90,7 +90,7 @@ const Templates: React.FC<TemplatesProps> = () => {
               <h4 className="text-sm">Questions: 12</h4>
               <h4 className="text-sm">Used in: 2 roles</h4>
             </div>
-          </CardWithActions>
+          {/* </CardWithActions> */}
         </div>
       </ComponentCard>
       <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">

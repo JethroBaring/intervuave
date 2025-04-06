@@ -6,8 +6,8 @@ import Input from "../input/InputField";
 import Select from "../Select";
 import Radio from "../input/Radio";
 import Form from "../Form";
-import { CalenderIcon } from "../../../icons";
-import Button from "../../ui/button/Button";
+import { CalenderIcon } from "../../../../icons";
+import Button from "../../../ui/button/Button";
 import Flatpickr from "react-flatpickr";
 import "flatpickr/dist/themes/light.css";
 
@@ -48,7 +48,7 @@ export default function ExampleFormTwo() {
     console.log("Selected:", value);
   };
   return (
-    <ComponentCard title="Example Form">
+    // <ComponentCard title="Example Form">
       <Form onSubmit={handleSubmit}>
         <div className="grid gap-6 sm:grid-cols-2">
           <div className="col-span-full">
@@ -161,6 +161,6 @@ export default function ExampleFormTwo() {
           </div>
         </div>
       </Form>
-    </ComponentCard>
+    // </ComponentCard>
   );
 }

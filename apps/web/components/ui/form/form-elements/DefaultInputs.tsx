@@ -4,7 +4,7 @@ import ComponentCard from "../../common/ComponentCard";
 import Label from "../Label";
 import Input from "../input/InputField";
 import Select from "../Select";
-import { CalenderIcon, ChevronDownIcon, EyeCloseIcon, EyeIcon, TimeIcon } from "../../../icons";
+import { CalenderIcon, ChevronDownIcon, EyeCloseIcon, EyeIcon, TimeIcon } from "../../../../icons";
 
 export default function DefaultInputs() {
   const [showPassword, setShowPassword] = useState(false);
@@ -17,7 +17,7 @@ export default function DefaultInputs() {
     console.log("Selected value:", value);
   };
   return (
-    <ComponentCard title="Default Inputs">
+    // <ComponentCard title="Default Inputs">
       <div className="space-y-6">
         <div>
           <Label>Input</Label>
@@ -115,6 +115,6 @@ export default function DefaultInputs() {
           </div>
         </div>
       </div>
-    </ComponentCard>
+    // </ComponentCard>
   );
 }

@@ -8,8 +8,9 @@ export default function ToggleSwitch() {
     console.log("Switch is now:", checked ? "ON" : "OFF");
   };
   return (
-    <ComponentCard title="Toggle switch input">
-      <div className="flex gap-4">
+    // <ComponentCard title="Toggle switch input">
+     <>
+       <div className="flex gap-4">
         <Switch
           label="Default"
           defaultChecked={true}
@@ -37,6 +38,7 @@ export default function ToggleSwitch() {
         />
         <Switch label="Disabled" disabled={true} color="gray" />
       </div>
-    </ComponentCard>
+     </>
+    // </ComponentCard>
   );
 }

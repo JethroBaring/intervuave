@@ -1,5 +1,5 @@
-import ComponentCard from "@/components/common/ComponentCard";
-import PageBreadcrumb from "@/components/common/PageBreadCrumb";
+import ComponentCard from "@/components/ui/common/ComponentCard";
+import PageBreadcrumb from "@/components/ui/common/PageBreadCrumb";
 import ResponsiveImage from "@/components/ui/images/ResponsiveImage";
 import ThreeColumnImageGrid from "@/components/ui/images/ThreeColumnImageGrid";
 import TwoColumnImageGrid from "@/components/ui/images/TwoColumnImageGrid";
@@ -17,7 +17,7 @@ export default function Images() {
   return (
     <div>
       <PageBreadcrumb pageTitle="Images" />
-      <div className="space-y-5 sm:space-y-6">
+      {/* <div className="space-y-5 sm:space-y-6">
         <ComponentCard title="Responsive image">
           <ResponsiveImage />
         </ComponentCard>
@@ -27,7 +27,7 @@ export default function Images() {
         <ComponentCard title="Image in 3 Grid">
           <ThreeColumnImageGrid />
         </ComponentCard>
-      </div>
+      </div> */}
     </div>
   );
 }

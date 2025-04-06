@@ -109,20 +109,20 @@ export const useElevenlabsInterviewerStore = create<InterviewState>((set, get) =
 
     // Initialize Speech Recognition
     const SpeechRecognitionAPI = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
-    recognition = new SpeechRecognitionAPI();
-    recognition.continuous = true;
-    recognition.interimResults = false;
-    recognition.lang = "en-US";
+    // recognition = new SpeechRecognitionAPI();
+    // recognition.continuous = true;
+    // recognition.interimResults = false;
+    // recognition.lang = "en-US";
 
-    recognition.onresult = (event: SpeechRecognitionEvent) => {
-      const lastResult = event.results[event.results.length - 1];
-      const transcript = lastResult[0].transcript.trim();
-      if (transcript && get().expectingUserInput) {
-        get().endCurrentQuestion(transcript);
-      }
-    };
+    // recognition.onresult = (event: SpeechRecognitionEvent) => {
+    //   const lastResult = event.results[event.results.length - 1];
+    //   const transcript = lastResult[0].transcript.trim();
+    //   if (transcript && get().expectingUserInput) {
+    //     get().endCurrentQuestion(transcript);
+    //   }
+    // };
 
-    recognition.start();
+    // recognition.start();
 
     await speak("Welcome to the interview. Let's begin.");
 

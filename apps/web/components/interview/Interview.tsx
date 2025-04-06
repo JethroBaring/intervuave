@@ -8,6 +8,7 @@ import { useInterviewer } from "@/hooks-test/useInterviewer";
 import { useSearchParams } from "next/navigation";
 import GridShape from "../ui/common/GridShape";
 import ExpiredInvalidInterview from "./InvalidExpiredInterview";
+import { Suspense } from "react";
 
 export default function Interview() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -106,7 +107,8 @@ export default function Interview() {
   }
 
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
       <GridShape />
       <div className="h-[600px] w-[1300px] flex gap-5">
         <Card className="flex-auto h-full flex flex-col gap-5 text-gray-500 dark:text-gray-400 relative">
@@ -216,5 +218,6 @@ export default function Interview() {
         &copy; {new Date().getFullYear()} - Intervuave
       </p>
     </div>
+    </Suspense>
   );
 }

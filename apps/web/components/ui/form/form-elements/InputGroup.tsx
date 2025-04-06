@@ -3,7 +3,7 @@ import React from "react";
 import ComponentCard from "../../common/ComponentCard";
 import Label from "../Label";
 import Input from "../input/InputField";
-import { EnvelopeIcon } from "../../../icons";
+import { EnvelopeIcon } from "../../../../icons";
 import PhoneInput from "../group-input/PhoneInput";
 
 export default function InputGroup() {
@@ -17,7 +17,7 @@ export default function InputGroup() {
     console.log("Updated phone number:", phoneNumber);
   };
   return (
-    <ComponentCard title="Input Group">
+    // <ComponentCard title="Input Group">
       <div className="space-y-6">
         <div>
           <Label>Email</Label>
@@ -51,6 +51,6 @@ export default function InputGroup() {
           />
         </div>
       </div>
-    </ComponentCard>
+    // </ComponentCard>
   );
 }

@@ -8,10 +8,10 @@ import {
   EnvelopeIcon,
   LockIcon,
   UserIcon,
-} from "../../../icons";
+} from "../../../../icons";
 import Checkbox from "../input/Checkbox";
 import Label from "../Label";
-import Button from "../../ui/button/Button";
+import Button from "../../../ui/button/Button";
 
 export default function ExampleFormWithIcon() {
   const handleSubmit = (e: React.FormEvent) => {
@@ -21,7 +21,7 @@ export default function ExampleFormWithIcon() {
 
   const [isChecked, setIsChecked] = useState(false);
   return (
-    <ComponentCard title="Example Form With Icons">
+    // <ComponentCard title="Example Form With Icons">
       <Form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6">
           <div className="relative">
@@ -81,6 +81,6 @@ export default function ExampleFormWithIcon() {
           </div>
         </div>
       </Form>
-    </ComponentCard>
+    // </ComponentCard>
   );
 }

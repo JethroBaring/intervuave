@@ -1,6 +1,6 @@
 import React from "react";
-import Card from "../common/Card";
 import { LockIcon } from "@/icons";
+import Card from "../ui/common/Card";
 
 interface KanbanColumnProps {
   key: string;

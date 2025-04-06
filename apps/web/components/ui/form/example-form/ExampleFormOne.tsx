@@ -6,8 +6,8 @@ import Label from "../Label";
 import Input from "../input/InputField";
 import Select from "../Select";
 import TextArea from "../input/TextArea";
-import Button from "../../ui/button/Button";
-import { PaperPlaneIcon } from "../../../icons";
+import Button from "../../../ui/button/Button";
+import { PaperPlaneIcon } from "../../../../icons";
 
 export default function ExampleFormOne() {
   const [message, setMessage] = useState<string>("");
@@ -29,7 +29,7 @@ export default function ExampleFormOne() {
     console.log("Message:", value);
   };
   return (
-    <ComponentCard title="Example Form">
+    // <ComponentCard title="Example Form">
       <Form onSubmit={handleSubmit}>
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
           <div className="col-span-2 sm:col-span-1">
@@ -76,6 +76,6 @@ export default function ExampleFormOne() {
           </div>
         </div>
       </Form>
-    </ComponentCard>
+    // </ComponentCard>
   );
 }

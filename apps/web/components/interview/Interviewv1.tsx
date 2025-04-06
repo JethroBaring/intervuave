@@ -1,6 +1,6 @@
 "use client";
 import { useEffect, useRef, useState } from "react";
-import Card from "@/components/common/Card";
+import Card from "@/components/ui/common/Card";
 import Button from "@/components/ui/button/Button";
 import Image from "next/image";
 import { useInterviewStore } from "@/stores-test/interviewStore";
@@ -8,8 +8,8 @@ import { InfoIcon } from "@/icons";
 import { useRoleForm } from "@/hooks-test/useRoleForm";
 import { useInterviewer } from "@/hooks-test/useInterviewer";
 import { useSearchParams } from "next/navigation";
-import GridShape from "../common/GridShape";
 import ExpiredInvalidInterview from "./InvalidExpiredInterview";
+import GridShape from "../ui/common/GridShape";
 
 export default function Interview() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -57,7 +57,7 @@ export default function Interview() {
   useEffect(() => {
     if (lastMessage) {
       const sender = isSpeaking ? "bot" : "user";
-      addTranscript(lastMessage, sender);
+      // addTranscript(lastMessage, sender);
     }
   }, [lastMessage, isSpeaking, addTranscript]);
 

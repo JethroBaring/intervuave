@@ -1,7 +1,9 @@
+'use client'
+
 import GridShape from "@/components/ui/common/GridShape";
 import { CircleAlert, TimerOff } from "lucide-react";
 import Link from "next/link";
-import React from "react";
+import React, { Suspense } from "react";
 
 export default function ExpiredInvalidInterview({
   isInvalid,
@@ -9,7 +11,8 @@ export default function ExpiredInvalidInterview({
   isInvalid: boolean;
 }) {
   return (
-    <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+    <Suspense fallback={<div>Loading...</div>}>
+      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
       <GridShape />
       <div className="mx-auto w-full max-w-[242px] text-center sm:max-w-[472px]">
         <div className="flex items-center justify-center mb-8">
@@ -40,5 +43,6 @@ export default function ExpiredInvalidInterview({
         &copy; {new Date().getFullYear()} - Intervuave
       </p>
     </div>
+    </Suspense>
   );
 }

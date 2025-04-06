@@ -1,8 +1,8 @@
 "use client";
 
-import Card from "@/components/common/Card";
-import GridShape from "@/components/common/GridShape";
-import Checkbox from "@/components/form/input/Checkbox";
+import Card from "@/components/ui/common/Card";
+import GridShape from "@/components/ui/common/GridShape";
+import Checkbox from "@/components/ui/form/input/Checkbox";
 import Button from "@/components/ui/button/Button";
 import { Metadata } from "next";
 import Image from "next/image";
