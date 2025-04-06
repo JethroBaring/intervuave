@@ -25,6 +25,7 @@ import { blockBoardPanningAttr } from "./data-attributes";
 import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types";
 import KanbanScrollWrapper from "./kanbanscrollwrapper";
 import { useCompanyStore } from "@/stores/useCompanyStore";
+import { API_URL } from "@/lib/constants";
 const systemLockedStatuses = [
   "in_progress",
   "processing",
@@ -395,7 +396,7 @@ export function Board({ initial }: { initial: TBoard }) {
   async function updateInterviewStatus(interviewId: string, status: string) {
     try {
       const res = await fetch(
-        `http://localhost:3000/api/v1/companies/${companyId}/interviews/${interviewId}`,
+        `${API_URL}/companies/${companyId}/interviews/${interviewId}`,
         {
           method: "PATCH",
           headers: {
