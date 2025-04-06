@@ -112,13 +112,13 @@ export function CardDisplay({
         }
       >
         <div className="flex flex-col">
-          <p className="text-lg font-bold">Jethro Baring</p>
-          <p className="text-gray-500 dark:text-gray-400">Frontend Developer</p>
+          <p className="text-lg font-bold">{card.description}</p>
+          {/* <p className="text-gray-500 dark:text-gray-400">Frontend Developer</p> */}
         </div>
         <div className="flex items-center gap-1">
           <Clock className="h-4 w-4" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
-            Created: Apr 1, 2025
+            Created: April 7, 2025
           </p>
         </div>
       </div>

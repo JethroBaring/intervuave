@@ -45,10 +45,10 @@ export class UploadService {
         .getSignedUrl(options);
 
       const publicUrl = `https://storage.googleapis.com/${this.bucket}/${filename}`;
-      // await this.prisma.interview.update({
-      //   where: { id: dto.interviewId },
-      //   data: { videoUrl: publicUrl },
-      // });
+      await this.prisma.interview.update({
+        where: { id: dto.interviewId },
+        data: { videoUrl: publicUrl, status: 'SUBMITTED' },
+      });
       return { uploadUrl: url, publicUrl };
     } catch (error) {
       console.log(error);
