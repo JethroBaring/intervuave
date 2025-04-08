@@ -24,7 +24,7 @@ model Interview {
   interviewLink String?         @unique
   expiresAt     DateTime?
   timestamps    Json?
-  videoUrl      String?
+  filename      String?
   cameraType    InputType?
   micType       InputType?
   noiseLevel    Float?

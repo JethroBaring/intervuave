@@ -30,6 +30,10 @@ class InterviewResponse(BaseModel):
     status: str
     submitted_at: str
 
+@app.get("/")
+def read_root():
+    return {"status": "running"}
+
 @app.post("/process-interview", response_model=InterviewResponse)
 # @app.post("/process-interview")
 async def create_processing_job(request: InterviewRequest, background_tasks: BackgroundTasks):

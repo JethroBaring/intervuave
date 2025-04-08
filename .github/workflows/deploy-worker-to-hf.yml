@@ -1,0 +1,27 @@
+name: Deploy Worker to Hugging Face
+
+on:
+  push:
+    branches: [main]   # or whichever branch you want
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v3
+
+      - name: Prepare worker directory
+        run: |
+          mkdir worker-dir
+          cp -r apps/worker/* worker-dir/
+
+      - name: Push to Hugging Face
+        uses: backendcloud/hugging-push@v0.2.3
+        with:
+          hf_token: ${{ secrets.HF_TOKEN }}
+          repo_type: 'space'
+          private: false
+          space_sdk: 'docker'   # 👈 because you are using Docker
+          directory: worker-dir

@@ -1,8 +1,11 @@
-'use client'
+"use client";
 
 import { ELEVENLABS_API_KEY } from "./constants";
 
-export const speak = async (text: string): Promise<void> => {
+export const speak = async (
+  text: string,
+  onSpeakingChange: (isSpeaking: boolean) => void
+): Promise<void> => {
   try {
     const response = await fetch(
       `https://api.elevenlabs.io/v1/text-to-speech/IKne3meq5aSn9XLyUdCD/stream`,
@@ -39,11 +42,13 @@ export const speak = async (text: string): Promise<void> => {
       audioElement.onended = () => {
         URL.revokeObjectURL(audioUrl);
         console.log("✅ Audio finished playing");
+        onSpeakingChange?.(false); // ✅ Set speaking = false after done
         resolve();
       };
 
       audioElement.onerror = (e) => {
         console.error("❌ Audio element error:", e);
+        onSpeakingChange?.(false); // ✅ Set speaking = false after done
         reject(e);
       };
 
@@ -51,9 +56,13 @@ export const speak = async (text: string): Promise<void> => {
 
       audioElement
         .play()
-        .then(() => console.log("▶️ Audio is playing"))
+        .then(() => {
+          console.log("▶️ Audio is playing");
+          onSpeakingChange?.(true); // 🔥 Set speaking true ONLY when audio really plays
+        })
         .catch((playError) => {
           console.error("❌ Play error:", playError);
+          onSpeakingChange?.(false); // ✅ Set speaking = false after done
           reject(playError);
         });
     });

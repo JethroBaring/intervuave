@@ -8,7 +8,7 @@ import { useSearchParams } from "next/navigation";
 import ExpiredInvalidInterview from "@/components/interview/InvalidExpiredInterview";
 import { useInterviewerStore } from "@/stores/useInterviewerStore";
 import Checkbox from "../ui/form/input/Checkbox";
-import { Camera, Check, Mic } from "lucide-react";
+import { Camera, Check, Loader, Mic } from "lucide-react";
 
 export default function Interview() {
   const videoRef = useRef<HTMLVideoElement | null>(null);
@@ -30,12 +30,25 @@ export default function Interview() {
     isCameraOn,
     getStreamRef,
     candidate,
+    role,
+    isSpeaking,
+    company,
+    isSubmitting,
+    currentStep,
+    setCurrentStep
   } = useInterviewerStore();
-  const [currentStep, setCurrentStep] = useState(0);
+  // const [currentStep, setCurrentStep] = useState(0);
+  const [consent, setConsent] = useState({
+    videoAndAudio: false,
+    aiAnalysis: false,
+    personalInfo: false,
+    privacyTerms: false,
+  });
+  const [countdown, setCountdown] = useState(5);
 
   const handleInterviewToggle = useCallback(async () => {
     if (isRecording) {
-      stopInterview();
+      stopInterview()
     } else {
       await startInterview();
     }
@@ -71,9 +84,39 @@ export default function Interview() {
   useEffect(() => {
     if (currentStep === 4 && videoRef.current && streamRef) {
       videoRef.current.srcObject = streamRef;
-      handleInterviewToggle();
     }
   }, [currentStep]);
+
+  useEffect(() => {
+    if (currentStep === 4 && countdown === 0) {
+      handleInterviewToggle();
+    }
+  }, [currentStep, countdown]);
+
+  useEffect(() => {
+    let timer: any;
+    if (currentStep === 4) {
+      timer = setInterval(() => {
+        console.log("test");
+        setCountdown((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+
+    return () => clearInterval(timer);
+  }, [currentStep]);
+
+  useEffect(() => {
+    return () => {
+      console.log("Interview component unmounting, stopping camera and mic");
+      stopInterview();
+    };
+  }, [stopInterview]);
 
   if (!isValid || isExpired) {
     return <ExpiredInvalidInterview isInvalid={isValid} />;
@@ -89,8 +132,7 @@ export default function Interview() {
               Welcome to your Interview
             </h1>
             <p className="mt-6 mb-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-              You're applying for the position of Software Engineer at
-              TechInnovate
+              You're applying for the position of {role} at {company.name}
             </p>
             <Button onClick={() => setCurrentStep(1)}>
               Begin Interview Setup
@@ -105,31 +147,71 @@ export default function Interview() {
             </h1>
             <div className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 sm:text-lg w-fit mx-auto">
               <div className="flex items-center gap-3">
-                <Checkbox checked={true} onChange={() => {}} />
+                <Checkbox
+                  checked={consent.videoAndAudio}
+                  onChange={() =>
+                    setConsent((prev) => ({
+                      ...prev,
+                      videoAndAudio: !prev.videoAndAudio,
+                    }))
+                  }
+                />
                 <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
                   I consent to video and audio recording of the interview
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Checkbox checked={true} onChange={() => {}} />
+                <Checkbox
+                  checked={consent.aiAnalysis}
+                  onChange={() =>
+                    setConsent((prev) => ({
+                      ...prev,
+                      aiAnalysis: !prev.aiAnalysis,
+                    }))
+                  }
+                />
                 <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
                   I understand my interview will be analyzed by AI
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Checkbox checked={true} onChange={() => {}} />
+                <Checkbox
+                  checked={consent.personalInfo}
+                  onChange={() =>
+                    setConsent((prev) => ({
+                      ...prev,
+                      personalInfo: !prev.personalInfo,
+                    }))
+                  }
+                />
                 <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
                   I consent to processing of my personal information
                 </span>
               </div>
               <div className="flex items-center gap-3">
-                <Checkbox checked={true} onChange={() => {}} />
+                <Checkbox
+                  checked={consent.privacyTerms}
+                  onChange={() =>
+                    setConsent((prev) => ({
+                      ...prev,
+                      privacyTerms: !prev.privacyTerms,
+                    }))
+                  }
+                />
                 <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
                   I have read and agree to the privacy terms
                 </span>
               </div>
             </div>
-            <Button onClick={() => setCurrentStep(2)}>
+            <Button
+              onClick={() => setCurrentStep(2)}
+              disabled={
+                !consent.videoAndAudio ||
+                !consent.privacyTerms ||
+                !consent.personalInfo ||
+                !consent.aiAnalysis
+              }
+            >
               Continue to System Check
             </Button>
           </div>
@@ -202,7 +284,7 @@ export default function Interview() {
                 </div>
 
                 {isRecording && (
-                  <div className="absolute top-5 left-1/2 -translate-x-1/2 flex items-center gap-2">
+                  <div className="absolute top-12 left-5 flex items-center gap-2">
                     <span className="animate-pulse w-3 h-3 bg-red-500 rounded-full"></span>
                     <p className="text-red-500 font-medium">Recording</p>
                   </div>
@@ -217,6 +299,7 @@ export default function Interview() {
                       alt="interview_bot"
                       className="object-cover rounded-full"
                     />
+                    {isSpeaking && <span className="animate-speak" />}
                   </div>
                 </div>
 
@@ -227,7 +310,11 @@ export default function Interview() {
                   playsInline
                   className="h-full w-full object-cover rounded-2xl"
                 />
-
+                {countdown > 0 && (
+                  <div className="h-full w-full flex items-center justify-center absolute text-[100px]">
+                    {countdown}
+                  </div>
+                )}
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-999">
                   {isRecording && questions[currentQuestionIndex - 1] && (
                     <div className="text-center text-xl font-medium text-gray-700 dark:text-white">
@@ -235,17 +322,45 @@ export default function Interview() {
                     </div>
                   )}
                   <div className="flex gap-3">
-                    <Button onClick={handleInterviewToggle}>
-                      {isRecording ? "Stop Interview" : "Start Interview"}
-                    </Button>
-                    {isRecording && (
-                      <Button onClick={handleNextQuestion}>Next</Button>
-                    )}
+                    
+                      <Button
+                        onClick={handleNextQuestion}
+                        disabled={isSubmitting}
+                      >
+                        {isSubmitting && (
+                          <Loader className="h-5 w-5 animate-spin" />
+                        )}
+                        {currentQuestionIndex === questions.length
+                          ? "Finish Interview"
+                          : "Next"}
+                      </Button>
+                    
                   </div>
                 </div>
               </Card>
             )}
           </div>
+        )}
+
+        {currentStep === 5 && (
+          <>
+            <Check className="text-brand-400 h-48 w-48" />
+            <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
+              <h1 className="mt-6 mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
+                Interview completed!
+              </h1>
+              <p className="mt-6 mb-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
+                Thank you for completing your interview. Your responses have
+                been recorded and will be analyzed by our AI assessment system.
+              </p>
+              <a href="/dashboard">
+                <Button variant="outline">Home</Button>
+              </a>
+            </div>
+            <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
+              &copy; {new Date().getFullYear()} - Intervuave
+            </p>
+          </>
         )}
 
         <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">

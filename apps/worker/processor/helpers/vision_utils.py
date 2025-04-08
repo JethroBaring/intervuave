@@ -7,8 +7,10 @@ import numpy as np
 import mediapipe as mp
 from deepface import DeepFace
 from collections import defaultdict
-
-
+# Ensure DEEPFACE_HOME is set before DeepFace is imported elsewhere
+if "DEEPFACE_HOME" not in os.environ:
+    os.environ["DEEPFACE_HOME"] = "/app/.deepface"
+    
 def analyze_emotions(video_path: str, with_timeline: bool = False) -> dict:
     cap = cv2.VideoCapture(video_path)
     fps = cap.get(cv2.CAP_PROP_FPS) or 25

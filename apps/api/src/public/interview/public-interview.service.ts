@@ -1,19 +1,26 @@
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import {
+  Injectable,
+  InternalServerErrorException,
+  Logger,
+} from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CryptoService } from 'src/common/crypto.service';
+import { GenerateUploadUrlDto } from './dto/generate-upload-url.dto';
+import { GoogleStorageService } from 'src/common/google-storage.service';
+import { Prisma } from '@prisma/client';
+import { GoogleTasksService } from 'src/common/google-tasks.service';
 
 @Injectable()
 export class PublicInterviewService {
-  private readonly algorithm = 'aes-256-cbc';
-  private readonly secret =
-    process.env.CRYPTO_SECRET || 'default_32_characters_key';
-  private readonly ivLength = 16;
+  private readonly logger = new Logger(PublicInterviewService.name);
 
   constructor(
     private readonly prisma: PrismaService,
     private readonly crypto: CryptoService,
+    private readonly storage: GoogleStorageService,
+    private readonly queue: GoogleTasksService,
   ) {}
 
   async accessInterview(token: string) {
@@ -34,10 +41,11 @@ export class PublicInterviewService {
               questions: true,
             },
           },
+          company: true,
         },
       });
 
-      if (!interview) {
+      if (!interview || interview.status !== 'PENDING') {
         return { valid: false, reason: 'invalid' };
       }
 
@@ -45,6 +53,97 @@ export class PublicInterviewService {
     } catch (err: any) {
       console.log(err);
       return { valid: false, reason: 'invalid' };
+    }
+  }
+
+  async startInterview(token: string) {
+    try {
+      const decrypted = this.crypto.decrypt(decodeURIComponent(token));
+      const { id, expiresAt } = JSON.parse(decrypted);
+
+      if (new Date() > new Date(expiresAt)) {
+        return { valid: false, reason: 'expired' };
+      }
+
+      const interview = await this.prisma.interview.update({
+        where: { id },
+        data: { status: 'IN_PROGRESS' },
+      });
+
+      return interview;
+    } catch (err: any) {
+      console.log(err);
+      return { valid: false, reason: 'invalid' };
+    }
+  }
+
+  async submitInterview(token: string, timestamps: any) {
+    try {
+      const decrypted = this.crypto.decrypt(decodeURIComponent(token));
+      const { id, expiresAt } = JSON.parse(decrypted);
+
+      if (new Date() > new Date(expiresAt)) {
+        return { valid: false, reason: 'expired' };
+      }
+
+      const interview = await this.prisma.interview.update({
+        where: { id },
+        data: {
+          status: 'SUBMITTED',
+          timestamps: timestamps as Prisma.JsonArray,
+        },
+      });
+
+      const videoUrl = await this.storage.generateInterviewViewUrl(
+        interview.filename!,
+        60,
+      );
+
+      await this.queue.addTask({
+        interview_id: id,
+        timestamps: timestamps.timestamps,
+        video_url: videoUrl,
+        questions: {
+          cm95uw5tf0004vgkf0skn92vg:
+            'How do you approach working with team members who have different working styles or opinions from yours?',
+        },
+        callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
+        status_callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/companies/${interview.companyId}/interviews`,
+      });
+
+      return interview;
+    } catch (err: any) {
+      console.log(err);
+      return { valid: false, reason: 'invalid' };
+    }
+  }
+
+  async generateSignedInterviewUrl(token: string, dto: GenerateUploadUrlDto) {
+    try {
+      const decrypted = this.crypto.decrypt(decodeURIComponent(token));
+      const { id, expiresAt } = JSON.parse(decrypted);
+
+      if (new Date() > new Date(expiresAt)) {
+        return { valid: false, reason: 'expired' };
+      }
+
+      const { filename, contentType } = dto;
+
+      const uploadUrl = await this.storage.generateSignedUrl(
+        filename,
+        contentType,
+      );
+
+      await this.prisma.interview.update({
+        where: { id },
+        data: { filename },
+      });
+
+      return { uploadUrl };
+    } catch (error) {
+      console.log(error);
+      this.logger.error('Failed to generate signed URL', error);
+      throw new InternalServerErrorException('Failed to generate signed URL');
     }
   }
 }

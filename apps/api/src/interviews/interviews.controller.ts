@@ -26,7 +26,8 @@ export class InterviewsController {
     return this.service.findAll(companyId);
   }
 
-  @Get(':interviewId') findOne(@Param('interviewId') id: string) {
+  @Get(':interviewId')
+  findOne(@Param('interviewId') id: string) {
     return this.service.findOne(id);
   }
 
@@ -40,5 +41,12 @@ export class InterviewsController {
 
   @Delete(':interviewId') remove(@Param('interviewId') id: string) {
     return this.service.remove(id);
+  }
+
+  @Get(':interviewId/view-url') getInterviewUrl(
+    @Param('companyId') companyId: string,
+    @Param('interviewId') interviewId: string,
+  ) {
+    return this.service.getInterviewViewUrl(companyId, interviewId);
   }
 }

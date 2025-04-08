@@ -7,13 +7,28 @@ from .helpers.video_utils import extract_audio, slice_video, slice_audio, conver
 from .helpers.audio_utils import analyze_audio
 from .helpers.vision_utils import analyze_emotions, analyze_body_language
 from .helpers.metrics import compute_engagement, compute_emotional_tone, compute_speech_clarity, estimate_confidence
+from .logger import get_logger
+
 
 PROCESSING_VERSION = "v1.1"
-CHUNK_SAVE_DIR = os.path.join(os.path.dirname(__file__), "../chunks")
-os.makedirs(CHUNK_SAVE_DIR, exist_ok=True)
+CHUNK_SAVE_DIR = "/app/chunks"
 
+logger = get_logger("processor")
 
-def process_interview(interview_id: str, metadata: dict) -> dict:
+# Log environment variables related to file paths
+logger.info(f"DEEPFACE_HOME: {os.environ.get('DEEPFACE_HOME', 'Not set')}")
+logger.info(f"MPLCONFIGDIR: {os.environ.get('MPLCONFIGDIR', 'Not set')}")
+logger.info(f"CHUNK_SAVE_DIR: {CHUNK_SAVE_DIR}")
+
+# Ensure the directory exists
+try:
+    os.makedirs(CHUNK_SAVE_DIR, exist_ok=True)
+    logger.info(f"Directory {CHUNK_SAVE_DIR} created or already exists")
+    logger.info(f"Directory permissions: {oct(os.stat(CHUNK_SAVE_DIR).st_mode)}")
+except Exception as e:
+    logger.error(f"Failed to create directory {CHUNK_SAVE_DIR}: {str(e)}")
+
+async def process_interview(interview_id: str, metadata: dict) -> dict:
     results = []
     error_log = []
     start_time = time.time()

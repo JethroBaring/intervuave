@@ -11,6 +11,7 @@ import { UpdateInterviewsDto } from './dto/update-interviews.dto';
 import { InterviewStatus } from '@prisma/client';
 import { MailService } from 'src/mail/mail.service';
 import { CryptoService } from 'src/common/crypto.service';
+import { GoogleStorageService } from 'src/common/google-storage.service';
 
 @Injectable()
 export class InterviewsService {
@@ -20,6 +21,7 @@ export class InterviewsService {
     private readonly prisma: PrismaService,
     private readonly mailer: MailService,
     private readonly crypto: CryptoService,
+    private readonly storage: GoogleStorageService,
   ) {}
 
   async create(companyId: string, createDto: CreateInterviewsDto) {
@@ -253,5 +255,27 @@ export class InterviewsService {
     //   },
     // });
     this.logger.log(`Created evaluation for interview ${interview.id}`);
+  }
+
+  async getInterviewViewUrl(companyId: string, interviewId: string) {
+    try {
+      // Get the interview to find the video path
+      const interview = await this.prisma.interview.findUnique({
+        where: { id: interviewId, companyId },
+      });
+
+      if (!interview || !interview.filename) {
+        throw new Error('Video not found');
+      }
+      const viewUrl = this.storage.generateInterviewViewUrl(
+        interview.filename as string,
+        60,
+      );
+
+      return { viewUrl };
+    } catch (error) {
+      this.logger.error('Failed to generate view URL', error);
+      throw new InternalServerErrorException('Failed to generate view URL');
+    }
   }
 }

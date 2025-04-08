@@ -1,13 +1,15 @@
 model InterviewTemplate {
-  id        String     @id @default(cuid())
-  name      String
-  companyId String
-  company   Company    @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  questions Question[]
-  interviews Interview[]
-  metrics   Metric[]
-  createdAt DateTime   @default(now())
-  updatedAt DateTime   @updatedAt
+  id                     String      @id @default(cuid())
+  name                   String
+  companyId              String
+  company                Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  responseQualityWeights Float       @default(0.3)
+  cultureFitWeights      Float       @default(0.7)
+  questions              Question[]
+  interviews             Interview[]
+  metrics                Metric[]
+  createdAt              DateTime    @default(now())
+  updatedAt              DateTime    @updatedAt
 }
 
 model Metric {
@@ -26,9 +28,7 @@ model Question {
   order        Int
   templateId   String
   template     InterviewTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  evaluates    String // plain text, stored for audit + display
-  coreValueId  String? // optional FK for search and UI
-  coreValue    CoreValue?        @relation(fields: [coreValueId], references: [id])
+  coreValues   CoreValue[]
 
   responses Response[]
   createdAt DateTime   @default(now())

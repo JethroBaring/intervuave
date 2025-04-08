@@ -33,7 +33,7 @@ async def submit_processing_job(interview_id: str, video_url: str, timestamps: l
     try:
         logger.info(f"Processing job {interview_id}")
         await notify_status(status_callback_url, interview_id, "processing")
-        interview_result = process_interview(interview_id, {
+        interview_result = await process_interview(interview_id, {
             "videoUrl": video_url,
             "timestamps": timestamps,
             "questions": questions

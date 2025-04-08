@@ -3,11 +3,18 @@ import { CloudTasksClient, protos } from '@google-cloud/tasks';
 
 @Injectable()
 export class GoogleTasksService {
-  private client = new CloudTasksClient();
-  private project = 'your-project-id';
-  private location = 'us-central1';
-  private queue = 'my-queue';
-  private url = 'https://your-fastapi-worker.com/task-handler';
+  private client = new CloudTasksClient({
+    projectId: process.env.GCP_PROJECT_ID,
+    credentials: {
+      client_email: process.env.GCP_CLIENT_EMAIL,
+      private_key: process.env.GCP_PRIVATE_KEY,
+    },
+  });
+  private project = 'intervuave';
+  private location = 'asia-east2';
+  private queue = 'interview-processing';
+  private url =
+    'https://jethrob123-processing-worker.hf.space/process-interview';
 
   async addTask(data: any): Promise<protos.google.cloud.tasks.v2.ITask> {
     const parent = this.client.queuePath(
@@ -26,6 +33,8 @@ export class GoogleTasksService {
         body: Buffer.from(JSON.stringify(data)).toString('base64'),
       },
     };
+
+    console.log({ HANNAH: JSON.stringify(data) });
 
     const response = await this.client.createTask({ parent, task });
     return response[0];

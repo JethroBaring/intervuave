@@ -3,6 +3,7 @@ import tempfile
 import os
 from ..logger import get_logger
 import requests
+from urllib.parse import urlparse
 
 logger = get_logger("video-utils")
 
@@ -27,7 +28,9 @@ def download_video(url: str) -> str:
     logger.info(f"Downloading video from {url}")
     try:
         # Detect extension
-        extension = url.split('.')[-1].lower()
+        parsed_url = urlparse(url)
+        filename = os.path.basename(parsed_url.path)
+        extension = filename.split('.')[-1].lower()
         if extension not in ["mp4", "webm"]:
             raise Exception("Unsupported video format")
 

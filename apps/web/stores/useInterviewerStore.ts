@@ -16,6 +16,8 @@ interface InterviewState {
   isRecording: boolean;
   isCameraOn: boolean;
   currentQuestionIndex: number;
+  company: any;
+  interviewToken: string | null;
   interview: Interview | null;
   questions: Question[];
   candidate: Candidate | null;
@@ -23,6 +25,10 @@ interface InterviewState {
   isValid: boolean;
   isExpired: boolean;
   isVerifying: boolean;
+  isSpeaking: boolean;
+  isSubmitting: boolean;
+  currentStep: number;
+  setCurrentStep: (step: number) => void;
   startInterview: () => Promise<void>;
   nextQuestion: () => Promise<void>;
   endCurrentQuestion: () => void;
@@ -44,29 +50,21 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
   isRecording: false,
   isCameraOn: false,
   currentQuestionIndex: 0,
-  questions: [
-    {
-      id: "q1",
-      questionText:
-        "Can you tell me about a time when you had to explain a complex idea?",
-      evaluates: "",
-      alignedWith: "",
-    },
-    {
-      id: "q2",
-      questionText:
-        "Describe a challenging problem you faced and how you solved it.",
-      evaluates: "",
-      alignedWith: "",
-    },
-  ],
+  questions: [],
+  company: null,
+  interviewToken: null,
   interview: null,
   isValid: false,
   isExpired: false,
   isVerifying: false,
   candidate: null,
-  // questions: [],
+  isSpeaking: false,
+  isSubmitting: false,
   role: "",
+  currentStep: 0,
+  setCurrentStep: (step: number) => {
+    set({ currentStep: step });
+  },
   setVideoRef: (ref) => {
     videoRef = ref;
   },
@@ -94,7 +92,11 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
   startInterview: async () => {
     if (get().isRecording || !videoRef?.current) return;
 
-    await speak("Welcome to the interview. Let's begin.");
+    await api.patch(
+      `${endpoints.public.startInterview(
+        encodeURIComponent(get().interviewToken!)
+      )}`
+    );
 
     // Start recording
     const stream = videoRef.current.srcObject as MediaStream;
@@ -109,61 +111,41 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       const blob = new Blob(recordedChunks, { type: "video/webm" });
       try {
         // Upload video
+        set({ isSubmitting: true });
         const videoFilename = `${Date.now()}_interview.webm`;
-        const resVideo = await fetch(
-          `${process.env.NEXT_PUBLIC_API_URL}/upload/generate-url`,
+        const { data } = await api.post(
+          `${endpoints.public.getSignedInterviewUrl(
+            encodeURIComponent(get().interviewToken!)
+          )}`,
           {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({
-              filename: videoFilename,
-              contentType: "video/webm",
-              interviewId: get().interview?.id, // make sure you pass this
-            }),
+            filename: videoFilename,
+            contentType: "video/webm",
+            interviewId: get().interview?.id,
           }
         );
 
-        if (!resVideo.ok) throw new Error("Failed to get signed URL for video");
-        const { uploadUrl: videoUploadUrl, publicUrl: videoPublicUrl } =
-          await resVideo.json();
+        if (!data) throw new Error("Failed to get signed URL for video");
+        const uploadUrl = data.uploadUrl;
 
-        const uploadVideo = await fetch(videoUploadUrl, {
+        const uploadVideo = await fetch(uploadUrl, {
           method: "PUT",
           headers: { "Content-Type": "video/webm" },
           body: blob,
         });
         if (!uploadVideo.ok) throw new Error("Video upload failed");
-
+        await api.patch(
+          `${endpoints.public.submitInterview(
+            encodeURIComponent(get().interviewToken!)
+          )}`,
+          {
+            timestamps: get().timestamps,
+          }
+        );
+        set({ isSubmitting: false, currentStep: 5 });
       } catch (err) {
         console.error(err);
         alert("Upload failed");
       }
-
-      // const blob = new Blob(recordedChunks, { type: "video/webm" });
-      // const url = URL.createObjectURL(blob);
-
-      // const link = document.createElement("a");
-      // link.href = url;
-      // link.download = "interview.webm";
-      // document.body.appendChild(link);
-      // link.click();
-      // document.body.removeChild(link);
-      // URL.revokeObjectURL(url);
-
-      // const timestampBlob = new Blob(
-      //   [JSON.stringify(get().timestamps, null, 2)],
-      //   {
-      //     type: "application/json",
-      //   }
-      // );
-      // const timestampUrl = URL.createObjectURL(timestampBlob);
-      // const timestampLink = document.createElement("a");
-      // timestampLink.href = timestampUrl;
-      // timestampLink.download = "timestamps.json";
-      // document.body.appendChild(timestampLink);
-      // timestampLink.click();
-      // document.body.removeChild(timestampLink);
-      // URL.revokeObjectURL(timestampUrl);
     };
 
     mediaRecorder.start();
@@ -171,6 +153,9 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     setTimeout(
       () => set({ isRecording: true, recordingStartTime: startTime }),
       500
+    );
+    await speak("Welcome to the interview. Let's begin.", (isSpeaking) =>
+      set({ isSpeaking })
     );
 
     await get().nextQuestion();
@@ -184,7 +169,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
 
     const question = questions[currentQuestionIndex];
 
-    await speak(question.questionText); // Speak first
+    await speak(question.questionText, (isSpeaking) => set({ isSpeaking })); // Speak first
 
     const now = performance.now();
     const relativeStart = recordingStartTime ? now - recordingStartTime : 0;
@@ -217,7 +202,17 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     if (mediaRecorder && get().isRecording) {
       mediaRecorder.stop();
     }
-    set({ isRecording: false });
+
+    if (streamRef) {
+      streamRef.getTracks().forEach((track) => track.stop()); // 👈 stop the camera and microphone
+      streamRef = null;
+    }
+
+    if (videoRef?.current) {
+      videoRef.current.srcObject = null; // 👈 detach the stream from the video element
+    }
+
+    set({ isRecording: false, isCameraOn: false });
   },
   verifyToken: async (token: string) => {
     set({ isVerifying: true });
@@ -228,13 +223,15 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
 
       if (data.valid) {
         set({
+          company: data.interview.company,
           interview: data.interview,
           candidate: data.interview.candidate,
-          questions: data.interview.interviewTemplate.questions,
+          questions: data.interview.interviewTemplate.questions.slice(1, 2),
           role: data.interview.position,
           isValid: true,
           isExpired: false,
           isVerifying: false,
+          interviewToken: token,
         });
       } else {
         set({
@@ -255,6 +252,6 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     }
   },
   getStreamRef: () => {
-    return streamRef
-  }
+    return streamRef;
+  },
 }));

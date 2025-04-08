@@ -3,67 +3,38 @@ import {
   Logger,
   InternalServerErrorException,
 } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
-import { Storage } from '@google-cloud/storage';
 import { GenerateUploadUrlDto } from './dto/generate-upload-url.dto';
 import { PrismaService } from 'nestjs-prisma';
+import { GoogleStorageService } from 'src/common/google-storage.service';
 
 @Injectable()
 export class UploadService {
   private readonly logger = new Logger(UploadService.name);
-  private readonly storage: Storage;
-  private readonly bucket: string;
 
   constructor(
-    private readonly configService: ConfigService,
     private readonly prisma: PrismaService,
-  ) {
-    this.storage = new Storage({
-      projectId: process.env.GCP_PROJECT_ID,
-      credentials: {
-        client_email: process.env.GCP_CLIENT_EMAIL,
-        private_key: process.env.GCP_PRIVATE_KEY,
-      },
-    });
-    this.bucket = this.configService.get<string>('GCP_BUCKET_NAME', '');
-  }
+    private readonly storage: GoogleStorageService,
+  ) {}
 
   async generateSignedUrl(dto: GenerateUploadUrlDto) {
     try {
       const { filename, contentType } = dto;
-      const options = {
-        version: 'v4' as const,
-        action: 'write' as const,
-        expires: Date.now() + 15 * 60 * 1000, // 15 minutes
+
+      const uploadUrl = await this.storage.generateSignedUrl(
+        filename,
         contentType,
-        predefinedAcl: 'publicRead', // 👈 the magic fix
-      };
+      );
 
-      const [url] = await this.storage
-        .bucket(this.bucket)
-        .file(filename)
-        .getSignedUrl(options);
-
-      const publicUrl = `https://storage.googleapis.com/${this.bucket}/${filename}`;
       await this.prisma.interview.update({
         where: { id: dto.interviewId },
-        data: { videoUrl: publicUrl, status: 'SUBMITTED' },
+        data: { filename },
       });
-      return { uploadUrl: url, publicUrl };
+
+      return { uploadUrl };
     } catch (error) {
       console.log(error);
       this.logger.error('Failed to generate signed URL', error);
       throw new InternalServerErrorException('Failed to generate signed URL');
-    }
-  }
-
-  getPublicUri(filename: string) {
-    try {
-      const uri = `https://storage.googleapis.com/${this.bucket}/${filename}`;
-      return { uri };
-    } catch (error) {
-      this.logger.error('Failed to generate public URI', error);
-      throw new InternalServerErrorException('Failed to generate public URI');
     }
   }
 }

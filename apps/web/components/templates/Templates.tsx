@@ -17,6 +17,7 @@ import { useShallow } from "zustand/shallow";
 import { useTemplateForm } from "@/hooks-test/useTemplateForm";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useTemplateStore } from "@/stores/useTemplateStore";
+import MultiSelect from "../ui/form/MultiSelect";
 
 interface TemplatesProps {}
 
@@ -580,9 +581,9 @@ const Templates: React.FC<TemplatesProps> = () => {
                   />
                 </div>
 
-                <div>
+                <div className="col-span-2">
                   <Label>Evaluates</Label>
-                  <div className="relative">
+                  {/* <div className="relative">
                     <Select
                       options={coreValues.map((coreValue) => ({
                         value: `${coreValue.id}-${coreValue.name}`,
@@ -599,11 +600,18 @@ const Templates: React.FC<TemplatesProps> = () => {
                       disabled={isViewQuestionModalOpen}
                     />
                     <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                  </div>
+                  </div> */}
+                                      <MultiSelect
+                      label="Test"
+                      options={[
+                        { value: "test", text: "Test", selected: false },
+                        { value: "test", text: "Test", selected: false },
+                      ]}
+                    />
                 </div>
-
-                <div>
-                  <Label>Aligned with (Optional)</Label>
+ 
+                <div className="col-span-2">
+                  <Label>Aligned with</Label>
                   <div className="relative">
                     <Select
                       options={[

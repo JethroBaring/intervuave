@@ -87,5 +87,8 @@ export const endpoints = {
 
   public: {
     accessInterview: (token: string) => `/public/interviews/${token}`,
+    startInterview: (token: string) => `/public/interviews/${token}/start`,
+    submitInterview: (token: string) => `/public/interviews/${token}/submit`,
+    getSignedInterviewUrl: (token: string) => `/public/interviews/${token}/generate-url`,
   },
 };
