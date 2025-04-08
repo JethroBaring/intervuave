@@ -20,6 +20,7 @@ jobs:
       - name: Push to Hugging Face
         uses: backendcloud/hugging-push@v0.2.3
         with:
+          huggingface_repo: 'processing-worker'    # 👈 Add this line!
           hf_token: ${{ secrets.HF_TOKEN }}
           repo_type: 'space'
           private: false
