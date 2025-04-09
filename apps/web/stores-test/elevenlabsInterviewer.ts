@@ -124,11 +124,11 @@ export const useElevenlabsInterviewerStore = create<InterviewState>((set, get) =
 
     // recognition.start();
 
-    await speak("Welcome to the interview. Let's begin.");
+    // await speak("Welcome to the interview. Let's begin.");
 
     for (const question of get().questions) {
       get().addQuestionTimestamp();
-      await speak(question.questionText);
+      // await speak(question.questionText);
       get().addTranscript(question.questionText, "bot");
 
       await new Promise<void>((resolve) => {
@@ -136,7 +136,7 @@ export const useElevenlabsInterviewerStore = create<InterviewState>((set, get) =
       });
     }
 
-    await speak("Thank you for completing the interview.");
+    // await speak("Thank you for completing the interview.");
     get().stopInterview();
   },
 
