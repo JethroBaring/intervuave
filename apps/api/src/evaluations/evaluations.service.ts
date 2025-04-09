@@ -9,6 +9,7 @@ import { PrismaService } from 'nestjs-prisma';
 import { CreateEvaluationsDto } from './dto/create-evaluations.dto';
 import { UpdateEvaluationsDto } from './dto/update-evaluations.dto';
 import { GeminiService } from 'src/common/google-gemini.service';
+import { Decision } from '@prisma/client';
 
 @Injectable()
 export class EvaluationsService {
@@ -21,9 +22,12 @@ export class EvaluationsService {
 
   async create(createDto: CreateEvaluationsDto) {
     try {
-      return await this.prisma.evaluation.create({
-        data: createDto,
-      });
+      // return await this.prisma.evaluation.create({
+      //   data: createDto,
+      // });
+      console.log('createDto', createDto);
+      await fetch('');
+      return;
     } catch (error) {
       this.logger.error('Failed to create evaluations', error);
       throw new InternalServerErrorException('Failed to create evaluations');
@@ -146,10 +150,7 @@ export class EvaluationsService {
     );
 
     await this.prisma.evaluation.create({
-      data: {
-        interviewId,
-        ...calculatedEvaluation,
-      },
+      data: calculatedEvaluation,
     });
 
     await this.prisma.interview.update({
@@ -174,8 +175,8 @@ export class EvaluationsService {
         },
         interviewTemplate: {
           select: {
-            responseQualityWeights: true,
-            cultureFitWeights: true,
+            responseQualityWeight: true,
+            cultureFitWeight: true,
           },
         },
       },
@@ -187,16 +188,22 @@ export class EvaluationsService {
 
     const { responses, interviewTemplate } = interview;
 
-    const responseQualityWeight =
-      interviewTemplate.responseQualityWeights ?? 30;
-    const cultureFitWeight = interviewTemplate.cultureFitWeights ?? 70;
+    const responseQualityWeight = interviewTemplate.responseQualityWeight ?? 30;
+    const cultureFitWeight = interviewTemplate.cultureFitWeight ?? 70;
 
     const metricsByQuestionId = new Map<string, any>();
     for (const response of responses) {
       metricsByQuestionId.set(response.questionId, response.metrics);
     }
 
-    let totalResponseQualityScore = 0;
+    const perQuestionResults: Record<string, any> = {};
+    const perValueScores: Record<string, number[]> = {};
+
+    let totalSpeechClarity = 0;
+    let totalConfidence = 0;
+    let totalEmotionalTone = 0;
+    let totalEngagement = 0;
+    let totalBodyLanguage = 0;
     let totalValuesFit = 0;
     let totalMissionAlignment = 0;
     let totalVisionAlignment = 0;
@@ -207,10 +214,8 @@ export class EvaluationsService {
     let countCultureFit = 0;
     let questionCount = 0;
 
-    const perValueScores: Record<string, number[]> = {};
-
     for (const result of correctedEvaluation.perQuestionResults) {
-      const metrics = metricsByQuestionId.get(result.questionId as string);
+      const metrics = metricsByQuestionId.get(result.questionId);
       if (!metrics) {
         console.warn(`Missing metrics for question ${result.questionId}`);
         continue;
@@ -224,50 +229,82 @@ export class EvaluationsService {
         bodyLanguage,
       } = metrics;
 
-      const responseQualityScore =
-        ((speechClarity ?? 0) +
-          (confidence ?? 0) +
-          (emotionalTone ?? 0) +
-          (engagement ?? 0) +
-          (bodyLanguage ?? 0)) /
-        5;
+      // Save per-question response quality
+      perQuestionResults[result.questionId] = {
+        responseQuality: {
+          speechClarity,
+          confidence,
+          emotionalTone,
+          engagement,
+          bodyLanguage,
+        },
+        cultureFitComposite: {},
+        feedback: result.feedback,
+      };
 
-      totalResponseQualityScore += responseQualityScore;
-      questionCount++;
+      totalSpeechClarity += speechClarity ?? 0;
+      totalConfidence += confidence ?? 0;
+      totalEmotionalTone += emotionalTone ?? 0;
+      totalEngagement += engagement ?? 0;
+      totalBodyLanguage += bodyLanguage ?? 0;
 
-      // Culture Fit Scores
-      const { cultureFitComposite } = result;
+      const cultureFitComposite = result.cultureFitComposite;
 
       if (Array.isArray(cultureFitComposite.valuesFit)) {
+        let avgValuesFitForThisQuestion = 0;
         for (const value of cultureFitComposite.valuesFit) {
+          avgValuesFitForThisQuestion += value.score;
           if (!perValueScores[value.coreValue]) {
             perValueScores[value.coreValue] = [];
           }
-          perValueScores[value.coreValue].push(parseInt(value.score as string));
-          totalValuesFit += value.score;
-          countValuesFit++;
+          perValueScores[value.coreValue].push(value.score);
         }
+        avgValuesFitForThisQuestion /= cultureFitComposite.valuesFit.length;
+        perQuestionResults[result.questionId].cultureFitComposite.valuesFit =
+          avgValuesFitForThisQuestion;
+        totalValuesFit += avgValuesFitForThisQuestion;
+        countValuesFit++;
       }
 
       if (cultureFitComposite.missionAlignment !== undefined) {
+        perQuestionResults[
+          result.questionId
+        ].cultureFitComposite.missionAlignment =
+          cultureFitComposite.missionAlignment;
         totalMissionAlignment += cultureFitComposite.missionAlignment;
         countMissionAlignment++;
       }
+
       if (cultureFitComposite.visionAlignment !== undefined) {
+        perQuestionResults[
+          result.questionId
+        ].cultureFitComposite.visionAlignment =
+          cultureFitComposite.visionAlignment;
         totalVisionAlignment += cultureFitComposite.visionAlignment;
         countVisionAlignment++;
       }
+
       if (cultureFitComposite.cultureFit !== undefined) {
+        perQuestionResults[result.questionId].cultureFitComposite.cultureFit =
+          cultureFitComposite.cultureFit;
         totalCultureFit += cultureFitComposite.cultureFit;
         countCultureFit++;
       }
+
+      questionCount++;
     }
 
     if (questionCount === 0) {
       throw new Error('No valid questions found for scoring.');
     }
 
-    const avgResponseQuality = totalResponseQualityScore / questionCount;
+    // Averages
+    const avgSpeechClarity = totalSpeechClarity / questionCount;
+    const avgConfidence = totalConfidence / questionCount;
+    const avgEmotionalTone = totalEmotionalTone / questionCount;
+    const avgEngagement = totalEngagement / questionCount;
+    const avgBodyLanguage = totalBodyLanguage / questionCount;
+
     const avgValuesFit = countValuesFit ? totalValuesFit / countValuesFit : 0;
     const avgMissionAlignment = countMissionAlignment
       ? totalMissionAlignment / countMissionAlignment
@@ -279,15 +316,7 @@ export class EvaluationsService {
       ? totalCultureFit / countCultureFit
       : 0;
 
-    const overallFitScore =
-      avgResponseQuality * (responseQualityWeight / 100) +
-      ((avgValuesFit +
-        avgMissionAlignment +
-        avgVisionAlignment +
-        avgCultureFit) /
-        4) *
-        (cultureFitWeight / 100);
-
+    // perValueBreakdown
     const perValueBreakdown: Record<string, number> = {};
     for (const coreValue in perValueScores) {
       const scores = perValueScores[coreValue];
@@ -295,17 +324,53 @@ export class EvaluationsService {
         scores.reduce((a, b) => a + b, 0) / scores.length;
     }
 
+    // Overall Scores
+    const avgResponseQuality =
+      (avgSpeechClarity +
+        avgConfidence +
+        avgEmotionalTone +
+        avgEngagement +
+        avgBodyLanguage) /
+      5;
+    const avgCultureFitComposite =
+      (avgValuesFit +
+        avgMissionAlignment +
+        avgVisionAlignment +
+        avgCultureFit) /
+      4;
+
+    const overallFitScore =
+      avgResponseQuality * (responseQualityWeight / 100) +
+      avgCultureFitComposite * (cultureFitWeight / 100);
+
+    // AI Decision (basic rule)
+    const aiDecision =
+      overallFitScore >= 0.75 ? Decision.APPROVED : Decision.REJECTED;
+    const aiFeedback =
+      aiDecision === 'APPROVED'
+        ? "The candidate demonstrated strong communication skills and a solid understanding of the company's values. They are likely to thrive in our collaborative environment and contribute positively to our mission."
+        : 'The candidate showed some misalignment with our core values and expectations. Further evaluation may be necessary to determine overall fit.';
+
     return {
-      responseQuality: avgResponseQuality,
-      valuesFit: avgValuesFit,
-      missionAlignment: avgMissionAlignment,
-      visionAlignment: avgVisionAlignment,
-      cultureFit: avgCultureFit,
-      overallFitScore: overallFitScore,
-      perQuestionResults: correctedEvaluation.perQuestionResults,
-      perValueBreakdown: perValueBreakdown,
-      aiDecision: null, // optional, if you have a rule to auto-approve/reject
-      aiFeedback: '', // optional general feedback, can fill later
+      interviewId,
+      overallFitScore,
+      responseQuality: {
+        speechClarity: avgSpeechClarity,
+        confidence: avgConfidence,
+        emotionalTone: avgEmotionalTone,
+        engagement: avgEngagement,
+        bodyLanguage: avgBodyLanguage,
+      },
+      cultureFitComposite: {
+        valuesFit: avgValuesFit,
+        missionAlignment: avgMissionAlignment,
+        visionAlignment: avgVisionAlignment,
+        cultureFit: avgCultureFit,
+      },
+      perQuestionResults,
+      perValueBreakdown,
+      aiDecision,
+      aiFeedback,
     };
   }
 }

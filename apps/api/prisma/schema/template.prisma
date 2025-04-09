@@ -3,8 +3,8 @@ model InterviewTemplate {
   name                   String
   companyId              String
   company                Company     @relation(fields: [companyId], references: [id], onDelete: Cascade)
-  responseQualityWeights Float       @default(0.3)
-  cultureFitWeights      Float       @default(0.7)
+  responseQualityWeight Float       @default(0.3)
+  cultureFitWeight      Float       @default(0.7)
   questions              Question[]
   interviews             Interview[]
   metrics                Metric[]
