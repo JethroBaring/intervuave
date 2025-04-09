@@ -25,8 +25,8 @@ export default function Kanban() {
       );
       if (column) {
         column.cards.push({
-          id: interview.id,
-          description: `${interview.candidate.firstName} ${interview.candidate.lastName}`,
+          interview,
+          candidate: interview.candidate,
         });
       }
     });

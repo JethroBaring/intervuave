@@ -2,10 +2,14 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateResponsesDto } from './dto/create-response.dto';
+import { EvaluationsService } from 'src/evaluations/evaluations.service';
 
 @Injectable()
 export class ResponsesService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly evaluation: EvaluationsService,
+  ) {}
 
   async bulkCreate(interviewId: string, createResponseDto: CreateResponsesDto) {
     const data = createResponseDto.responses.map((item) => ({
@@ -37,6 +41,13 @@ export class ResponsesService {
     }));
 
     await this.prisma.response.createMany({ data });
+    await this.prisma.interview.update({
+      where: { id: interviewId },
+      data: {
+        status: 'EVALUATING',
+      },
+    });
+    await this.evaluation.evaluate(interviewId);
     return { message: 'Responses saved successfully' };
   }
 }

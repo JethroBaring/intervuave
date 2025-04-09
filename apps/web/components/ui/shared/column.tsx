@@ -41,6 +41,7 @@ import { endpoints } from "@/lib/endpoint";
 import { Modal } from "../modal";
 import Button from "../button/Button";
 import { useCompanyStore } from "@/stores/useCompanyStore";
+import { useToastStore } from "@/stores/useToastStore";
 
 type TColumnState =
   | {
@@ -74,7 +75,7 @@ const idle = { type: "idle" } satisfies TColumnState;
  */
 const CardList = memo(function CardList({ column }: { column: TColumn }) {
   return column.cards.map((card) => (
-    <BoardCard key={card.id} card={card} columnId={column.id} />
+    <BoardCard key={card.interview.id} card={card} columnId={column.id} />
   ));
 });
 
@@ -269,11 +270,23 @@ export function Column({ column }: { column: TColumn }) {
   const [position, setPosition] = useState("");
   const [interviewTemplateId, setInterviewTemplateId] = useState("");
   const companyId = useCompanyStore((state) => state.companyId);
+  const showToast = useToastStore((state) => state.showToast);
   const handleSubmit = async () => {
-    await api.post(`${endpoints.interviews.create(companyId)}`, {
+    const { data } = await api.post(`${endpoints.interviews.create(companyId)}`, {
       candidate,
       position,
-      interviewTemplateId
+      interviewTemplateId,
+    });
+    useCompanyStore.setState((state) => ({
+      ...state,
+      interviews: [...state.interviews, data],
+    }))
+    closeModal();
+    showToast({
+      type: "success",
+      message: "Interview created successfully",
+      title: "Success",
+      duration: 3000,
     });
   };
 
@@ -436,30 +449,29 @@ export function Column({ column }: { column: TColumn }) {
                   <Input
                     type="text"
                     value={position}
-                    onChange={(e) =>
-                      setPosition(e.target.value)
-                    }
+                    onChange={(e) => setPosition(e.target.value)}
                   />
                 </div>
                 <div className="col-span-2">
-                    <Label>Interview Template</Label>
-                    <div className="relative">
-                      <Select
-                        className="pr-8"
-                        placeholder="Select candidate"
-                        options={interviewTemplates
-                          .filter((interviewTemplate) => interviewTemplate.id !== undefined)
-                          .map((interviewTemplate) => ({
-                            value: interviewTemplate.id as string,
-                            label: interviewTemplate.name,
-                          }))}
-                        onChange={(value) =>
-                          setInterviewTemplateId(value)
-                        }
-                      />
-                      <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                    </div>
+                  <Label>Interview Template</Label>
+                  <div className="relative">
+                    <Select
+                      className="pr-8"
+                      placeholder="Select interview template"
+                      options={interviewTemplates
+                        .filter(
+                          (interviewTemplate) =>
+                            interviewTemplate.id !== undefined
+                        )
+                        .map((interviewTemplate) => ({
+                          value: interviewTemplate.id as string,
+                          label: interviewTemplate.name,
+                        }))}
+                      onChange={(value) => setInterviewTemplateId(value)}
+                    />
+                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
                   </div>
+                </div>
               </div>
             </div>
             <div className="flex items-center gap-3 px-2 lg:justify-end">

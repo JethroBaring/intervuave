@@ -1,7 +1,7 @@
 "use client";
 
 import { useCompanyStore } from "@/stores/useCompanyStore";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 

@@ -1,6 +1,6 @@
 model Company {
   id                 String              @id @default(cuid())
-  name               String
+  name               String              @unique
   mission            String?
   vision             String?
   culture            String?

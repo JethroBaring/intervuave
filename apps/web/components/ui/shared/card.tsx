@@ -25,8 +25,8 @@ import {
   TCard,
 } from "./data";
 import { isShallowEqual } from "./is-shallow-equal";
-import Card from "../common/Card";
-import { Clock } from "lucide-react";
+import { Clock, InfoIcon } from "lucide-react";
+import moment from "moment";
 
 type TCardState =
   | {
@@ -74,6 +74,48 @@ export function CardShadow({ dragging }: { dragging: DOMRect }) {
   );
 }
 
+export function getCardStyle(card: TCard) {
+  if (card.interview.status === "DRAFT") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Clock className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Created:{" "}
+            {moment(card.interview.createdAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "PENDING") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <InfoIcon className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Sent:{" "}
+            {moment(card.interview.updatedAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  }
+
+  return <></>;
+}
+
 export function CardDisplay({
   card,
   state,
@@ -111,16 +153,7 @@ export function CardDisplay({
             : undefined
         }
       >
-        <div className="flex flex-col">
-          <p className="text-lg font-bold">{card.description}</p>
-          {/* <p className="text-gray-500 dark:text-gray-400">Frontend Developer</p> */}
-        </div>
-        <div className="flex items-center gap-1">
-          <Clock className="h-4 w-4" />
-          <p className="text-sm text-gray-500 dark:text-gray-400">
-            Created: April 7, 2025
-          </p>
-        </div>
+        {getCardStyle(card)}
       </div>
       {/* Put a shadow after the item if closer to the bottom edge */}
       {state.type === "is-over" && state.closestEdge === "bottom" ? (
@@ -197,7 +230,7 @@ export function BoardCard({
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.interview.id === card.interview.id) {
             return;
           }
           const closestEdge = extractClosestEdge(self.data);
@@ -215,7 +248,7 @@ export function BoardCard({
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.interview.id === card.interview.id) {
             return;
           }
           const closestEdge = extractClosestEdge(self.data);
@@ -239,7 +272,7 @@ export function BoardCard({
           if (!isCardData(source.data)) {
             return;
           }
-          if (source.data.card.id === card.id) {
+          if (source.data.card.interview.id === card.interview.id) {
             setState({ type: "is-dragging-and-left-self" });
             return;
           }

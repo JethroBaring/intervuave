@@ -41,6 +41,7 @@ import { ResponsesModule } from './responses/responses.module';
     UploadModule,
     PublicModule,
     ResponsesModule,
+    EvaluationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

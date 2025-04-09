@@ -1,7 +1,7 @@
 import { Controller, Get, Post, Patch, Body, Param } from '@nestjs/common';
 import { EvaluationsService } from './evaluations.service';
-import { CreateEvaluationsDto } from './dto/create-evaluations.dto';
 import { UpdateEvaluationsDto } from './dto/update-evaluations.dto';
+import { CreateEvaluationsDto } from './dto/create-evaluations.dto';
 
 @Controller({ path: 'interviews/:interviewId/evaluation', version: '1' })
 export class EvaluationsController {

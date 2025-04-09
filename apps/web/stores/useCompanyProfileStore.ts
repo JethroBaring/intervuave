@@ -16,7 +16,7 @@ interface CompanyProfileState {
       mission?: string;
       vision?: string;
       culture?: string;
-      coreValues?: CoreValue[]
+      coreValues?: CoreValue[];
     }
   ) => Promise<void>;
 }
@@ -24,22 +24,20 @@ interface CompanyProfileState {
 export const useCompanyProfileStore = create<CompanyProfileState>(() => ({
   updateToBackend: async (id, data) => {
     if (!data || Object.keys(data).length === 0) return;
-
     try {
       const res = await api.patch(`/companies/${id}`, data);
-      
+
       useCompanyStore.setState((state) => ({
         ...state,
         mission: res.data.mission,
         vision: res.data.vision,
         culture: res.data.culture,
-        coreValues: res.data.coreValues
+        coreValues: res.data.coreValues,
         // Optional: add name/logo/website if you want
       }));
-      console.log(useCompanyStore.getState().mission)
     } catch (error) {
       console.error("Failed to update company profile", error);
       throw error;
     }
-  }
+  },
 }));

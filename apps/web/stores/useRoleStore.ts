@@ -2,7 +2,7 @@ import { Role } from "@/lib/types";
 import { create } from "zustand";
 import api from "@/lib/axios";
 import { endpoints } from "@/lib/endpoint";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useToastStore } from "./useToastStore";
 import { useCompanyStore } from "./useCompanyStore";
 

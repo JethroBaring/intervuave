@@ -105,8 +105,7 @@ const OnBoarding = () => {
             Mission
           </h1>
           <p className="mt-6 mb-5 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-            Define your company's mission, vision, and culture to help evaluate
-            candidates who align with your long-term goals.
+            State your company's purpose and the impact you aim to make.
           </p>
           <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
             <div>
@@ -144,8 +143,7 @@ const OnBoarding = () => {
             Vision
           </h1>
           <p className="mt-6 mb-5 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-            Define your company's mission, vision, and culture to help evaluate
-            candidates who align with your long-term goals.
+            Describe the future you are working toward.
           </p>
           <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
             <div>
@@ -181,8 +179,7 @@ const OnBoarding = () => {
             Culture
           </h1>
           <p className="mt-6 mb-5 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-            Define your company's mission, vision, and culture to help evaluate
-            candidates who align with your long-term goals.
+            Define the values and environment that shape how your team works.
           </p>
           <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
             <div>
@@ -218,8 +215,7 @@ const OnBoarding = () => {
             Core Values
           </h1>
           <p className="mt-6 mb-5 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-            Define the core values that drive your company. These will be used
-            to evaluate cultural alignment during interviews.
+            Define the core values that drive your company.
           </p>
           <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
             {data.coreValues.map((data, index) => (
@@ -297,7 +293,10 @@ const OnBoarding = () => {
           isEditCoreValueModalOpen ||
           isViewCoreValueModalOpen
         }
-        onClose={closeModal}
+        onClose={() => {
+          closeModal();
+          setCoreValue({ id: "", name: "", description: "" });
+        }}
         className="max-w-[700px] m-4"
       >
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
@@ -348,6 +347,8 @@ const OnBoarding = () => {
                 onClick={() => {
                   // closeQuestionModal();
                   // clearQuestion();
+                  closeModal();
+                  setCoreValue({ id: "", name: "", description: "" });
                 }}
               >
                 Close
@@ -361,8 +362,10 @@ const OnBoarding = () => {
                         name: coreValue.name,
                         description: coreValue.description,
                       });
+                      setCoreValue({ id: "", name: "", description: "" });
                     } else {
                       addCoreValue(coreValue);
+                      setCoreValue({ id: "", name: "", description: "" });
                     }
                     closeModal();
                   }}

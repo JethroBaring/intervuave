@@ -66,7 +66,7 @@ export function Board({ initial }: { initial: TBoard }) {
             return;
           }
           const cardIndexInHome = home.cards.findIndex(
-            (card) => card.id === dragging.card.id
+            (card) => card.interview.id === dragging.card.interview.id
           );
 
           // dropping on a card
@@ -78,7 +78,7 @@ export function Board({ initial }: { initial: TBoard }) {
             // reordering in home column
             if (home === destination) {
               const cardFinishIndex = home.cards.findIndex(
-                (card) => card.id === dropTargetData.card.id
+                (card) => card.interview.id === dropTargetData.card.interview.id
               );
 
               // could not find cards needed
@@ -133,7 +133,7 @@ export function Board({ initial }: { initial: TBoard }) {
             }
 
             const indexOfTarget = destination.cards.findIndex(
-              (card) => card.id === dropTargetData.card.id
+              (card) => card.interview.id === dropTargetData.card.interview.id
             );
 
             const closestEdge = extractClosestEdge(dropTargetData);
@@ -160,7 +160,7 @@ export function Board({ initial }: { initial: TBoard }) {
             setData({ ...data, columns });
 
             const newStatus = destination.id.toUpperCase().replace("_", " ");
-            updateInterviewStatus(dragging.card.id, newStatus);
+            updateInterviewStatus(dragging.card.interview.id, newStatus);
             return;
           }
 
@@ -233,7 +233,7 @@ export function Board({ initial }: { initial: TBoard }) {
             setData({ ...data, columns });
             // ✅ Call API
             const newStatus = destination.id.toUpperCase().replace("_", " ");
-            updateInterviewStatus(dragging.card.id, newStatus);
+            updateInterviewStatus(dragging.card.interview.id, newStatus);
             return;
           }
         },

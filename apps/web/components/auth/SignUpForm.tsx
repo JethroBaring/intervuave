@@ -3,7 +3,7 @@ import Checkbox from "@/components/ui/form/input/Checkbox";
 import Input from "@/components/ui/form/input/InputField";
 import Label from "@/components/ui/form/Label";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
-import { useAuthStore } from "@/stores-test/authStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useToastStore } from "@/stores/useToastStore";
 import { Loader } from "lucide-react";
 import Link from "next/link";
@@ -19,8 +19,9 @@ export default function SignUpForm() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const register = useAuthStore((state) => state.register);
+  const registerError = useAuthStore((state) => state.registerError);
   const showToast = useToastStore((state) => state.showToast);
-  const router = useRouter()
+  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -30,19 +31,19 @@ export default function SignUpForm() {
     if (!success) {
       showToast({
         title: "Error",
-        message: "Email address is already taken",
+        message: registerError!,
         type: "error",
       });
     } else {
-      setCompanyName("")
-      setEmail("")
-      setPassword("")
+      setCompanyName("");
+      setEmail("");
+      setPassword("");
       showToast({
         title: "Success",
         message: "Account has been created successfully",
         type: "success",
       });
-      router.push('/signin')
+      router.push("/signin");
       // window.location.href = "/dashboard"; // Redirect to dashboard
     }
   };

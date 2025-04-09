@@ -1,4 +1,4 @@
-"use client";;
+"use client";
 import { useEffect, useState } from "react";
 import { useModal } from "../../hooks-test/useModal";
 import { Modal } from "../ui/modal";
@@ -7,7 +7,8 @@ import Label from "../ui/form/Label";
 import TextArea from "../ui/form/input/TextArea";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useCompanyProfileStore } from "@/stores/useCompanyProfileStore";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function MissionCard() {
   const [draftMission, setDraftMission] = useState("");
@@ -17,7 +18,8 @@ export default function MissionCard() {
   const updateToBackend = useCompanyProfileStore(
     (state) => state.updateToBackend
   );
-  const companyId = useCompanyStore((state) => state.companyId)
+  const companyId = useCompanyStore((state) => state.companyId);
+  const showToast = useToastStore((state) => state.showToast);
 
   useEffect(() => {
     if (isOpen) {
@@ -88,8 +90,13 @@ export default function MissionCard() {
               </Button>
               <Button
                 size="sm"
-                onClick={() => {
-                  updateToBackend(companyId, { mission: draftMission });
+                onClick={async () => {
+                  await updateToBackend(companyId, { mission: draftMission });
+                  showToast({
+                    type: "success",
+                    message: "Mission updated successfully",
+                    title: "Success",
+                  });
                   closeModal();
                 }}
               >

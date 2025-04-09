@@ -6,7 +6,7 @@ import { create } from "zustand";
 import { endpoints } from "@/lib/endpoint";
 import { useCompanyStore } from "./useCompanyStore";
 import { useToastStore } from "./useToastStore";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 // import { useAuthStore } from "./authStore";
 
 

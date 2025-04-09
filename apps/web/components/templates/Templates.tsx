@@ -542,6 +542,47 @@ const Templates: React.FC<TemplatesProps> = () => {
         </div>
       </Modal>
       <Modal
+        isOpen={isNewTemplateModalOpen && currentStep === 4}
+        onClose={clearState}
+        className="max-w-[700px] m-4"
+      >
+        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Create interview template
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              Create a question set with customizable metrics to evaluate
+              candidates based on your culture and values. You can reuse this
+              across multiple interviews.
+            </p>
+          </div>
+          <div className="flex flex-col gap-6">
+            <div className="px-2 overflow-y-auto custom-scrollbar">
+              <div>
+                <Label>Name</Label>
+                <Input value={name} onChange={(e) => setName(e.target.value)} />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-2 lg:justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  closeTemplateModal();
+                  resetForm();
+                }}
+              >
+                Cancel
+              </Button>
+              <Button size="sm" onClick={nextStep} disabled={!name}>
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+      <Modal
         isOpen={
           isNewQuestionModalOpen ||
           isViewQuestionModalOpen ||

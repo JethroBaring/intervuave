@@ -11,13 +11,14 @@ import QuestionCard from "../ui/common/QuestionCard";
 import TextArea from "../ui/form/input/TextArea";
 import { useCoreValueManager } from "@/hooks/useCoreValueManager";
 import { useCompanyProfileStore } from "@/stores/useCompanyProfileStore";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
+import { useToastStore } from "@/stores/useToastStore";
 
 export default function CoreValues() {
   const { isOpen, openModal, closeModal } = useModal();
 
   const values = useCompanyStore((state) => state.coreValues);
-  const companyId = useCompanyStore((state) => state.companyId)
+  const companyId = useCompanyStore((state) => state.companyId);
   const updateToBackend = useCompanyProfileStore(
     (state) => state.updateToBackend
   );
@@ -43,10 +44,20 @@ export default function CoreValues() {
     closeAllModals,
     setCoreValues,
   } = useCoreValueManager();
-
+  const showToast = useToastStore((state) => state.showToast);
 
   const handleSave = async () => {
-    await updateToBackend(companyId, { coreValues: coreValues.map((data) => ({name: data.name, description: data.description})) });
+    await updateToBackend(companyId, {
+      coreValues: coreValues.map((data) => ({
+        name: data.name,
+        description: data.description,
+      })),
+    });
+    showToast({
+      type: "success",
+      message: "Core values updated successfully",
+      title: "Success",
+    });
     closeModal();
   };
   return (
@@ -110,11 +121,12 @@ export default function CoreValues() {
               Edit Core Values
             </h4>
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
-              Update your details to keep your profile up-to-date.
+              Update your core values to ensure they align with your company's
+              growth and direction.
             </p>
           </div>
           <div className="flex flex-col">
-            <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
+            <div className="w-full flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
               {coreValues.map((data, index) => (
                 <QuestionCard
                   id={`core-${index}`}
@@ -162,7 +174,10 @@ export default function CoreValues() {
           isEditCoreValueModalOpen ||
           isViewCoreValueModalOpen
         }
-        onClose={closeAllModals}
+        onClose={() => {
+          closeAllModals();
+          setCoreValue({ id: "", name: "", description: "" });
+        }}
         className="max-w-[700px] m-4"
       >
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
@@ -214,6 +229,7 @@ export default function CoreValues() {
                   // closeQuestionModal();
                   // clearQuestion();
                   closeAllModals();
+                  setCoreValue({ id: "", name: "", description: "" });
                 }}
               >
                 Close
@@ -227,8 +243,10 @@ export default function CoreValues() {
                         name: coreValue.name,
                         description: coreValue.description,
                       });
+                      setCoreValue({ id: "", name: "", description: "" });
                     } else {
                       addCoreValue(coreValue);
+                      setCoreValue({ id: "", name: "", description: "" });
                     }
                     closeAllModals();
                   }}

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 import {
   ConflictException,
   Injectable,
@@ -21,6 +22,13 @@ export class UsersService {
   async create(createUserDto: CreateUserDto) {
     const { email, password, companyName } = createUserDto;
     try {
+      const company = await this.prismaService.company.findUnique({
+        where: { name: companyName },
+      });
+      if (company) {
+        throw new ConflictException('Company already exists');
+      }
+
       const user = await this.prismaService.user.create({
         data: {
           email,
@@ -47,7 +55,7 @@ export class UsersService {
       }
 
       this.logger.error('Failed to create user', error);
-      throw new InternalServerErrorException('Something went wrong');
+      throw new ConflictException(error.message);
     }
   }
 

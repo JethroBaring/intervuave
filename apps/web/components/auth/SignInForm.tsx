@@ -8,7 +8,7 @@ import Link from "next/link";
 import React, { useState } from "react";
 import { useToastStore } from "@/stores/useToastStore";
 import { Loader } from "lucide-react";
-import { useAuthStore } from "@/useAuthStore";
+import { useAuthStore } from "@/stores/useAuthStore";
 import { useRouter } from "next/navigation";
 
 export default function SignInForm() {

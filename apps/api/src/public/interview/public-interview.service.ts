@@ -1,3 +1,5 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
+/* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-argument */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -90,7 +92,7 @@ export class PublicInterviewService {
         where: { id },
         data: {
           status: 'SUBMITTED',
-          timestamps: timestamps as Prisma.JsonArray,
+          timestamps: (timestamps.timestamps ?? []) as Prisma.JsonArray,
         },
       });
 
@@ -99,14 +101,21 @@ export class PublicInterviewService {
         60,
       );
 
+      const questions = (timestamps as any[]).reduce(
+        (acc, t) => {
+          if (t.questionId && t.questionText) {
+            acc[t.questionId] = t.questionText;
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
       await this.queue.addTask({
         interview_id: id,
-        timestamps: timestamps.timestamps,
+        timestamps: timestamps,
         video_url: videoUrl,
-        questions: {
-          cm95uw5tf0004vgkf0skn92vg:
-            'How do you approach working with team members who have different working styles or opinions from yours?',
-        },
+        questions,
         callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
         status_callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/companies/${interview.companyId}/interviews`,
       });

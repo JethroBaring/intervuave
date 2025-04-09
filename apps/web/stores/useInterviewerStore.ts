@@ -6,6 +6,7 @@ import api from "@/lib/axios";
 
 interface QuestionTimestamp {
   questionId: string;
+  questionText: string;
   start: number;
   end: number;
 }
@@ -176,6 +177,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
 
     timestamps.push({
       questionId: question.id!,
+      questionText: question.questionText,
       start: Math.round(relativeStart),
       end: 0,
     });

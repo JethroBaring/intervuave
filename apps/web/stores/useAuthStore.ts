@@ -8,8 +8,13 @@ const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3000"; // N
 interface AuthState {
   user: any | null;
   isAuthenticated: boolean;
+  registerError: string | null;
   login: (email: string, password: string) => Promise<boolean>;
-  register: (companyName: string, email: string, password: string) => Promise<boolean>;
+  register: (
+    companyName: string,
+    email: string,
+    password: string
+  ) => Promise<boolean>;
   logout: () => Promise<void>;
   checkAuth: () => Promise<void>;
   getCompanyId: () => string;
@@ -18,15 +23,19 @@ interface AuthState {
 export const useAuthStore = create<AuthState>((set, get) => ({
   user: null,
   isAuthenticated: false,
-
+  registerError: null,
   // Login Function
   login: async (email, password) => {
     try {
-      await api.post(
+      const res = await api.post(
         `${endpoints.auth.login}`,
         { email, password },
         { withCredentials: true }
       );
+
+      if (res.status !== 201) {
+        throw new Error("Login failed");
+      }
 
       // Automatically fetch user info after login
       await useAuthStore.getState().checkAuth();
@@ -39,16 +48,19 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
   register: async (companyName, email, password) => {
     try {
-      await api.post(
-        `${endpoints.auth.signup}`,
-        { companyName, email, password },
-      );
+      await api.post(`${endpoints.auth.signup}`, {
+        companyName,
+        email,
+        password,
+      });
 
       // Automatically fetch user info after login
       // await useAuthStore.getState().checkAuth();
 
       return true;
-    } catch (error) {
+    } catch (error: any) {
+      console.log(error)
+      set({ registerError: error.response.data.message });
       return false;
     }
   },

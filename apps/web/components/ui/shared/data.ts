@@ -1,6 +1,6 @@
 export type TCard = {
-  id: string;
-  description: string;
+  interview: any;
+  candidate: any;
 };
 
 export type TColumn = {
