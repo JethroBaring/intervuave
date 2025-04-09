@@ -93,7 +93,7 @@ export const useInterviewFinalStore = create<InterviewState>((set, get) => ({
   startInterview: async () => {
     if (get().isRecording || !videoRef?.current) return;
 
-    await speak("Welcome to the interview. Let's begin.");
+    // await speak("Welcome to the interview. Let's begin.");
 
     // Start recording
     const stream = videoRef.current.srcObject as MediaStream;
@@ -225,7 +225,7 @@ export const useInterviewFinalStore = create<InterviewState>((set, get) => ({
 
     const question = questions[currentQuestionIndex];
 
-    await speak(question.questionText); // Speak first
+    // await speak(question.questionText); // Speak first
 
     const now = performance.now();
     const relativeStart = recordingStartTime ? now - recordingStartTime : 0;
