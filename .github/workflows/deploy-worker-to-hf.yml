@@ -3,6 +3,8 @@ name: Deploy Worker to Hugging Face
 on:
   push:
     branches: [main]   # or whichever branch you want
+    paths:
+      - 'apps/worker/**' 
 
 jobs:
   deploy:
