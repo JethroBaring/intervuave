@@ -1,6 +1,7 @@
 import httpx
 from processor.processor import process_interview
 from processor.logger import get_logger
+from datetime import datetime, timezone
 
 logger = get_logger("job-service")
 
@@ -8,9 +9,9 @@ async def notify_status(status_callback_url: str, interview_id: str, status: str
     """Notify NestJS API about status change"""
     try:
         async with httpx.AsyncClient() as client:
-            response = await client.patch(f"{status_callback_url}/{interview_id}", json={
-                "status": status.upper()
-            })
+            now = datetime.now(timezone.utc)
+            formatted_now = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
+            response = await client.patch(f"{status_callback_url}")
             response.raise_for_status()
         logger.info(f"Status updated to '{status}' for job {interview_id}")
     except Exception as e:
