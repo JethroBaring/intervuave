@@ -44,20 +44,6 @@ export const useInterviewFinalStore = create<InterviewState>((set, get) => ({
   isCameraOn: false,
   currentQuestionIndex: 0,
   questions: [
-    {
-      id: "q1",
-      questionText:
-        "Can you tell me about a time when you had to explain a complex idea?",
-      evaluates: "",
-      alignedWith: "",
-    },
-    {
-      id: "q2",
-      questionText:
-        "Describe a challenging problem you faced and how you solved it.",
-      evaluates: "",
-      alignedWith: "",
-    },
   ],
   interview: null,
   isValid: false,
