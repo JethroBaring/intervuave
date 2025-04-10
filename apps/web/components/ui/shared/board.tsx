@@ -26,6 +26,7 @@ import { CleanupFn } from "@atlaskit/pragmatic-drag-and-drop/dist/types/internal
 import KanbanScrollWrapper from "./kanbanscrollwrapper";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { API_URL } from "@/lib/constants";
+import InterviewModal from "./InterviewModal";
 const systemLockedStatuses = [
   "in_progress",
   "processing",
@@ -427,6 +428,7 @@ export function Board({ initial }: { initial: TBoard }) {
           <Column key={column.id} column={column} />
         ))}
       </KanbanScrollWrapper>
+      <InterviewModal />
     </div>
   );
 }

@@ -76,7 +76,17 @@ export class GeminiService {
       ${JSON.stringify(responses, null, 2)}
 
       Use the company's provided Core Value definitions, Mission ("${mission}"), Vision ("${vision}"), and Culture ("${culture}") when reasoning.
-      Score consistently: 1.0 means perfect fit, 0.0 means no alignment.
+      Scoring Guide for all evaluations:
+      - 1.0 = Perfect fit
+      - 0.8 = Strong fit
+      - 0.5 = Moderate fit
+      - 0.2 = Weak fit
+      - 0.0 = No fit
+
+      Be strict and realistic when scoring.
+
+      Core Values Scoring:
+      Score each core value (valuesFit) individually based on how much the candidate's response reflects that value. Use the same 0.0-1.0 scale.
       `.trim();
 
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });

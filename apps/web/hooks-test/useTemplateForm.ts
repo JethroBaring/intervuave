@@ -36,19 +36,21 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
   ];
 
   const [name, setName] = useState("");
+  const [responseQualityWeight, setResponseQualityWeight] = useState(0);
+  const [cultureFitWeight, setCultureFitWeight] = useState(0)
   const [order, setOrder] = useState(0);
   const [question, setQuestion] = useState<Question>({
     id: crypto.randomUUID(),
     questionText: "",
     order: order,
-    evaluates: "",
-    coreValueId: "",
+    coreValues: "",
     alignedWith: "",
   });
   const [questions, setQuestions] = useState<Question[]>([]);
   const [metrics, setMetrics] = useState<Metric[]>(defaultMetrics);
 
   const totalMetricsWeights = metrics.reduce((sum, m) => sum + m.weight, 0);
+  const totalOverallFitWeight = responseQualityWeight + cultureFitWeight;
   // When editing, populate form with existing values
   useEffect(() => {
     if (initial) {
@@ -64,6 +66,8 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
     setName("");
     setQuestions([]);
     setMetrics(defaultMetrics);
+    setResponseQualityWeight(0);
+    setCultureFitWeight(0);
   };
 
   const addQuestion = (question: Question) => {
@@ -87,8 +91,7 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
       id: crypto.randomUUID(),
       questionText: "",
       order: 0,
-      evaluates: "",
-      coreValueId: "",
+      coreValues: "",
       alignedWith: "",
     });
   };
@@ -108,5 +111,10 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
     editQuestion,
     deleteQuestion,
     clearQuestion,
+    responseQualityWeight,
+    cultureFitWeight,
+    setResponseQualityWeight,
+    setCultureFitWeight,
+    totalOverallFitWeight
   };
 };

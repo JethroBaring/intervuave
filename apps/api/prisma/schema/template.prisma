@@ -28,7 +28,7 @@ model Question {
   order        Int
   templateId   String
   template     InterviewTemplate @relation(fields: [templateId], references: [id], onDelete: Cascade)
-  coreValues   CoreValue[]
+  coreValues   String
 
   responses Response[]
   createdAt DateTime   @default(now())

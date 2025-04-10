@@ -15,7 +15,7 @@ jobs:
       - name: Prepare worker directory
         run: |
           mkdir worker-dir
-          cp -r apps/worker/* worker-dir/
+          cp -r apps/worker/. worker-dir/
 
       - name: Push to Hugging Face
         uses: backendcloud/hugging-push@v0.2.3

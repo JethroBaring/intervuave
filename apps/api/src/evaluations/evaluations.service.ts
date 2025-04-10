@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import {
@@ -10,6 +11,7 @@ import { CreateEvaluationsDto } from './dto/create-evaluations.dto';
 import { UpdateEvaluationsDto } from './dto/update-evaluations.dto';
 import { GeminiService } from 'src/common/google-gemini.service';
 import { Decision } from '@prisma/client';
+import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 
 @Injectable()
 export class EvaluationsService {
@@ -81,11 +83,10 @@ export class EvaluationsService {
           select: {
             questionId: true,
             question: {
-              include: {
-                coreValues: true,
-              },
               select: {
                 alignedWith: true,
+                questionText: true,
+                coreValues: true,
               },
             },
             transcript: true,
@@ -109,9 +110,7 @@ export class EvaluationsService {
         questionId: response.questionId,
         questionText: response.question.questionText,
         transcript: response.transcript,
-        coreValues: response.question.coreValues.map(
-          (coreValue) => coreValue.name,
-        ),
+        coreValues: response.question.coreValues.split(','),
         alignsWith: response.question.alignedWith,
       })),
       companyProfile: {
@@ -157,6 +156,7 @@ export class EvaluationsService {
       where: { id: interviewId },
       data: {
         status: 'EVALUATED',
+        evaluatedAt: getPrismaDateTimeNow(),
       },
     });
 
@@ -185,7 +185,7 @@ export class EvaluationsService {
     if (!interview) {
       throw new Error('Interview not found.');
     }
-
+    console.log({ HANNAH143: JSON.stringify(interview, null, 2) });
     const { responses, interviewTemplate } = interview;
 
     const responseQualityWeight = interviewTemplate.responseQualityWeight ?? 30;
@@ -332,16 +332,23 @@ export class EvaluationsService {
         avgEngagement +
         avgBodyLanguage) /
       5;
+    const cultureScores = [
+      avgValuesFit,
+      avgMissionAlignment,
+      avgVisionAlignment,
+      avgCultureFit,
+    ];
+    const nonZeroCultureScores = cultureScores.filter((score) => score > 0);
+
     const avgCultureFitComposite =
-      (avgValuesFit +
-        avgMissionAlignment +
-        avgVisionAlignment +
-        avgCultureFit) /
-      4;
+      nonZeroCultureScores.length > 0
+        ? nonZeroCultureScores.reduce((sum, score) => sum + score, 0) /
+          nonZeroCultureScores.length
+        : 0;
 
     const overallFitScore =
-      avgResponseQuality * (responseQualityWeight / 100) +
-      avgCultureFitComposite * (cultureFitWeight / 100);
+      avgResponseQuality * responseQualityWeight +
+      avgCultureFitComposite * cultureFitWeight;
 
     // AI Decision (basic rule)
     const aiDecision =

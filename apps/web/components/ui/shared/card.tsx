@@ -27,6 +27,7 @@ import {
 import { isShallowEqual } from "./is-shallow-equal";
 import { Clock, InfoIcon } from "lucide-react";
 import moment from "moment";
+import { useInterviewStore } from "@/stores/useInterviewStore";
 
 type TCardState =
   | {
@@ -127,12 +128,16 @@ export function CardDisplay({
   outerRef?: React.MutableRefObject<HTMLDivElement | null>;
   innerRef?: MutableRefObject<HTMLDivElement | null>;
 }) {
+
+  const openCardModal  = useInterviewStore((state) => state.openCardModal)
+
   return (
     <div
       ref={outerRef}
       className={`flex flex-shrink-0 flex-col gap-3 px-3 py-2 ${
         outerStyles[state.type]
       }`}
+      onClick={(e) => openCardModal(card)}
     >
       {/* Put a shadow before the item if closer to the top edge */}
       {state.type === "is-over" && state.closestEdge === "top" ? (

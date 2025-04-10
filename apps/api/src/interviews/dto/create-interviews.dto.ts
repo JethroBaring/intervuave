@@ -24,4 +24,9 @@ export class CreateInterviewsDto {
   deviceType?: DeviceType;
   noiseLevel?: number;
   status: InterviewStatus;
+  emailSentAt?: any;
+  interviewStartedAt?: any;
+  submittedAt?: any;
+  processedAt?: any;
+  evaluatedAt?: any;
 }

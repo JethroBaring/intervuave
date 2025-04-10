@@ -42,6 +42,8 @@ import { Modal } from "../modal";
 import Button from "../button/Button";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useToastStore } from "@/stores/useToastStore";
+import { useInterviewStore } from "@/stores/useInterviewStore";
+import InterviewModal from "./InterviewModal";
 
 type TColumnState =
   | {
@@ -272,15 +274,18 @@ export function Column({ column }: { column: TColumn }) {
   const companyId = useCompanyStore((state) => state.companyId);
   const showToast = useToastStore((state) => state.showToast);
   const handleSubmit = async () => {
-    const { data } = await api.post(`${endpoints.interviews.create(companyId)}`, {
-      candidate,
-      position,
-      interviewTemplateId,
-    });
+    const { data } = await api.post(
+      `${endpoints.interviews.create(companyId)}`,
+      {
+        candidate,
+        position,
+        interviewTemplateId,
+      }
+    );
     useCompanyStore.setState((state) => ({
       ...state,
       interviews: [...state.interviews, data],
-    }))
+    }));
     closeModal();
     showToast({
       type: "success",
@@ -345,7 +350,7 @@ export function Column({ column }: { column: TColumn }) {
           )}
         </div>
       </Card>
-      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4">
+      <Modal isOpen={isOpen} onClose={closeModal} className="max-w-[700px] m-4" key={"testets"}>
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
           <div className="px-2 pr-14">
             <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">

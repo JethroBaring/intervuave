@@ -25,6 +25,4 @@ model CoreValue {
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   deletedAt   DateTime?
-
-  questions Question[]
 }

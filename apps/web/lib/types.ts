@@ -2,8 +2,7 @@ export interface Question {
   id?: string;
   questionText: string;
   order?: number;
-  evaluates: string;
-  coreValueId?: string;
+  coreValues: string;
   alignedWith: string;
 }
 
@@ -32,6 +31,8 @@ export interface Candidate {
 export interface InterviewTemplate {
   id?: string;
   name: string;
+  responseQualityWeight: number;
+  cultureFitWeight: number;
   companyId?: string;
   questions?: Question[];
   metrics?: Metric[];

@@ -38,11 +38,11 @@ type NavItem = {
 };
 
 const navItems: NavItem[] = [
-  {
-    icon: <LayoutDashboard className="h-5 w-5" />,
-    name: "Dashboard",
-    path: "/dashboard",
-  },
+  // {
+  //   icon: <LayoutDashboard className="h-5 w-5" />,
+  //   name: "Dashboard",
+  //   path: "/dashboard",
+  // },
   {
     icon: <Puzzle className="h-5 w-5" />,
     name: "Templates",

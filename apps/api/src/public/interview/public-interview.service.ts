@@ -13,6 +13,7 @@ import { GenerateUploadUrlDto } from './dto/generate-upload-url.dto';
 import { GoogleStorageService } from 'src/common/google-storage.service';
 import { Prisma } from '@prisma/client';
 import { GoogleTasksService } from 'src/common/google-tasks.service';
+import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 
 @Injectable()
 export class PublicInterviewService {
@@ -69,7 +70,10 @@ export class PublicInterviewService {
 
       const interview = await this.prisma.interview.update({
         where: { id },
-        data: { status: 'IN_PROGRESS' },
+        data: {
+          status: 'IN_PROGRESS',
+          interviewStartedAt: getPrismaDateTimeNow(),
+        },
       });
 
       return interview;
@@ -93,6 +97,7 @@ export class PublicInterviewService {
         data: {
           status: 'SUBMITTED',
           timestamps: (timestamps.timestamps ?? []) as Prisma.JsonArray,
+          submittedAt: getPrismaDateTimeNow(),
         },
       });
 
@@ -101,7 +106,7 @@ export class PublicInterviewService {
         60,
       );
 
-      const questions = (timestamps as any[]).reduce(
+      const questions = (timestamps.timestamps as any[]).reduce(
         (acc, t) => {
           if (t.questionId && t.questionText) {
             acc[t.questionId] = t.questionText;
@@ -111,13 +116,63 @@ export class PublicInterviewService {
         {} as Record<string, string>,
       );
 
-      await this.queue.addTask({
-        interview_id: id,
-        timestamps: timestamps,
-        video_url: videoUrl,
-        questions,
-        callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
-        status_callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/companies/${interview.companyId}/interviews`,
+      // await this.queue.addTask({
+      //   interview_id: id,
+      //   timestamps: timestamps,
+      //   video_url: videoUrl,
+      //   questions,
+      //   callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
+      //   status_callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/companies/${interview.companyId}/interviews`,
+      // });
+
+      console.log({
+        HANNAH: JSON.stringify({
+          interview_id: id,
+          timestamps: timestamps.timestamps,
+          video_url: videoUrl,
+          questions,
+          callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
+          status_callback_url: `http://localhost:3000/api/v1/public/interviews/process`,
+        }),
+      });
+
+      await fetch('http://localhost:8000/process-interview', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          interview_id: id,
+          timestamps: timestamps.timestamps,
+          video_url: videoUrl,
+          questions,
+          callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
+          status_callback_url: `http://localhost:3000/api/v1/public/interviews/process`,
+        }),
+      });
+
+      return interview;
+    } catch (err: any) {
+      console.log(err);
+      return { valid: false, reason: 'invalid' };
+    }
+  }
+
+  async startInterviewProcessing(interviewId: string) {
+    try {
+      // const decrypted = this.crypto.decrypt(decodeURIComponent(token));
+      // const { id, expiresAt } = JSON.parse(decrypted);
+
+      // if (new Date() > new Date(expiresAt)) {
+      //   return { valid: false, reason: 'expired' };
+      // }
+
+      const interview = await this.prisma.interview.update({
+        where: { id: interviewId },
+        data: {
+          status: 'PROCESSING',
+          interviewStartedAt: getPrismaDateTimeNow(),
+        },
       });
 
       return interview;

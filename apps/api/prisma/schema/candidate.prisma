@@ -14,96 +14,101 @@ model Candidate {
 }
 
 model Interview {
-  id            String          @id @default(cuid())
-  candidateId   String
-  companyId     String
-  company       Company         @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  id                  String            @id @default(cuid())
+  candidateId         String
+  companyId           String
+  company             Company           @relation(fields: [companyId], references: [id], onDelete: Cascade)
   interviewTemplateId String
-  interviewTemplate InterviewTemplate @relation(fields: [interviewTemplateId], references: [id], onDelete: Cascade)
-  position        String
-  interviewLink String?         @unique
-  expiresAt     DateTime?
-  timestamps    Json?
-  filename      String?
-  cameraType    InputType?
-  micType       InputType?
-  noiseLevel    Float?
-  deviceType    DeviceType?
-  candidate     Candidate       @relation(fields: [candidateId], references: [id], onDelete: Cascade)
-  responses     Response[]
-  evaluation    Evaluation?
-  status        InterviewStatus @default(PENDING)
-  createdAt     DateTime        @default(now())
-  updatedAt     DateTime        @updatedAt
-  deletedAt     DateTime?
+  interviewTemplate   InterviewTemplate @relation(fields: [interviewTemplateId], references: [id], onDelete: Cascade)
+  position            String
+  interviewLink       String?           @unique
+  expiresAt           DateTime?
+  timestamps          Json?
+  filename            String?
+  cameraType          InputType?
+  micType             InputType?
+  noiseLevel          Float?
+  deviceType          DeviceType?
+  candidate           Candidate         @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  responses           Response[]
+  evaluation          Evaluation?
+  status              InterviewStatus   @default(PENDING)
+  createdAt           DateTime          @default(now())
+  emailSentAt         DateTime?
+  interviewStartedAt  DateTime?
+  submittedAt         DateTime?
+  processedAt         DateTime?
+  evaluatedAt         DateTime?
+
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
 }
 
 model Response {
-  id               String   @id @default(cuid())
-  interviewId      String
-  questionId       String
-  videoChunkUrl    String
-  
+  id            String @id @default(cuid())
+  interviewId   String
+  questionId    String
+  videoChunkUrl String
+
   // Transcripts
-  transcript       String
-  
+  transcript String
+
   // Timing
-  startTime        Float
-  endTime          Float
-  
+  startTime Float
+  endTime   Float
+
   // Video Analysis
-  emotion          String
-  tone             String
-  eyeGaze          Float
-  posture          Float
-  gestures         Int
-  movement         Float
-  
+  emotion  String
+  tone     String
+  eyeGaze  Float
+  posture  Float
+  gestures Int
+  movement Float
+
   // Metrics
-  metrics          Json
+  metrics           Json
   metricsConfidence Json
-  
+
   // Word timing information
-  wordTimings      Json
-  
+  wordTimings Json
+
   // Emotion Timeline
-  emotionTimeline  Json
-  
+  emotionTimeline Json
+
   // Posture Timeline
-  postureTimeline  Json
-  
+  postureTimeline Json
+
   // Gaze Timeline
-  gazeTimeline     Json
-  
+  gazeTimeline Json
+
   // Pause locations
-  pauseLocations   Json
-  
+  pauseLocations Json
+
   // Disfluencies
-  disfluencies     Json
-  
+  disfluencies Json
+
   // Expressiveness Timeline
   expressivenessTimeline Json
-  
+
   // General expressiveness score
-  expressiveness   Float
-  
+  expressiveness Float
+
   // Speech Features
-  speechFeatures   Json
-  
+  speechFeatures Json
+
   // Processing version
   processingVersion String
-  
-  // Quality flag
-  qualityFlag      String
-  
-  interview        Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
-  question         Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
-  
-  createdAt        DateTime  @default(now())
-  updatedAt        DateTime  @updatedAt
-  deletedAt        DateTime?
-}
 
+  // Quality flag
+  qualityFlag String
+
+  interview Interview @relation(fields: [interviewId], references: [id], onDelete: Cascade)
+  question  Question  @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+}
 
 enum InterviewStatus {
   DRAFT

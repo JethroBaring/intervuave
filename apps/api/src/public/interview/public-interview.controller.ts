@@ -23,6 +23,13 @@ export class PublicInterviewController {
     return this.publicInterviewSerivice.submitInterview(token, timestamps);
   }
 
+  @Patch('/process')
+  processInterview() {
+    return this.publicInterviewSerivice.startInterviewProcessing(
+      'cm9bhmkmw000lvguuq7lqayr2',
+    );
+  }
+
   @Post(':token/generate-url')
   generateSignedInterviewUrl(
     @Param('token') token: string,

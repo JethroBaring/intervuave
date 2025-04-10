@@ -52,6 +52,7 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
       const company: any = await api.get(
         `${endpoints.companies.find(companyId)}`
       );
+
       set({
         name: company.data.name,
         companyId,

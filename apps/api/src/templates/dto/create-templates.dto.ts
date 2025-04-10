@@ -3,8 +3,7 @@ export class CreateQuestionDto {
   alignedWith?: 'MISSION' | 'VISION' | 'CULTURE';
   order: number;
   templateId: string;
-  evaluates: string;
-  coreValueId?: string;
+  coreValues: string;
 }
 
 export class CreateMetricDto {
@@ -18,4 +17,6 @@ export class CreateTemplatesDto {
   companyId: string;
   questions: CreateQuestionDto[];
   metrics: CreateMetricDto[];
+  responseQualityWeight: number;
+  cultureFitWeight: number;
 }

@@ -66,6 +66,11 @@ const Templates: React.FC<TemplatesProps> = () => {
     editQuestion,
     deleteQuestion,
     clearQuestion,
+    responseQualityWeight,
+    cultureFitWeight,
+    setResponseQualityWeight,
+    setCultureFitWeight,
+    totalOverallFitWeight
   } = useTemplateForm(selectedTemplate!);
 
   const { templates, coreValues } = useCompanyStore(
@@ -312,10 +317,11 @@ const Templates: React.FC<TemplatesProps> = () => {
                         questions: questions.map((question) => ({
                           questionText: question.questionText,
                           order: question.order,
-                          evaluates: question.evaluates,
-                          coreValueId: question.coreValueId,
+                          coreValues: question.coreValues,
                           alignedWith: question.alignedWith,
                         })),
+                        responseQualityWeight: 0,
+                        cultureFitWeight: 0,
                       });
                       clearState();
                     }}
@@ -524,18 +530,19 @@ const Templates: React.FC<TemplatesProps> = () => {
               </Button>
               <Button
                 size="sm"
-                onClick={() => {
-                  addTemplate({
-                    name: name,
-                    companyId: "cm8l7il910007vgi8ano9wwz1",
-                    questions: questions.map(({ id, ...rest }) => rest),
-                    metrics: metrics.map(({ id, ...rest }) => rest),
-                  });
-                  clearState();
-                }}
+                // onClick={() => {
+                //   addTemplate({
+                //     name: name,
+                //     companyId: "cm8l7il910007vgi8ano9wwz1",
+                //     questions: questions.map(({ id, ...rest }) => rest),
+                //     metrics: metrics.map(({ id, ...rest }) => rest),
+                //   });
+                //   clearState();
+                // }}
+                onClick={nextStep}
                 disabled={questions.length === 0}
               >
-                Create
+                Next
               </Button>
             </div>
           </div>
@@ -558,25 +565,109 @@ const Templates: React.FC<TemplatesProps> = () => {
             </p>
           </div>
           <div className="flex flex-col gap-6">
-            <div className="px-2 overflow-y-auto custom-scrollbar">
+            <div className="px-2 flex flex-col gap-3">
               <div>
-                <Label>Name</Label>
-                <Input value={name} onChange={(e) => setName(e.target.value)} />
+                <Label className="text-base">Overall Fit Score</Label>
+                <Label>
+                  Customize how much each metric affects candidate evaluation
+                </Label>
+              </div>
+              <div className="w-full flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1 justify-center">
+                    <Label className="m-0">Response Quality</Label>
+                    <Label className="m-0 font-normal text-xs">
+                      Response quality
+                    </Label>
+                  </div>
+                  <div className="relative w-[70px]">
+                    <Input
+                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={responseQualityWeight}
+                      onChange={(e) =>
+                        setResponseQualityWeight(parseFloat(e.target.value))
+                      }
+                    />
+                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  className="accent-brand-500"
+                  value={responseQualityWeight}
+                  onChange={(e) =>
+                    setResponseQualityWeight(parseFloat(e.target.value))
+                  }
+                />
+              </div>
+              <div className="w-full flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1 justify-center">
+                    <Label className="m-0">Culture Fit</Label>
+                    <Label className="m-0 font-normal text-xs">
+                      Culture Fit
+                    </Label>
+                  </div>
+                  <div className="relative w-[70px]">
+                    <Input
+                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={cultureFitWeight}
+                      onChange={(e) =>
+                        setCultureFitWeight(parseFloat(e.target.value))
+                      }
+                    />
+                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  className="accent-brand-500"
+                  value={cultureFitWeight}
+                  onChange={(e) =>
+                    setCultureFitWeight(parseFloat(e.target.value))
+                  }
+                />
               </div>
             </div>
+            <p
+              className={`mb-1.5 block text-sm font-medium  px-2 ${
+                totalOverallFitWeight !== 100 ? "text-red-500" : "text-green-500"
+              }`}
+            >
+              {totalOverallFitWeight !== 100
+                ? `Total weight is ${totalOverallFitWeight}%. Please make sure it adds up to 100%.`
+                : "All good! Metric weights are properly distributed."}
+            </p>
             <div className="flex items-center gap-3 px-2 lg:justify-end">
+              <Button size="sm" variant="outline" onClick={prevStep}>
+                Previous
+              </Button>
               <Button
                 size="sm"
-                variant="outline"
                 onClick={() => {
-                  closeTemplateModal();
-                  resetForm();
+                  addTemplate({
+                    name: name,
+                    companyId: "cm8l7il910007vgi8ano9wwz1",
+                    questions: questions.map(({ id, ...rest }) => rest),
+                    metrics: metrics.map(({ id, ...rest }) => rest),
+                    responseQualityWeight: parseFloat(`${responseQualityWeight/100}`),
+                    cultureFitWeight: parseFloat(`${cultureFitWeight/100}`)
+                  });
+                  clearState();
                 }}
+                disabled={totalOverallFitWeight !== 100}
               >
-                Cancel
-              </Button>
-              <Button size="sm" onClick={nextStep} disabled={!name}>
-                Next
+                Create
               </Button>
             </div>
           </div>
@@ -623,34 +714,30 @@ const Templates: React.FC<TemplatesProps> = () => {
                 </div>
 
                 <div className="col-span-2">
-                  <Label>Evaluates</Label>
-                  {/* <div className="relative">
-                    <Select
-                      options={coreValues.map((coreValue) => ({
-                        value: `${coreValue.id}-${coreValue.name}`,
-                        label: coreValue.name,
-                      }))}
-                      onChange={(value) =>
-                        setQuestion((prev) => ({
-                          ...prev,
-                          evaluates: value.split("-")[1],
-                          coreValueId: value.split("-")[0],
-                        }))
-                      }
-                      defaultValue={question.evaluates}
-                      disabled={isViewQuestionModalOpen}
-                    />
-                    <ChevronDown className="absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none" />
-                  </div> */}
-                                      <MultiSelect
-                      label="Test"
-                      options={[
-                        { value: "test", text: "Test", selected: false },
-                        { value: "test", text: "Test", selected: false },
-                      ]}
-                    />
+                  <MultiSelect
+                    label="Evaluates"
+                    options={coreValues.map((coreValue) => ({
+                      value: `${coreValue.id}-${coreValue.name}`,
+                      text: coreValue.name,
+                      selected: false,
+                    }))}
+                    defaultSelected={coreValues
+                      .filter((cv) =>
+                        question.coreValues.split(",").includes(cv.name)
+                      )
+                      .map((cv) => `${cv.id}-${cv.name}`)}
+                    onChange={(values) =>
+                      setQuestion((prev) => ({
+                        ...prev,
+                        coreValues: values
+                          .map((v) => v.split("-")[1])
+                          .join(","),
+                      }))
+                    }
+                    disabled={isViewQuestionModalOpen}
+                  />
                 </div>
- 
+
                 <div className="col-span-2">
                   <Label>Aligned with</Label>
                   <div className="relative">
@@ -698,7 +785,7 @@ const Templates: React.FC<TemplatesProps> = () => {
                   }}
                   disabled={
                     !question.questionText ||
-                    !question.evaluates ||
+                    !question.coreValues ||
                     !question.alignedWith
                   }
                 >

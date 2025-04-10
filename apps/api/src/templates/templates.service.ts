@@ -15,7 +15,14 @@ export class TemplatesService {
 
   async create(createDto: CreateTemplatesDto) {
     try {
-      const { name, companyId, questions, metrics } = createDto;
+      const {
+        name,
+        companyId,
+        questions,
+        metrics,
+        responseQualityWeight,
+        cultureFitWeight,
+      } = createDto;
 
       return await this.prisma.interviewTemplate.create({
         data: {
@@ -27,6 +34,8 @@ export class TemplatesService {
           metrics: {
             create: metrics,
           },
+          responseQualityWeight,
+          cultureFitWeight,
         },
         include: { questions: true, metrics: true },
       });

@@ -12,6 +12,7 @@ import { InterviewStatus } from '@prisma/client';
 import { MailService } from 'src/mail/mail.service';
 import { CryptoService } from 'src/common/crypto.service';
 import { GoogleStorageService } from 'src/common/google-storage.service';
+import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 
 @Injectable()
 export class InterviewsService {
@@ -100,6 +101,7 @@ export class InterviewsService {
           this.generateInterviewLink(interviewId);
         updateData.expiresAt = expiresAt;
         updateData.interviewLink = interviewLink;
+        updateData.emailSentAt = getPrismaDateTimeNow();
       }
 
       const updated = await this.prisma.interview.update({
@@ -152,110 +154,20 @@ export class InterviewsService {
           interviewLink: interview.interviewLink,
         });
         break;
-
-      case InterviewStatus.SUBMITTED:
-        await this.processInterview(interview);
-        break;
-
-      case InterviewStatus.EVALUATED:
-        await this.createEvaluation(interview);
-        break;
-
       default:
         break;
     }
   }
 
-  private async processInterview(interview: any) {
-    const payload = {
-      interviewId: interview.id,
-      video_url: interview.videoUrl,
-      timestamps: interview.timestamps,
-      questions: interview.role.interviewTemplate.questions,
-      callback_url: null,
-    };
+  // async sendInterviewLink(interviewId: string) {
+  //   try {
 
-    await this.directProcessInterview(payload, interview.id);
+  //   } catch (error) {
+  //     this.logger.error('Failed to send interview link', error);
+  //     throw new InternalServerErrorException('Failed to send interview link');
 
-    // if (process.env.NODE_ENV === 'production') {
-    //   await this.createGoogleTask(payload, interview.id);
-    // } else {
-    //   await this.directProcessInterview(payload, interview.id);
-    // }
-  }
-
-  /** Direct call for local testing */
-  private async directProcessInterview(payload: any, interviewId: string) {
-    try {
-      const response = await fetch('http://localhost:8000/process-interview', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response.ok) {
-        this.logger.error(
-          `Direct processing failed for interview ${interviewId}: ${response.statusText}`,
-        );
-      } else {
-        this.logger.log(
-          `Direct processing triggered for interview ${interviewId}`,
-        );
-      }
-    } catch (error) {
-      this.logger.error(
-        `Error while direct processing interview ${interviewId}`,
-        error,
-      );
-    }
-  }
-
-  /** Production: Google Cloud Task */
-  private async createGoogleTask(payload: any, interviewId: string) {
-    try {
-      await fetch('');
-      // const client = new CloudTasksClient();
-      // const project = process.env.GCP_PROJECT_ID;
-      // const queue = process.env.GCP_QUEUE_ID;
-      // const location = process.env.GCP_LOCATION;
-      // const url = 'https://YOUR-WORKER-URL/process-interview'; // public worker endpoint
-      // const parent = client.queuePath(project!, location!, queue!);
-      // const task = {
-      //   httpRequest: {
-      //     httpMethod: 'POST',
-      //     url,
-      //     headers: {
-      //       'Content-Type': 'application/json',
-      //     },
-      //     body: Buffer.from(JSON.stringify(payload)).toString('base64'),
-      //   },
-      //   scheduleTime: {
-      //     seconds: Date.now() / 1000 + 10, // optional 10s delay
-      //   },
-      //   name: `${parent}/tasks/${uuidv4()}`,
-      // };
-      // const [response] = await client.createTask({ parent, task });
-      // this.logger.log(
-      //   `GCP Task created for interview ${interviewId}: ${response.name}`,
-      // );
-    } catch (error) {
-      this.logger.error(
-        `Error creating GCP Task for interview ${interviewId}`,
-        error,
-      );
-    }
-  }
-
-  private async createEvaluation(interview: any) {
-    await fetch('');
-    // await this.prisma.evaluation.create({
-    //   data: {
-    //     interviewId: interview.id,
-    //     status: 'PENDING',
-    //   },
-    // });
-    this.logger.log(`Created evaluation for interview ${interview.id}`);
-  }
+  //   }
+  // }
 
   async getInterviewViewUrl(companyId: string, interviewId: string) {
     try {
@@ -268,7 +180,7 @@ export class InterviewsService {
         throw new Error('Video not found');
       }
       const viewUrl = this.storage.generateInterviewViewUrl(
-        interview.filename as string,
+        interview.filename,
         60,
       );
 

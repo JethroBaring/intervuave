@@ -64,6 +64,8 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
         companyId: data.companyId,
         questions: data.questions,
         metrics: data.metrics,
+        responseQualityWeight: data.responseQualityWeight,
+        cultureFitWeight: data.cultureFitWeight,
       });
       console.log("Template created:", res.data);
       set({ isNewTemplateModalOpen: false });
