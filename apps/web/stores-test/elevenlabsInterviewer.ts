@@ -38,18 +38,7 @@ export const useElevenlabsInterviewerStore = create<InterviewState>((set, get) =
   isRecording: false,
   expectingUserInput: false,
   userResponseResolver: null,
-  questions: [
-    {
-      questionText: "Can you tell me about a time when you had to explain a complex idea to someone?",
-      evaluates: "communication",
-      alignedWith: "clarity",
-    },
-    {
-      questionText: "Describe a challenging problem you faced at work and how you solved it.",
-      evaluates: "problem-solving",
-      alignedWith: "innovation",
-    },
-  ],
+  questions: [],
 
   setVideoRef: (ref) => {
     videoRef = ref;
