@@ -25,7 +25,7 @@ import {
   TCard,
 } from "./data";
 import { isShallowEqual } from "./is-shallow-equal";
-import { Clock, InfoIcon } from "lucide-react";
+import { BadgeCheck, Clock, InfoIcon, TimerOff, Upload } from "lucide-react";
 import moment from "moment";
 import { useInterviewStore } from "@/stores/useInterviewStore";
 
@@ -107,6 +107,96 @@ export function getCardStyle(card: TCard) {
           <InfoIcon className="h-4 w-4" />
           <p className="text-sm text-gray-500 dark:text-gray-400">
             Sent:{" "}
+            {moment(card.interview.emailSentAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "IN_PROGRESS") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Clock className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Started:{" "}
+            {moment(card.interview.interviewStartedAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "SUBMITTED") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <Upload className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Submitted:{" "}
+            {moment(card.interview.submittedAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "PROCESSING" || card.interview.status === "EVALUATING") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <InfoIcon className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Sent:{" "}
+            {moment(card.interview.processedAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "EVALUATED") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <BadgeCheck className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Evaluated:{" "}
+            {moment(card.interview.evaluatedAt).format("MMMM D, YYYY - h:mm A")}
+          </p>
+        </div>
+      </>
+    );
+  } else if (card.interview.status === "EXPIRED") {
+    return (
+      <>
+        <div className="flex flex-col">
+          <p className="text-lg font-bold">{`${card.candidate.firstName} ${card.candidate.lastName}`}</p>
+          <p className="text-gray-500 dark:text-gray-400">
+            {card.interview.position}
+          </p>
+        </div>
+        <div className="flex items-center gap-1">
+          <TimerOff className="h-4 w-4" />
+          <p className="text-sm text-gray-500 dark:text-gray-400">
+            Expired:{" "}
             {moment(card.interview.updatedAt).format("MMMM D, YYYY - h:mm A")}
           </p>
         </div>
