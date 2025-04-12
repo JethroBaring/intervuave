@@ -533,9 +533,21 @@ const InterviewModal = () => {
           </div>
         );
       case "EVALUATED":
-        break;
+        return (
+          <div className="flex items-center gap-3 px-2 lg:justify-end">
+            <Button size="sm" variant="outline">
+              Close
+            </Button>
+          </div>
+        );
       case "EXPIRED":
-        break;
+        return (
+          <div className="flex items-center gap-3 px-2 lg:justify-end">
+            <Button size="sm" variant="outline">
+              Close
+            </Button>
+          </div>
+        );
       default:
         break;
     }
@@ -582,7 +594,7 @@ const InterviewModal = () => {
           </div>
         </div>
 
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-6 h-full">
           <div className="px-2">
             <div className="border-b border-gray-200 dark:border-gray-800">
               <nav className="-mb-px flex space-x-2 overflow-x-auto [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600 dark:[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:h-1.5">
@@ -607,11 +619,12 @@ const InterviewModal = () => {
                 ))}
               </nav>
             </div>
-            <div className="pt-4 dark:border-gray-800 overflow-scroll max-h-[500px]">
+            <div className="pt-4 dark:border-gray-800 overflow-scroll min-h-[500px] max-h-[500px]">
               {renderTabContent()}
             </div>
           </div>
           {renderFooter()}
+
         </div>
       </div>
     </Modal>

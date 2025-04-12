@@ -1,15 +1,12 @@
-'use client'
+import Interviewer from "@/components/interviewer/Interviewer";
 import { Metadata } from "next";
-import Interview from "@/components/interview/Interview";
-import { Suspense } from "react";
 
-// export const metadata: Metadata = {
-//   title: "Sign-In | Intervuave",
-//   description: "This is Next.js Signin Page TailAdmin Dashboard Template",
-// };
+export const metadata: Metadata = {
+  title:
+    "Interview | Intervuave",
+};
+const Page = () => {
+  return <Interviewer />;
+};
 
-export default function Page() {
-  return <Suspense fallback={<div>Loading...</div>}>
-    <Interview /> 
-  </Suspense>;
-}
+export default Page;

@@ -1,9 +1,11 @@
-const Page = () => {
-  return (
-    <div>
-      Candidates
-    </div>
-  )
-}
+import { Metadata } from "next";
 
-export default Page
+export const metadata: Metadata = {
+  title: "Candidates | Intervuave",
+};
+
+const Page = () => {
+  return <div>Candidates</div>;
+};
+
+export default Page;

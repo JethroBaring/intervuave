@@ -19,7 +19,7 @@ export class ResponsesService {
       transcript: item.transcript,
       startTime: item.start,
       endTime: item.end,
-      emotion: 'sad',
+      emotion: item.emotion,
       tone: '', // optional if you want to set
       eyeGaze: item.eyeGaze,
       posture: item.posture,

@@ -59,9 +59,9 @@ const navItems: NavItem[] = [
     path: "/interviews",
   },
   {
-    name: "Information",
+    name: "Settings",
     icon: <Settings className="h-5 w-5" />,
-    path: "/profile",
+    path: "/settings",
   },
 ];
 
