@@ -23,11 +23,9 @@ export class PublicInterviewController {
     return this.publicInterviewSerivice.submitInterview(token, timestamps);
   }
 
-  @Patch('/process')
-  processInterview() {
-    return this.publicInterviewSerivice.startInterviewProcessing(
-      'cm9bhmkmw000lvguuq7lqayr2',
-    );
+  @Patch(':interviewId/process')
+  processInterview(@Param('interviewId') interviewId: string) {
+    return this.publicInterviewSerivice.startInterviewProcessing(interviewId);
   }
 
   @Post(':token/generate-url')

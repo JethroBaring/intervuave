@@ -34,8 +34,6 @@ export class GoogleTasksService {
       },
     };
 
-    console.log({ HANNAH: JSON.stringify(data) });
-
     const response = await this.client.createTask({ parent, task });
     return response[0];
   }

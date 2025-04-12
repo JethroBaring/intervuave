@@ -11,7 +11,7 @@ from .logger import get_logger
 
 
 PROCESSING_VERSION = "v1.1"
-CHUNK_SAVE_DIR = "/app/chunks"
+CHUNK_SAVE_DIR = "./chunks"
 
 logger = get_logger("processor")
 

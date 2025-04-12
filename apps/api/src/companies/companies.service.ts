@@ -52,6 +52,12 @@ export class CompaniesService {
           interviews: {
             include: {
               candidate: true,
+              responses: {
+                include: {
+                  question: true,
+                },
+              },
+              evaluation: true,
             },
           },
         },

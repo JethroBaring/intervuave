@@ -179,11 +179,11 @@ export class InterviewsService {
       if (!interview || !interview.filename) {
         throw new Error('Video not found');
       }
-      const viewUrl = this.storage.generateInterviewViewUrl(
+      const viewUrl = await this.storage.generateInterviewViewUrl(
         interview.filename,
         60,
       );
-
+      console.log('HANNAH', viewUrl);
       return { viewUrl };
     } catch (error) {
       this.logger.error('Failed to generate view URL', error);

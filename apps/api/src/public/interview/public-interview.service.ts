@@ -116,40 +116,29 @@ export class PublicInterviewService {
         {} as Record<string, string>,
       );
 
-      // await this.queue.addTask({
-      //   interview_id: id,
-      //   timestamps: timestamps,
-      //   video_url: videoUrl,
-      //   questions,
-      //   callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
-      //   status_callback_url: `https://dev.api.intervuave.jethdev.tech/api/v1/companies/${interview.companyId}/interviews`,
+      await this.queue.addTask({
+        interview_id: id,
+        timestamps: timestamps.timestamps,
+        video_url: videoUrl,
+        questions,
+        callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
+        status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${id}/process`,
+      });
+
+      // await fetch('http://localhost:8000/process-interview', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify({
+      //     interview_id: id,
+      //     timestamps: timestamps.timestamps,
+      //     video_url: videoUrl,
+      //     questions,
+      //     callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
+      //     status_callback_url: `http://localhost:3000/api/v1/public/interviews/${id}/process`,
+      //   }),
       // });
-
-      console.log({
-        HANNAH: JSON.stringify({
-          interview_id: id,
-          timestamps: timestamps.timestamps,
-          video_url: videoUrl,
-          questions,
-          callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
-          status_callback_url: `http://localhost:3000/api/v1/public/interviews/process`,
-        }),
-      });
-
-      await fetch('http://localhost:8000/process-interview', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          interview_id: id,
-          timestamps: timestamps.timestamps,
-          video_url: videoUrl,
-          questions,
-          callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
-          status_callback_url: `http://localhost:3000/api/v1/public/interviews/process`,
-        }),
-      });
 
       return interview;
     } catch (err: any) {

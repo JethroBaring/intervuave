@@ -67,6 +67,7 @@ export const endpoints = {
       `/candidates/:candidateId/interviews/${interviewId}`,
     delete: (candidateId: string, interviewId: string) =>
       `/candidates/${candidateId}/interviews/${interviewId}`,
+    'view-url': (companyId: string, interviewId: string) => `companies/${companyId}/interviews/${interviewId}/view-url`,
   },
 
   evaluations: {
