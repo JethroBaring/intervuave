@@ -207,14 +207,14 @@ const ResponsesTab = ({
                     Response Quality
                   </h5>
                   <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(result.responseQuality).map(
+                    {Object.entries((result as any).responseQuality).map(
                       ([metric, score]) => (
                         <div key={metric}>
                           <p className="text-xs text-gray-500 capitalize">
                             {metric}
                           </p>
                           <p className="text-sm font-medium">
-                            {(score * 100).toFixed(0)}%
+                            {((score as number) * 100).toFixed(0)}%
                           </p>
                         </div>
                       )
@@ -228,14 +228,14 @@ const ResponsesTab = ({
                     Culture Fit Composite
                   </h5>
                   <div className="grid grid-cols-2 gap-4">
-                    {Object.entries(result.cultureFitComposite).map(
+                    {Object.entries((result as any).cultureFitComposite).map(
                       ([metric, score]) => (
                         <div key={metric}>
                           <p className="text-xs text-gray-500 capitalize">
                             {metric}
                           </p>
                           <p className="text-sm font-medium">
-                            {(score * 100).toFixed(0)}%
+                            {((score as number) * 100).toFixed(0)}%
                           </p>
                         </div>
                       )
@@ -245,7 +245,7 @@ const ResponsesTab = ({
 
                 {/* Feedback */}
                 <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                  Feedback: {result.feedback}
+                  Feedback: {(result as any).feedback}
                 </p>
               </div>
             )}
