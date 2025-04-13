@@ -29,14 +29,16 @@ interface InterviewState {
   isSpeaking: boolean;
   isSubmitting: boolean;
   currentStep: number;
+  nextDisable: boolean;
   setCurrentStep: (step: number) => void;
   startInterview: () => Promise<void>;
   nextQuestion: () => Promise<void>;
   endCurrentQuestion: () => void;
-  stopInterview: () => void;
+  stopInterview: () => Promise<void>;
   toggleCamera: () => Promise<void>;
   setVideoRef: (ref: React.RefObject<HTMLVideoElement | null>) => void;
   verifyToken: (token: string) => Promise<void>;
+  forceStopCamera: () => void;
   getStreamRef: () => MediaStream | null;
 }
 
@@ -63,6 +65,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
   isSubmitting: false,
   role: "",
   currentStep: 0,
+  nextDisable: false,
   setCurrentStep: (step: number) => {
     set({ currentStep: step });
   },
@@ -112,7 +115,11 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       const blob = new Blob(recordedChunks, { type: "video/webm" });
       try {
         // Upload video
-        set({ isSubmitting: true });
+        await speak(`Thank you for completing your interview, ${get().candidate?.firstName || "candidate"}. We appreciate your time and effort.`, (isSpeaking) =>
+          set({ isSpeaking })
+        );
+        set({ isRecording: false, isCameraOn: false });
+        set({ isSubmitting: true, currentStep: 5 });
         const videoFilename = `${Date.now()}_interview.webm`;
         const { data } = await api.post(
           `${endpoints.public.getSignedInterviewUrl(
@@ -142,7 +149,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
             timestamps: get().timestamps,
           }
         );
-        set({ isSubmitting: false, currentStep: 5 });
+        set({ isSubmitting: false });
       } catch (err) {
         console.error(err);
         alert("Upload failed");
@@ -155,7 +162,8 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       () => set({ isRecording: true, recordingStartTime: startTime }),
       500
     );
-    await speak("Welcome to the interview. Let's begin.", (isSpeaking) =>
+    set({ nextDisable: true });
+    await speak(`Hello ${get().interview?.candidate.firstName}! Welcome to your interview. Let's get started.`, (isSpeaking) =>
       set({ isSpeaking })
     );
 
@@ -169,9 +177,9 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     if (currentQuestionIndex >= questions.length) return;
 
     const question = questions[currentQuestionIndex];
-
+    set({ nextDisable: true });
     await speak(question.questionText, (isSpeaking) => set({ isSpeaking })); // Speak first
-
+    set({ nextDisable: false });
     const now = performance.now();
     const relativeStart = recordingStartTime ? now - recordingStartTime : 0;
 
@@ -183,7 +191,6 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     });
 
     set({
-      currentQuestionIndex: currentQuestionIndex + 1,
       timestamps,
     });
   },
@@ -199,22 +206,12 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
     set({ timestamps });
   },
 
-  stopInterview: () => {
+  stopInterview: async () => {
     get().endCurrentQuestion();
+
     if (mediaRecorder && get().isRecording) {
       mediaRecorder.stop();
     }
-
-    if (streamRef) {
-      streamRef.getTracks().forEach((track) => track.stop()); // 👈 stop the camera and microphone
-      streamRef = null;
-    }
-
-    if (videoRef?.current) {
-      videoRef.current.srcObject = null; // 👈 detach the stream from the video element
-    }
-
-    set({ isRecording: false, isCameraOn: false });
   },
   verifyToken: async (token: string) => {
     set({ isVerifying: true });
@@ -253,6 +250,18 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       });
     }
   },
+
+  forceStopCamera: () => {
+    if (streamRef) {
+      streamRef.getTracks().forEach((track) => track.stop());
+      streamRef = null;
+    }
+    if (videoRef?.current) {
+      videoRef.current.srcObject = null;
+    }
+    set({ isCameraOn: false });
+  },
+
   getStreamRef: () => {
     return streamRef;
   },

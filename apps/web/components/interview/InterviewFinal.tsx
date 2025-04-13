@@ -35,7 +35,9 @@ export default function Interview() {
     company,
     isSubmitting,
     currentStep,
-    setCurrentStep
+    setCurrentStep,
+    nextDisable,
+    forceStopCamera,
   } = useInterviewerStore();
   // const [currentStep, setCurrentStep] = useState(0);
   const [consent, setConsent] = useState({
@@ -48,7 +50,7 @@ export default function Interview() {
 
   const handleInterviewToggle = useCallback(async () => {
     if (isRecording) {
-      stopInterview()
+      stopInterview();
     } else {
       await startInterview();
     }
@@ -56,12 +58,17 @@ export default function Interview() {
 
   const handleNextQuestion = useCallback(() => {
     endCurrentQuestion();
-    if (currentQuestionIndex >= questions.length) {
+    if (currentQuestionIndex >= questions.length - 1) {
+      // ✅ correct comparison
       stopInterview();
     } else {
+      console.log("hello");
+      useInterviewerStore.setState({
+        currentQuestionIndex: currentQuestionIndex + 1,
+      });
       nextQuestion();
     }
-  }, [nextQuestion]);
+  }, [nextQuestion, currentQuestionIndex, questions.length]);
 
   useEffect(() => {
     if (token) {
@@ -79,13 +86,19 @@ export default function Interview() {
     setVideoRef(videoRef);
   }, [setVideoRef]);
 
+  useEffect(() => {
+    return () => {
+      console.log("Interview component unmounting, stopping camera and mic");
+      useInterviewerStore.getState().forceStopCamera();
+    };
+  }, []);
+
   // 🆕 Add this!
-useEffect(() => {
-  if (currentStep === 5) {
-    console.log("Interview finished, stopping camera and mic");
-    stopInterview();
-  }
-}, [currentStep, stopInterview]);
+  useEffect(() => {
+    if (currentStep === 5) {
+      forceStopCamera();
+    }
+  }, [currentStep, forceStopCamera]);
 
   const streamRef = getStreamRef();
 
@@ -289,7 +302,8 @@ useEffect(() => {
             {currentStep === 4 && (
               <Card className="flex-auto h-full flex flex-col gap-5 text-gray-500 dark:text-gray-400 relative">
                 <div className="absolute left-5 top-5">
-                  {candidate?.firstName} {candidate?.lastName} (You)
+                  {candidate?.firstName} {candidate?.lastName} (You){" "}
+                  {currentQuestionIndex + 1} {questions.length}
                 </div>
 
                 {isRecording && (
@@ -313,6 +327,7 @@ useEffect(() => {
                 </div>
 
                 {/* Shared video */}
+
                 <video
                   ref={videoRef}
                   autoPlay
@@ -320,31 +335,32 @@ useEffect(() => {
                   muted
                   className="h-full w-full object-cover rounded-2xl"
                 />
+
                 {countdown > 0 && (
                   <div className="h-full w-full flex items-center justify-center absolute text-[100px]">
                     {countdown}
                   </div>
                 )}
                 <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-999">
-                  {isRecording && questions[currentQuestionIndex - 1] && (
-                    <div className="text-center text-xl font-medium text-gray-700 dark:text-white">
-                      {questions[currentQuestionIndex - 1].questionText}
-                    </div>
-                  )}
+                  {isRecording &&
+                    questions[currentQuestionIndex] &&
+                    !nextDisable && (
+                      <div className="text-center text-xl font-medium text-gray-700 dark:text-white">
+                        {questions[currentQuestionIndex].questionText}
+                      </div>
+                    )}
                   <div className="flex gap-3">
-                    
-                      <Button
-                        onClick={handleNextQuestion}
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting && (
-                          <Loader className="h-5 w-5 animate-spin" />
-                        )}
-                        {currentQuestionIndex === questions.length
-                          ? "Finish Interview"
-                          : "Next"}
-                      </Button>
-                    
+                    <Button
+                      onClick={handleNextQuestion}
+                      disabled={isSubmitting || countdown > 0 || nextDisable}
+                    >
+                      {isSubmitting && (
+                        <Loader className="h-5 w-5 animate-spin" />
+                      )}
+                      {currentQuestionIndex + 1 === questions.length
+                        ? "Finish Interview"
+                        : "Next"}
+                    </Button>
                   </div>
                 </div>
               </Card>
@@ -354,18 +370,29 @@ useEffect(() => {
 
         {currentStep === 5 && (
           <>
-            <Check className="text-brand-400 h-48 w-48" />
+            {isSubmitting ? (
+              <Loader className="h-40 w-40 text-brand-400 animate-spin" />
+            ) : (
+              <Check className="text-brand-400 h-48 w-48" />
+            )}
             <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
               <h1 className="mt-6 mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
-                Interview completed!
+                {isSubmitting
+                  ? "Submitting interview..."
+                  : "Interview completed!"}
               </h1>
-              <p className="mt-6 mb-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
-                Thank you for completing your interview. Your responses have
-                been recorded and will be analyzed by our AI assessment system.
-              </p>
-              <a href="/dashboard">
-                <Button variant="outline">Home</Button>
-              </a>
+              {!isSubmitting && (
+                <>
+                  <p className="mt-6 mb-10 text-base text-gray-700 dark:text-gray-400 sm:text-lg">
+                    Thank you for completing your interview. Your responses have
+                    been recorded and will be analyzed by our AI assessment
+                    system.
+                  </p>
+                  <a href="/dashboard">
+                    <Button variant="outline">Home</Button>
+                  </a>
+                </>
+              )}
             </div>
             <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
               &copy; {new Date().getFullYear()} - Intervuave
