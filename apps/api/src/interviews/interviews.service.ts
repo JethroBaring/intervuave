@@ -136,7 +136,7 @@ export class InterviewsService {
     }
   }
   private generateInterviewLink(interviewId: string) {
-    const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const expiresAt = new Date(Date.now() + 3 * 24 * 60 * 60 * 1000);
     const tokenPayload = JSON.stringify({ id: interviewId, expiresAt });
     const token = this.crypto.encrypt(tokenPayload);
     const interviewLink = `${process.env.FRONTEND_URL}/interview?token=${encodeURIComponent(token)}`;
