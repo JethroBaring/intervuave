@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-return */
 /* eslint-disable @typescript-eslint/no-unsafe-call */
 /* eslint-disable @typescript-eslint/no-unsafe-member-access */
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
@@ -12,6 +13,7 @@ import { UpdateEvaluationsDto } from './dto/update-evaluations.dto';
 import { GeminiService } from 'src/common/google-gemini.service';
 import { Decision } from '@prisma/client';
 import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
+import { GoogleStorageService } from 'src/common/google-storage.service';
 
 @Injectable()
 export class EvaluationsService {
@@ -20,6 +22,7 @@ export class EvaluationsService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gemini: GeminiService,
+    private readonly storage: GoogleStorageService,
   ) {}
 
   async create(createDto: CreateEvaluationsDto) {
@@ -349,15 +352,26 @@ export class EvaluationsService {
     const overallFitScore =
       avgResponseQuality * responseQualityWeight +
       avgCultureFitComposite * cultureFitWeight;
-
+    const overallFitSummary = {
+      overallFitScore,
+      avgResponseQuality,
+      avgCultureFitComposite,
+      cultureFitComposite: {
+        valuesFit: avgValuesFit,
+        missionAlignment: avgMissionAlignment,
+        visionAlignment: avgVisionAlignment,
+        cultureFit: avgCultureFit,
+      },
+      perValueBreakdown,
+    };
     // AI Decision (basic rule)
     const aiDecision =
       overallFitScore >= 0.75 ? Decision.APPROVED : Decision.REJECTED;
-    const aiFeedback =
+    const aiFeedback = await this.gemini.generateAIFeedback(overallFitSummary);
+    const fallbackFeedback =
       aiDecision === 'APPROVED'
-        ? "The candidate demonstrated strong communication skills and a solid understanding of the company's values. They are likely to thrive in our collaborative environment and contribute positively to our mission."
-        : 'The candidate showed some misalignment with our core values and expectations. Further evaluation may be necessary to determine overall fit.';
-
+        ? "The candidate demonstrated strong communication skills and a solid understanding of the company's values."
+        : 'The candidate showed some misalignment with our core values and expectations. Further evaluation may be necessary.';
     return {
       interviewId,
       overallFitScore,
@@ -374,10 +388,79 @@ export class EvaluationsService {
         visionAlignment: avgVisionAlignment,
         cultureFit: avgCultureFit,
       },
+      responseQualityAverage: avgResponseQuality,
+      cultureFitCompositeAverage: avgCultureFitComposite,
       perQuestionResults,
       perValueBreakdown,
       aiDecision,
-      aiFeedback,
+      aiFeedback: aiFeedback || fallbackFeedback,
     };
+  }
+
+  async reprocessInterview(interviewId: string) {
+    try {
+      const interview = await this.prisma.interview.findUnique({
+        where: { id: interviewId },
+        select: {
+          id: true,
+          filename: true,
+          timestamps: true, // <-- use this
+        },
+      });
+      console.log('hello');
+      if (!interview) {
+        throw new Error('Interview not found.');
+      }
+
+      if (!interview.filename) {
+        throw new Error('Interview video filename is missing.');
+      }
+
+      if (!interview.timestamps) {
+        throw new Error('Timestamps are missing.');
+      }
+
+      // Generate a signed URL to access the video
+      const videoUrl = await this.storage.generateInterviewViewUrl(
+        interview.filename,
+        60, // 1 hour expiry
+      );
+
+      const timestamps = interview.timestamps as any[]; // Already stored from submitInterview
+      const questions = timestamps.reduce(
+        (acc, t) => {
+          if (t.questionId && t.questionText) {
+            acc[t.questionId] = t.questionText;
+          }
+          return acc;
+        },
+        {} as Record<string, string>,
+      );
+
+      // Same as in submitInterview: send to FastAPI
+      await fetch(
+        process.env.PROCESSING_WORKER_URL ||
+          'https://jethrob123-processing-worker.hf.space/process-interview',
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            interview_id: interviewId,
+            timestamps: timestamps,
+            video_url: videoUrl,
+            questions,
+            callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
+            status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
+          }),
+        },
+      );
+
+      return { success: true };
+    } catch (error) {
+      console.error('Error during reprocessing interview:', error);
+      return { success: false, error: error.message };
+    }
   }
 }

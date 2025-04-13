@@ -24,4 +24,8 @@ export class EvaluationsController {
   ) {
     return this.service.update(interviewId, dto);
   }
+
+  @Post('reprocess') reprocess(@Param('interviewId') interviewId: string) {
+    return this.service.reprocessInterview(interviewId);
+  }
 }

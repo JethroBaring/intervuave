@@ -10,8 +10,16 @@ import moment from "moment";
 import api from "@/lib/axios";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { endpoints } from "@/lib/endpoint";
-import { ChartPie, ThumbsUp, UserCheck } from "lucide-react";
+import {
+  ChartPie,
+  MessageSquare,
+  PieChart,
+  ThumbsUp,
+  UserCheck,
+} from "lucide-react";
 import BarChartHorizontal from "../charts/bar/BarChartHorizontal";
+import PieChartComponent from "../charts/pie/PieChart";
+import DonutChartWithCenter from "../charts/pie/PieChart";
 
 export enum InterviewStatusNum {
   DRAFT = 0,
@@ -31,12 +39,12 @@ const TABS = [
     minStatus: InterviewStatusNum.SUBMITTED,
   },
   {
-    label: "Responses",
+    label: "Per-Question Evaluation",
     value: "analytics",
     minStatus: InterviewStatusNum.EVALUATED,
   },
   {
-    label: "Evaluation",
+    label: "Final Evaluation",
     value: "customers",
     minStatus: InterviewStatusNum.EVALUATED,
   },
@@ -88,41 +96,6 @@ export const InterviewTimeline = ({ steps }: { steps: any[] }) => {
   );
 };
 
-const evaluation = {
-  perQuestionResults: {
-    q123: {
-      responseQuality: {
-        speechClarity: 0.74,
-        confidence: 0.86,
-        emotionalTone: 0.68,
-        engagement: 0.8,
-        bodyLanguage: 0.75,
-      },
-      cultureFitComposite: {
-        valuesFit: 0.9,
-        cultureFit: 0.88,
-      },
-      feedback:
-        "The candidate communicated ideas clearly and demonstrated strong alignment with the company's culture of collaboration.",
-    },
-    q124: {
-      responseQuality: {
-        speechClarity: 0.7,
-        confidence: 0.82,
-        emotionalTone: 0.62,
-        engagement: 0.82,
-        bodyLanguage: 0.78,
-      },
-      cultureFitComposite: {
-        valuesFit: 0.86,
-        visionAlignment: 0.78,
-      },
-      feedback:
-        "The candidate's response was moderately aligned with the company's vision, though some points lacked clarity.",
-    },
-  },
-};
-
 // Dummy functions
 const ResponsesTab = ({
   evaluation,
@@ -156,53 +129,146 @@ const ResponsesTab = ({
   return (
     <div className="flex flex-col gap-4">
       {Object.entries(evaluation.perQuestionResults).map(
-        ([questionId, result]) => (
+        ([questionId, result], index) => (
           <Card key={questionId}>
             {/* Collapse Header */}
             <button
               onClick={() => toggleQuestion(questionId)}
-              className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
+              className="flex w-full justify-between items-start px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold h-[48px]"
             >
-              <span>
-                Question:{" "}
+              <span
+                className={`${openQuestion === questionId ? "" : "truncate"}`}
+              >
+                {index + 1}.{" "}
                 {
                   responses.find(
                     (response: any) => response.questionId === questionId
                   )?.question?.questionText
                 }
               </span>
-              <svg
-                className={`h-5 w-5 transform transition-transform ${
-                  openQuestion === questionId ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
+              <div className={`h-full flex justify-center items-center `}>
+                <svg
+                  className={`h-4 w-4 transform transition-transform ${
+                    openQuestion === questionId ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </div>
             </button>
 
             {/* Collapse Content */}
             {openQuestion === questionId && (
-              <div className="px-4 pb-4">
+              <div className="px-4 py-4">
+                <div className="mb-4">
+                  <div className="grid grid-cols-2 gap-4">
+                    <div>
+                      <p className="text-xs text-gray-500 capitalize">
+                        Evaluates
+                      </p>
+                      <p className="text-sm font-medium">
+                        {
+                          responses.find(
+                            (response: any) =>
+                              response.questionId === questionId
+                          )?.question?.coreValues
+                        }
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-gray-500 capitalize">
+                        Aligned With
+                      </p>
+                      <p className="text-sm font-medium">
+                        {responses
+                          .find(
+                            (response: any) =>
+                              response.questionId === questionId
+                          )
+                          ?.question?.alignedWith?.toLowerCase()
+                          .replace(/^\w/, (c: string) => c.toUpperCase())}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="flex flex-col gap-3">
+                  <div>
+                    <Label>Candidate Response</Label>
+                    <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
+                      The candidate demonstrated strong communication skills and
+                      solid cultural fit.
+                    </Card>
+                  </div>
+                  <div>
+                    <Label>AI Feedback</Label>
+                    <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
+                      The candidate demonstrated strong communication skills and
+                      solid cultural fit.
+                    </Card>
+                  </div>
+                  <div>
+                    <Label className="flex justify-between">
+                      <span>Response Quality</span>
+                      <span>73%</span>
+                    </Label>
+                    <div className="-my-3">
+                      <BarChartHorizontal
+                        categories={[
+                          "Confidence",
+                          "Engagement",
+                          "Body Language",
+                          "Emotional Tone",
+                          "Speech Clarity",
+                        ]}
+                        data={[
+                          evaluation.responseQuality.confidence * 100,
+                          evaluation.responseQuality.engagement * 100,
+                          evaluation.responseQuality.bodyLanguage * 100,
+                          evaluation.responseQuality.emotionalTone * 100,
+                          evaluation.responseQuality.speechClarity * 100,
+                        ]}
+                        height={250}
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="flex justify-between">
+                      <span>Culture Fit Composite</span>
+                      <span>73%</span>
+                    </Label>
+                    <div className="-my-3">
+                      <BarChartHorizontal
+                        categories={["Confidence", "Engagement"]}
+                        data={[
+                          evaluation.responseQuality.confidence * 100,
+                          evaluation.responseQuality.engagement * 100,
+                        ]}
+                        height={140}
+                      />
+                    </div>
+                  </div>
+                </div>
+
                 {/* Candidate Response */}
-                <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                {/* <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
                   <strong>Candidate Response:</strong>{" "}
                   {
                     responses.find(
                       (response: any) => response.questionId === questionId
                     )?.transcript
                   }
-                </p>
+                </p> */}
 
                 {/* Response Quality */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <h5 className="text-base font-semibold text-gray-700 dark:text-white/80 mb-1">
                     Response Quality
                   </h5>
@@ -220,10 +286,10 @@ const ResponsesTab = ({
                       )
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Culture Fit */}
-                <div className="mb-4">
+                {/* <div className="mb-4">
                   <h5 className="text-base font-semibold text-gray-700 dark:text-white/80 mb-1">
                     Culture Fit Composite
                   </h5>
@@ -241,17 +307,189 @@ const ResponsesTab = ({
                       )
                     )}
                   </div>
-                </div>
+                </div> */}
 
                 {/* Feedback */}
-                <p className="text-sm text-gray-700 dark:text-gray-300 italic">
+                {/* <p className="text-sm text-gray-700 dark:text-gray-300 italic">
                   Feedback: {(result as any).feedback}
-                </p>
+                </p> */}
               </div>
             )}
           </Card>
         )
       )}
+    </div>
+  );
+};
+
+const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
+  const [openQuestion, setOpenQuestion] = useState<string | null>(null);
+
+  const toggleQuestion = (id: string) => {
+    setOpenQuestion((prev) => (prev === id ? null : id));
+  };
+  const cards = [
+    {
+      id: "responseQuality",
+      label: "Response Quality",
+      icon: <MessageSquare className="h-4 w-4" />,
+    },
+    {
+      id: "cultureFit",
+      label: "Culture Fit",
+      icon: <UserCheck className="h-4 w-4" />,
+    },
+    {
+      id: "valuesBreakdown",
+      label: "Values Breakdown",
+      icon: <PieChart className="h-4 w-4" />,
+    },
+    {
+      id: "companyFeedback",
+      label: "Company Feedback",
+      icon: <PieChart className="h-4 w-4" />,
+    },
+  ];
+
+  const cultureFitData = [
+    {
+      label: "Mission Alignment",
+      value: evaluation.cultureFitComposite.missionAlignment * 100,
+    },
+    {
+      label: "Vision Alignment",
+      value: evaluation.cultureFitComposite.visionAlignment * 100,
+    },
+    {
+      label: "Culture Alignment",
+      value: evaluation.cultureFitComposite.cultureFit * 100,
+    },
+    {
+      label: "Values Fit",
+      value: evaluation.cultureFitComposite.valuesFit * 100,
+    },
+  ];
+
+  const filteredCultureFitData = cultureFitData.filter(
+    (item) =>
+      item.value !== undefined && item.value !== null && item.value !== 0
+  );
+
+  const getPercentage = (id: string) => {
+    switch (id) {
+      case "responseQuality":
+        return `${(evaluation.responseQualityAverage*100).toFixed(1)}%`;
+
+      case "cultureFit":
+        return `${(evaluation.cultureFitCompositeAverage*100).toFixed(1)}%`;
+
+      case "valuesBreadown":
+        return `${(evaluation.cultureFitComposite.valuesFit*100).toFixed(1)}%`;
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-5">
+      <Card className="px-4 py-3 ">
+        <div className="flex w-full justify-between items-center text-left text-gray-800 dark:text-white/90 font-semibold">
+          <div className="flex items-center gap-2">
+            <ThumbsUp className="h-4 w-4 text-brand-400" />
+            <span>Candidate Evaluation</span>
+          </div>
+        </div>
+        <div className="px-4 pb-4 relative">
+          <div className="flex items-center justify-center overflow-hidden">
+            <DonutChartWithCenter
+              centerLabel="Hello World"
+              labels={["Response Quality", "Culture Fit"]}
+              series={[30, 70]} // 30% Response Quality, 70% Culture Fit
+              height={250}
+            />
+            <div className="absolute flex flex-col items-center justify-center bottom-1/2">
+              <div className="text-2xl font-bold text-primary">83%</div>{" "}
+              {/* 🎯 Your big overall fit score */}
+              <div className="text-sm font-medium text-green-500">
+                Approved
+              </div>{" "}
+              {/* 🎯 Your decision */}
+            </div>
+          </div>
+        </div>
+        <div>
+          <Label>AI Feedback</Label>
+          <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
+            The candidate demonstrated strong communication skills and solid
+            cultural fit.
+          </Card>
+        </div>
+      </Card>
+      {cards.map((card) => (
+        <Card key={card.id} className="">
+          <button
+            onClick={() => toggleQuestion(card.id)}
+            className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
+          >
+            <div className="flex items-center gap-2">
+              {card.icon}
+              <span>{card.label}</span>
+            </div>
+            <div className="flex items-center">
+              {card.id !== "companyFeedback" && <p>{getPercentage(card.id)}</p>}
+              <svg
+                className={`h-4 w-4 transform transition-transform ${
+                  openQuestion === card.id ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          </button>
+          {openQuestion === card.id && (
+            <div className="px-4 pb-4 relative">
+              {card.id === "responseQuality" && (
+                <div className="-my-3">
+                  <BarChartHorizontal
+                    categories={[
+                      "Confidence",
+                      "Engagement",
+                      "Body Language",
+                      "Emotional Tone",
+                      "Speech Clarity",
+                    ]}
+                    data={[
+                      evaluation.responseQuality.confidence * 100,
+                      evaluation.responseQuality.engagement * 100,
+                      evaluation.responseQuality.bodyLanguage * 100,
+                      evaluation.responseQuality.emotionalTone * 100,
+                      evaluation.responseQuality.speechClarity * 100,
+                    ]}
+                    height={250}
+                  />
+                </div>
+              )}
+              {card.id === "cultureFit" && (
+                <div className="-my-3">
+                  <BarChartHorizontal
+                    categories={filteredCultureFitData.map(
+                      (item) => item.label
+                    )}
+                    data={filteredCultureFitData.map((item) => item.value)}
+                    height={filteredCultureFitData.length * 70}
+                  />
+                </div>
+              )}
+            </div>
+          )}
+        </Card>
+      ))}
     </div>
   );
 };
@@ -389,8 +627,11 @@ const InterviewModal = () => {
         }
 
         return (
-          <div className="flex justify-center">
-            <video controls className="max-w-full rounded-lg shadow-lg">
+          <div className="flex justify-center h-[450px]">
+            <video
+              controls
+              className="max-w-full rounded-lg shadow-lg object-cover"
+            >
               <source src={videoUrl} type="video/webm" />
               Your browser does not support the video tag.
             </video>
@@ -404,6 +645,9 @@ const InterviewModal = () => {
           />
         );
       case "customers":
+        return (
+          <EvaluationTab evaluation={selectedCandidate?.interview.evaluation} />
+        );
         return (
           <div className="flex flex-col gap-4">
             <Card className="p-4">
@@ -538,6 +782,12 @@ const InterviewModal = () => {
             <Button size="sm" variant="outline">
               Close
             </Button>
+            <Button size="sm" onClick={async() => {
+              const x = await api.post(`interviews/${selectedCandidate.interview.id}/evaluation/reprocess`)
+              console.log(x)
+            }}>
+              Reprocess
+            </Button>
           </div>
         );
       case "EXPIRED":
@@ -624,7 +874,6 @@ const InterviewModal = () => {
             </div>
           </div>
           {renderFooter()}
-
         </div>
       </div>
     </Modal>

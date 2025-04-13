@@ -79,6 +79,14 @@ export default function Interview() {
     setVideoRef(videoRef);
   }, [setVideoRef]);
 
+  // 🆕 Add this!
+useEffect(() => {
+  if (currentStep === 5) {
+    console.log("Interview finished, stopping camera and mic");
+    stopInterview();
+  }
+}, [currentStep, stopInterview]);
+
   const streamRef = getStreamRef();
 
   useEffect(() => {
@@ -265,6 +273,7 @@ export default function Interview() {
                     ref={videoRef}
                     autoPlay
                     playsInline
+                    muted
                     className="h-full w-full object-cover rounded-2xl"
                   />
                 </Card>
@@ -308,6 +317,7 @@ export default function Interview() {
                   ref={videoRef}
                   autoPlay
                   playsInline
+                  muted
                   className="h-full w-full object-cover rounded-2xl"
                 />
                 {countdown > 0 && (

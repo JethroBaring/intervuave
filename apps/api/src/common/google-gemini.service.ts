@@ -372,4 +372,48 @@ export class GeminiService {
       return initialEvaluation;
     }
   }
+
+  async generateAIFeedback(summaryData: any): Promise<string | null> {
+    if (!this.genAI) {
+      this.logger.error('Gemini API client is not initialized.');
+      return null;
+    }
+
+    const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+
+    const prompt = `
+  You are an expert HR evaluator.
+  
+  Based on the following interview evaluation results, generate a professional feedback summary explaining whether the candidate is a good fit or not. Be clear, constructive, and concise.
+  
+  Data:
+  ${JSON.stringify(summaryData, null, 2)}
+  
+  Guidelines:
+  - If the overall fit score is high (>= 0.75), praise their communication and culture fit.
+  - If the overall fit score is low (< 0.75), politely highlight areas where the candidate may not fully align and suggest further evaluation.
+  - Tone should be positive but realistic.
+  - Keep it within 3-5 sentences.
+  `.trim();
+
+    try {
+      const result = await model.generateContent({
+        contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      });
+
+      const response = result.response;
+      const candidates = response.candidates || [];
+
+      if (!candidates.length || !candidates[0]?.content?.parts?.length) {
+        this.logger.error('Gemini returned empty feedback.');
+        return null;
+      }
+
+      const generatedFeedback = candidates[0].content.parts[0]?.text;
+      return generatedFeedback || null;
+    } catch (error) {
+      this.logger.error('Error during AI feedback generation:', error);
+      return null;
+    }
+  }
 }

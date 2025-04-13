@@ -26,7 +26,7 @@ export default function BarChartHorizontal({categories, data, height}: {categori
         borderRadiusApplication: "end",
       },
     },
-    dataLabels: { enabled: false },
+    dataLabels: { enabled: true, formatter: (val: number) => `${val}%` },
     stroke: {
       // show: true,
       // width: 10,
@@ -37,6 +37,7 @@ export default function BarChartHorizontal({categories, data, height}: {categori
       // x-axis now displays the numeric values.
       axisBorder: { show: false },
       axisTicks: { show: false },
+      max: 100
     },
     xaxis: {
       // Use yaxis.categories for the labels.
@@ -55,7 +56,7 @@ export default function BarChartHorizontal({categories, data, height}: {categori
     tooltip: {
       x: { show: false },
       y: {
-        formatter: (val: number) => `${val}`,
+        formatter: (val: number) => `${val}%`,
       },
     },
   };
@@ -70,7 +71,7 @@ export default function BarChartHorizontal({categories, data, height}: {categori
   return (
     <div className="max-w-full overflow-x-auto custom-scrollbar">
       <div id="chartOne" className="max-w-full">
-        <ReactApexChart options={options} series={series} type="bar" height={height}/>
+        <ReactApexChart options={options} series={series} type="bar" height={height} />
       </div>
     </div>
   );

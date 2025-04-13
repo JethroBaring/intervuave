@@ -139,7 +139,7 @@ export class InterviewsService {
     const expiresAt = new Date(Date.now() + 24 * 60 * 60 * 1000);
     const tokenPayload = JSON.stringify({ id: interviewId, expiresAt });
     const token = this.crypto.encrypt(tokenPayload);
-    const interviewLink = `${process.env.FRONTEND_URL}/interview-final?token=${encodeURIComponent(token)}`;
+    const interviewLink = `${process.env.FRONTEND_URL}/interview?token=${encodeURIComponent(token)}`;
     return { interviewLink, expiresAt };
   }
 

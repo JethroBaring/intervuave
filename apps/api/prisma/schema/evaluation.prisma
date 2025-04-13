@@ -1,16 +1,18 @@
 model Evaluation {
-  id                  String             @id @default(cuid())
-  interview           Interview          @relation(fields: [interviewId], references: [id])
-  interviewId         String             @unique
-  responseQuality     Json
-  cultureFitComposite Json
-  overallFitScore     Float
-  perQuestionResults  Json // Detailed score breakdown per question
-  perValueBreakdown   Json // Score breakdown per core value
-  aiDecision          Decision? // Moved from Interview to here
-  aiFeedback          String
-  feedback            InterviewFeedback? // Optional link to human agreement
-  createdAt           DateTime           @default(now())
+  id                         String             @id @default(cuid())
+  interview                  Interview          @relation(fields: [interviewId], references: [id])
+  interviewId                String             @unique
+  responseQuality            Json
+  cultureFitComposite        Json
+  responseQualityAverage     Float
+  cultureFitCompositeAverage Float
+  overallFitScore            Float
+  perQuestionResults         Json // Detailed score breakdown per question
+  perValueBreakdown          Json // Score breakdown per core value
+  aiDecision                 Decision? // Moved from Interview to here
+  aiFeedback                 String
+  feedback                   InterviewFeedback? // Optional link to human agreement
+  createdAt                  DateTime           @default(now())
 }
 
 model InterviewFeedback {
