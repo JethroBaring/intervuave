@@ -55,11 +55,13 @@ export default function Interview() {
       await startInterview();
     }
   }, [isRecording, startInterview, stopInterview]);
+  const [hideFinish, setHideFinish] = useState(false);
 
   const handleNextQuestion = useCallback(() => {
     endCurrentQuestion();
     if (currentQuestionIndex >= questions.length - 1) {
       // ✅ correct comparison
+      setHideFinish(true);
       stopInterview();
     } else {
       console.log("hello");
@@ -350,17 +352,19 @@ export default function Interview() {
                       </div>
                     )}
                   <div className="flex gap-3">
-                    <Button
-                      onClick={handleNextQuestion}
-                      disabled={isSubmitting || countdown > 0 || nextDisable}
-                    >
-                      {isSubmitting && (
-                        <Loader className="h-5 w-5 animate-spin" />
-                      )}
-                      {currentQuestionIndex + 1 === questions.length
-                        ? "Finish Interview"
-                        : "Next"}
-                    </Button>
+                    {!hideFinish && (
+                      <Button
+                        onClick={handleNextQuestion}
+                        disabled={isSubmitting || countdown > 0 || nextDisable}
+                      >
+                        {isSubmitting && (
+                          <Loader className="h-5 w-5 animate-spin" />
+                        )}
+                        {currentQuestionIndex + 1 === questions.length
+                          ? "Finish Interview"
+                          : "Next"}
+                      </Button>
+                    )}
                   </div>
                 </div>
               </Card>
