@@ -8,12 +8,9 @@ import { AppModule } from './app.module';
 import { VersioningType } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
 import * as cookieParser from 'cookie-parser';
-import * as bodyParser from 'body-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.use(bodyParser.json({ limit: '10mb' }));
-  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
   const configService = app.get(ConfigService);
   app.enableCors({
     origin: configService.get<string>('FRONTEND_URL'), // your frontend origin
