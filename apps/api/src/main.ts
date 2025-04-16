@@ -11,6 +11,8 @@ import * as cookieParser from 'cookie-parser';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
+  app.use(bodyParser.json({ limit: '10mb' }));
+  app.use(bodyParser.urlencoded({ limit: '10mb', extended: true }));
   const configService = app.get(ConfigService);
   app.enableCors({
     origin: configService.get<string>('FRONTEND_URL'), // your frontend origin
