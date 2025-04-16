@@ -404,6 +404,7 @@ export function Board({ initial }: { initial: TBoard }) {
             "Content-Type": "application/json",
           },
           body: JSON.stringify({ status: status.replace(" ", "_") }),
+          credentials: "include"
         }
       );
 
