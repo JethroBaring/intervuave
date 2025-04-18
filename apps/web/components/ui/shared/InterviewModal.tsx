@@ -96,227 +96,187 @@ export const InterviewTimeline = ({ steps }: { steps: any[] }) => {
   );
 };
 
-// Dummy functions
+interface ResponseQuality {
+  confidence: number;
+  engagement: number;
+  bodyLanguage: number;
+  emotionalTone: number;
+  speechClarity: number;
+}
+
+interface CultureFitComposite {
+  valuesFit?: number;
+  visionAlignment?: number;
+  missionAlignment?: number;
+  cultureFit?: number;
+}
+
+interface PerQuestionResult {
+  feedback: string;
+  responseQuality: ResponseQuality;
+  cultureFitComposite: CultureFitComposite;
+}
+
+interface Evaluation {
+  perQuestionResults: Record<string, PerQuestionResult>;
+  // ... other properties
+}
+
+interface Response {
+  id: string;
+  questionId: string;
+  transcript: string;
+  metrics: ResponseQuality;
+  question: {
+    questionText: string;
+    coreValues: string;
+    alignedWith: string;
+  };
+}
+
 const ResponsesTab = ({
   evaluation,
   responses,
 }: {
-  evaluation: any;
-  responses: any;
+  evaluation: Evaluation;
+  responses: Response[];
 }) => {
-  const getQuestionTextById = (questionId: string) => {
-    const questions: Record<string, string> = {
-      q123: "Can you tell us about a time you worked with a team to solve a difficult problem?",
-      q124: "How do you align your personal goals with a company's vision?",
-    };
-    return questions[questionId] || "Unknown Question";
-  };
-
-  const getCandidateTranscriptByQuestionId = (questionId: string) => {
-    const transcripts: Record<string, string> = {
-      q123: "I once worked with a team to redesign a website under tight deadlines. We collaborated daily and adapted quickly to client feedback.",
-      q124: "I set my personal goals by understanding the company's vision first, then aligning my projects towards it.",
-    };
-    return transcripts[questionId] || "Transcript not available.";
-  };
-
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
 
   const toggleQuestion = (questionId: string) => {
     setOpenQuestion((prev) => (prev === questionId ? null : questionId));
   };
 
+  const calculateAverage = (values: number[]): number => {
+    return values.reduce((a, b) => a + b, 0) / values.length;
+  };
+
   return (
     <div className="flex flex-col gap-4">
       {Object.entries(evaluation.perQuestionResults).map(
-        ([questionId, result], index) => (
-          <Card key={questionId}>
-            {/* Collapse Header */}
-            <button
-              onClick={() => toggleQuestion(questionId)}
-              className="flex w-full justify-between items-start px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold h-[48px]"
-            >
-              <span
-                className={`${openQuestion === questionId ? "" : "truncate"}`}
+        ([questionId, result]: [string, PerQuestionResult], index) => {
+          const response = responses.find((r) => r.questionId === questionId);
+          return (
+            <Card key={questionId}>
+              {/* Collapse Header */}
+              <button
+                onClick={() => toggleQuestion(questionId)}
+                className="flex w-full justify-between items-start px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold h-[48px]"
               >
-                {index + 1}.{" "}
-                {
-                  responses.find(
-                    (response: any) => response.questionId === questionId
-                  )?.question?.questionText
-                }
-              </span>
-              <div className={`h-full flex justify-center items-center `}>
-                <svg
-                  className={`h-4 w-4 transform transition-transform ${
-                    openQuestion === questionId ? "rotate-180" : ""
-                  }`}
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
+                <span
+                  className={`${openQuestion === questionId ? "" : "truncate"}`}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth={2}
-                    d="M19 9l-7 7-7-7"
-                  />
-                </svg>
-              </div>
-            </button>
+                  {index + 1}. {response?.question.questionText}
+                </span>
+                <div className={`h-full flex justify-center items-center `}>
+                  <svg
+                    className={`h-4 w-4 transform transition-transform ${
+                      openQuestion === questionId ? "rotate-180" : ""
+                    }`}
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth={2}
+                      d="M19 9l-7 7-7-7"
+                    />
+                  </svg>
+                </div>
+              </button>
 
-            {/* Collapse Content */}
-            {openQuestion === questionId && (
-              <div className="px-4 py-4">
-                <div className="mb-4">
-                  <div className="grid grid-cols-2 gap-4">
+              {/* Collapse Content */}
+              {openQuestion === questionId && (
+                <div className="px-4 pb-4">
+                  <div className="mb-4">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div>
+                        <p className="text-xs text-gray-500 capitalize">
+                          Evaluates
+                        </p>
+                        <p className="text-sm font-medium">
+                          {response?.question.coreValues}
+                        </p>
+                      </div>
+                      <div>
+                        <p className="text-xs text-gray-500 capitalize">
+                          Aligned With
+                        </p>
+                        <p className="text-sm font-medium">
+                          {response?.question.alignedWith.toLowerCase().replace(/^\w/, (c: string) => c.toUpperCase())}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3">
                     <div>
-                      <p className="text-xs text-gray-500 capitalize">
-                        Evaluates
-                      </p>
-                      <p className="text-sm font-medium">
-                        {
-                          responses.find(
-                            (response: any) =>
-                              response.questionId === questionId
-                          )?.question?.coreValues
-                        }
-                      </p>
+                      <Label>Candidate Response</Label>
+                      <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
+                        {response?.transcript}
+                      </Card>
                     </div>
                     <div>
-                      <p className="text-xs text-gray-500 capitalize">
-                        Aligned With
-                      </p>
-                      <p className="text-sm font-medium">
-                        {responses
-                          .find(
-                            (response: any) =>
-                              response.questionId === questionId
-                          )
-                          ?.question?.alignedWith?.toLowerCase()
-                          .replace(/^\w/, (c: string) => c.toUpperCase())}
-                      </p>
+                      <Label>AI Feedback</Label>
+                      <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
+                        {result.feedback}
+                      </Card>
+                    </div>
+                    <div>
+                      <Label className="flex justify-between">
+                        <span>Response Quality</span>
+                        <span>{(calculateAverage(Object.values(result.responseQuality)) * 100).toFixed(1)}%</span>
+                      </Label>
+                      <div className="-my-3">
+                        <BarChartHorizontal
+                          categories={[
+                            "Confidence",
+                            "Engagement",
+                            "Body Language",
+                            "Emotional Tone",
+                            "Speech Clarity",
+                          ]}
+                          data={[
+                            parseFloat((result.responseQuality.confidence * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.engagement * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.speechClarity * 100).toFixed(2)),
+                          ]}
+                          height={70 * 5}
+                        />
+                      </div>
+                    </div>
+                    <div>
+                      <Label className="flex justify-between">
+                        <span>Culture Fit Composite</span>
+                        <span>{(calculateAverage(Object.values(result.cultureFitComposite).filter((v): v is number => v !== undefined)) * 100).toFixed(1)}%</span>
+                      </Label>
+                      <div className="-my-3">
+                        <BarChartHorizontal
+                          categories={Object.entries(result.cultureFitComposite)
+                            .filter(([_, value]) => value !== undefined)
+                            .map(([key]) => 
+                              key === 'valuesFit' ? 'Values Fit' :
+                              key === 'visionAlignment' ? 'Vision Alignment' :
+                              key === 'missionAlignment' ? 'Mission Alignment' :
+                              key === 'cultureFit' ? 'Culture Fit' :
+                              key
+                            )}
+                          data={Object.values(result.cultureFitComposite)
+                            .filter((v): v is number => v !== undefined)
+                            .map(value => parseFloat((value * 100).toFixed(2)))}
+                          height={90 * Object.entries(result.cultureFitComposite).filter(([_, value]) => value !== undefined).length}
+                        />
+                      </div>
                     </div>
                   </div>
                 </div>
-                <div className="flex flex-col gap-3">
-                  <div>
-                    <Label>Candidate Response</Label>
-                    <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
-                      The candidate demonstrated strong communication skills and
-                      solid cultural fit.
-                    </Card>
-                  </div>
-                  <div>
-                    <Label>AI Feedback</Label>
-                    <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
-                      The candidate demonstrated strong communication skills and
-                      solid cultural fit.
-                    </Card>
-                  </div>
-                  <div>
-                    <Label className="flex justify-between">
-                      <span>Response Quality</span>
-                      <span>73%</span>
-                    </Label>
-                    <div className="-my-3">
-                      <BarChartHorizontal
-                        categories={[
-                          "Confidence",
-                          "Engagement",
-                          "Body Language",
-                          "Emotional Tone",
-                          "Speech Clarity",
-                        ]}
-                        data={[
-                          evaluation.responseQuality.confidence * 100,
-                          evaluation.responseQuality.engagement * 100,
-                          evaluation.responseQuality.bodyLanguage * 100,
-                          evaluation.responseQuality.emotionalTone * 100,
-                          evaluation.responseQuality.speechClarity * 100,
-                        ]}
-                        height={250}
-                      />
-                    </div>
-                  </div>
-                  <div>
-                    <Label className="flex justify-between">
-                      <span>Culture Fit Composite</span>
-                      <span>73%</span>
-                    </Label>
-                    <div className="-my-3">
-                      <BarChartHorizontal
-                        categories={["Confidence", "Engagement"]}
-                        data={[
-                          evaluation.responseQuality.confidence * 100,
-                          evaluation.responseQuality.engagement * 100,
-                        ]}
-                        height={140}
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Candidate Response */}
-                {/* <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
-                  <strong>Candidate Response:</strong>{" "}
-                  {
-                    responses.find(
-                      (response: any) => response.questionId === questionId
-                    )?.transcript
-                  }
-                </p> */}
-
-                {/* Response Quality */}
-                {/* <div className="mb-4">
-                  <h5 className="text-base font-semibold text-gray-700 dark:text-white/80 mb-1">
-                    Response Quality
-                  </h5>
-                  <div className="grid grid-cols-2 gap-4">
-                    {Object.entries((result as any).responseQuality).map(
-                      ([metric, score]) => (
-                        <div key={metric}>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {metric}
-                          </p>
-                          <p className="text-sm font-medium">
-                            {((score as number) * 100).toFixed(0)}%
-                          </p>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div> */}
-
-                {/* Culture Fit */}
-                {/* <div className="mb-4">
-                  <h5 className="text-base font-semibold text-gray-700 dark:text-white/80 mb-1">
-                    Culture Fit Composite
-                  </h5>
-                  <div className="grid grid-cols-2 gap-4">
-                    {Object.entries((result as any).cultureFitComposite).map(
-                      ([metric, score]) => (
-                        <div key={metric}>
-                          <p className="text-xs text-gray-500 capitalize">
-                            {metric}
-                          </p>
-                          <p className="text-sm font-medium">
-                            {((score as number) * 100).toFixed(0)}%
-                          </p>
-                        </div>
-                      )
-                    )}
-                  </div>
-                </div> */}
-
-                {/* Feedback */}
-                {/* <p className="text-sm text-gray-700 dark:text-gray-300 italic">
-                  Feedback: {(result as any).feedback}
-                </p> */}
-              </div>
-            )}
-          </Card>
-        )
+              )}
+            </Card>
+          );
+        }
       )}
     </div>
   );
@@ -370,6 +330,11 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
     },
   ];
 
+  const perValueBreakdownData = Object.entries(evaluation.perValueBreakdown || {}).map(([value, score]) => ({
+    label: value,
+    value: (score as number) * 100
+  }));
+
   const filteredCultureFitData = cultureFitData.filter(
     (item) =>
       item.value !== undefined && item.value !== null && item.value !== 0
@@ -383,7 +348,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
       case "cultureFit":
         return `${(evaluation.cultureFitCompositeAverage*100).toFixed(1)}%`;
 
-      case "valuesBreadown":
+      case "valuesBreakdown":
         return `${(evaluation.cultureFitComposite.valuesFit*100).toFixed(1)}%`;
     }
   };
@@ -406,10 +371,10 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
               height={250}
             />
             <div className="absolute flex flex-col items-center justify-center bottom-1/2">
-              <div className="text-2xl font-bold text-primary">83%</div>{" "}
+              <div className="text-2xl font-bold text-primary">{(evaluation.overallFitScore * 100).toFixed(2)}%</div>{" "}
               {/* 🎯 Your big overall fit score */}
-              <div className="text-sm font-medium text-green-500">
-                Approved
+              <div className={`text-sm font-medium ${evaluation.aiDecision?.toLowerCase() === "approved" ? "text-green-500" : "text-red-500"}`}>
+                {evaluation.aiDecision?.toLowerCase() === "approved" ? "Approved" : "Rejected"}
               </div>{" "}
               {/* 🎯 Your decision */}
             </div>
@@ -418,8 +383,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
         <div>
           <Label>AI Feedback</Label>
           <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
-            The candidate demonstrated strong communication skills and solid
-            cultural fit.
+            {evaluation.aiFeedback}
           </Card>
         </div>
       </Card>
@@ -465,11 +429,11 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                       "Speech Clarity",
                     ]}
                     data={[
-                      evaluation.responseQuality.confidence * 100,
-                      evaluation.responseQuality.engagement * 100,
-                      evaluation.responseQuality.bodyLanguage * 100,
-                      evaluation.responseQuality.emotionalTone * 100,
-                      evaluation.responseQuality.speechClarity * 100,
+                      parseFloat((evaluation.responseQuality.confidence * 100).toFixed(2)),
+                      parseFloat((evaluation.responseQuality.engagement * 100).toFixed(2)),
+                      parseFloat((evaluation.responseQuality.bodyLanguage * 100).toFixed(2)),
+                      parseFloat((evaluation.responseQuality.emotionalTone * 100).toFixed(2)),
+                      parseFloat((evaluation.responseQuality.speechClarity * 100).toFixed(2)),
                     ]}
                     height={250}
                   />
@@ -481,8 +445,17 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                     categories={filteredCultureFitData.map(
                       (item) => item.label
                     )}
-                    data={filteredCultureFitData.map((item) => item.value)}
+                    data={filteredCultureFitData.map((item) => parseFloat((item.value).toFixed(2)))}
                     height={filteredCultureFitData.length * 70}
+                  />
+                </div>
+              )}
+              {card.id === "valuesBreakdown" && (
+                <div className="-my-3">
+                  <BarChartHorizontal
+                    categories={perValueBreakdownData.map(item => item.label)}
+                    data={perValueBreakdownData.map(item => parseFloat(item.value.toFixed(2)))}
+                    height={perValueBreakdownData.length * 70}
                   />
                 </div>
               )}
@@ -538,6 +511,37 @@ const getTimeline = (interview: any) => {
     ...(interview?.processedAt ? [processedAt] : []),
     ...(interview?.evaluatedAt ? [evaluatedAt] : []),
   ];
+};
+
+// Add color generation utility function
+const generateColorFromName = (name: string) => {
+  // List of visually appealing colors
+  const colors = [
+    'bg-blue-500',
+    'bg-green-500',
+    'bg-purple-500',
+    'bg-pink-500',
+    'bg-indigo-500',
+    'bg-teal-500',
+    'bg-orange-500',
+    'bg-cyan-500',
+    'bg-rose-500',
+    'bg-violet-500',
+  ];
+
+  // Simple hash function to convert name to a number
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+  }
+
+  // Use the hash to select a color from the array
+  const index = Math.abs(hash) % colors.length;
+  return colors[index];
+};
+
+const getInitials = (firstName: string, lastName: string) => {
+  return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
 };
 
 const InterviewModal = () => {
@@ -648,96 +652,7 @@ const InterviewModal = () => {
         return (
           <EvaluationTab evaluation={selectedCandidate?.interview.evaluation} />
         );
-        return (
-          <div className="flex flex-col gap-4">
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <ThumbsUp className="h-5 w-5" />
 
-                <p className="text-lg">Overall Fit Score</p>
-              </div>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <UserCheck className="h-5 w-5" />
-
-                <p className="text-lg">Values Assessment</p>
-              </div>
-            </Card>
-            <Card className="p-4 flex flex-col gap-3">
-              <div className="flex items-center gap-3">
-                <ChartPie className="h-5 w-5" />
-
-                <p className="text-lg">Decision</p>
-              </div>
-              <Card className="p-3">
-                {selectedCandidate?.interview?.evaluation.aiFeedback}
-              </Card>
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <ThumbsUp className="h-5 w-5" />
-
-                <p className="text-lg">Response Quality</p>
-              </div>
-              <BarChartHorizontal
-                categories={[
-                  "Confidence",
-                  "Engagement",
-                  "Body Language",
-                  "Emotional Tone",
-                  "Speech Clarity",
-                ]}
-                data={[
-                  selectedCandidate?.interview?.evaluation.responseQuality
-                    .confidence,
-                  selectedCandidate?.interview?.evaluation.responseQuality
-                    .engagement,
-                  selectedCandidate?.interview?.evaluation.responseQuality
-                    .bodyLanguage,
-                  selectedCandidate?.interview?.evaluation.responseQuality
-                    .emotionalTone,
-                  selectedCandidate?.interview?.evaluation.responseQuality
-                    .speechClarity,
-                ]}
-                height={250}
-              />
-            </Card>
-            <Card className="p-4">
-              <div className="flex items-center gap-3">
-                <ThumbsUp className="h-5 w-5" />
-
-                <p className="text-lg">Culture Fit</p>
-              </div>
-              <BarChartHorizontal
-                categories={[
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .missionAlignment && "Mission Alignment",
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .visionAlignment && "Vision Alignment",
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .cultureFit && "Culture Alignment",
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .valuesFit && "Core Values Fit",
-                ].filter((v): v is string => Boolean(v))} // ✅ Hide 0, undefined, null, false
-                data={[
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .missionAlignment,
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .visionAlignment,
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .cultureFit,
-                  selectedCandidate?.interview?.evaluation.cultureFitComposite
-                    .valuesFit,
-                ].filter(
-                  (val): val is number =>
-                    val !== undefined && val !== null && val !== 0
-                )} // ✅ Hide 0, undefined, null
-                height={140}
-              />
-            </Card>
-          </div>
-        );
       default:
         return null;
     }
@@ -820,8 +735,8 @@ const InterviewModal = () => {
         </div>
 
         <div className="mx-2 my-5 flex">
-          <div className="h-[65px] w-[65px] rounded-full bg-gray-500 flex items-center justify-center text-2xl text-white">
-            JB
+          <div className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white ${generateColorFromName(selectedCandidate?.candidate.firstName + selectedCandidate?.candidate.lastName)}`}>
+            {getInitials(selectedCandidate?.candidate.firstName, selectedCandidate?.candidate.lastName)}
           </div>
           <div className="flex justify-between w-full">
             <div className="flex flex-col justify-center">

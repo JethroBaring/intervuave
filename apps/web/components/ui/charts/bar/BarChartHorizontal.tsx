@@ -19,38 +19,56 @@ export default function BarChartHorizontal({categories, data, height}: {categori
     },
     plotOptions: {
       bar: {
-        horizontal: true, // Change this to true for horizontal orientation
-        // For horizontal bars, use barHeight instead of columnWidth.
-        barHeight: "100%",
+        horizontal: true,
+        barHeight: "70%", // Set a fixed percentage of the available space
         borderRadius: 5,
         borderRadiusApplication: "end",
+        distributed: false,
       },
     },
-    dataLabels: { enabled: true, formatter: (val: number) => `${val}%` },
-    stroke: {
-      // show: true,
-      // width: 10,
-      // colors: ["transparent"],
+    dataLabels: { 
+      enabled: true, 
+      formatter: (val: number) => `${val}%`,
+      offsetX: 0,
+      style: {
+        fontSize: '12px',
+        colors: ['#fff']
+      }
     },
-    // In a horizontal bar chart, categories move to the y-axis.
+    stroke: {
+      show: false,
+    },
     yaxis: {
-      // x-axis now displays the numeric values.
       axisBorder: { show: false },
       axisTicks: { show: false },
-      max: 100
+      max: 100,
+      labels: {
+        style: {
+          fontSize: '12px',
+        },
+      },
     },
     xaxis: {
-      // Use yaxis.categories for the labels.
       categories: categories,
+      labels: {
+        style: {
+          fontSize: '12px',
+        },
+      },
     },
     legend: {
-      show: true,
-      position: "top",
-      horizontalAlign: "left",
-      fontFamily: "Outfit",
+      show: false,
     },
     grid: {
-      yaxis: { lines: { show: true } },
+      yaxis: { 
+        lines: { show: true },
+      },
+      padding: {
+        top: 0,
+        right: 0,
+        bottom: 0,
+        left: 0
+      }
     },
     fill: { opacity: 1 },
     tooltip: {
@@ -71,7 +89,12 @@ export default function BarChartHorizontal({categories, data, height}: {categori
   return (
     <div className="max-w-full overflow-x-auto custom-scrollbar">
       <div id="chartOne" className="max-w-full">
-        <ReactApexChart options={options} series={series} type="bar" height={height} />
+        <ReactApexChart 
+          options={options} 
+          series={series} 
+          type="bar" 
+          height={height} 
+        />
       </div>
     </div>
   );

@@ -17,6 +17,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
+      <meta name="darkreader-lock"/>
       <body className={`${outfit.variable} dark:bg-gray-900`}>
         <ThemeProvider>
           <SidebarProvider>
