@@ -16,6 +16,12 @@ import {
   PieChart,
   ThumbsUp,
   UserCheck,
+  CheckCircle2,
+  XCircle,
+  BarChart2,
+  Users,
+  Star,
+  MessageCircle,
 } from "lucide-react";
 import BarChartHorizontal from "../charts/bar/BarChartHorizontal";
 import PieChartComponent from "../charts/pie/PieChart";
@@ -285,29 +291,38 @@ const ResponsesTab = ({
 const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
   const [openQuestion, setOpenQuestion] = useState<string | null>(null);
 
+  const formatFeedback = (feedback: string) => {
+    // Replace decimal numbers with percentages
+    return feedback.replace(/\b0\.(\d+)\b/g, (match, p1) => {
+      const percentage = Math.round(parseFloat(`0.${p1}`) * 100);
+      return `${percentage}%`;
+    });
+  };
+
   const toggleQuestion = (id: string) => {
     setOpenQuestion((prev) => (prev === id ? null : id));
   };
+
   const cards = [
     {
       id: "responseQuality",
       label: "Response Quality",
-      icon: <MessageSquare className="h-4 w-4" />,
+      icon: <MessageCircle className="h-4 w-4 text-blue-500" />,
     },
     {
       id: "cultureFit",
       label: "Culture Fit",
-      icon: <UserCheck className="h-4 w-4" />,
+      icon: <Users className="h-4 w-4 text-purple-500" />,
     },
     {
       id: "valuesBreakdown",
       label: "Values Breakdown",
-      icon: <PieChart className="h-4 w-4" />,
+      icon: <Star className="h-4 w-4 text-amber-500" />,
     },
     {
       id: "companyFeedback",
       label: "Company Feedback",
-      icon: <PieChart className="h-4 w-4" />,
+      icon: <MessageSquare className="h-4 w-4 text-green-500" />,
     },
   ];
 
@@ -383,7 +398,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
         <div>
           <Label>AI Feedback</Label>
           <Card className="p-3 text-sm text-gray-600 dark:text-gray-300">
-            {evaluation.aiFeedback}
+            {formatFeedback(evaluation.aiFeedback)}
           </Card>
         </div>
       </Card>
@@ -435,7 +450,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                       parseFloat((evaluation.responseQuality.emotionalTone * 100).toFixed(2)),
                       parseFloat((evaluation.responseQuality.speechClarity * 100).toFixed(2)),
                     ]}
-                    height={250}
+                    height={70 * 5}
                   />
                 </div>
               )}
@@ -446,7 +461,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                       (item) => item.label
                     )}
                     data={filteredCultureFitData.map((item) => parseFloat((item.value).toFixed(2)))}
-                    height={filteredCultureFitData.length * 70}
+                    height={90 * filteredCultureFitData.length}
                   />
                 </div>
               )}
@@ -455,7 +470,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                   <BarChartHorizontal
                     categories={perValueBreakdownData.map(item => item.label)}
                     data={perValueBreakdownData.map(item => parseFloat(item.value.toFixed(2)))}
-                    height={perValueBreakdownData.length * 70}
+                    height={90 * perValueBreakdownData.length}
                   />
                 </div>
               )}
@@ -735,8 +750,10 @@ const InterviewModal = () => {
         </div>
 
         <div className="mx-2 my-5 flex">
-          <div className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white ${generateColorFromName(selectedCandidate?.candidate.firstName + selectedCandidate?.candidate.lastName)}`}>
-            {getInitials(selectedCandidate?.candidate.firstName, selectedCandidate?.candidate.lastName)}
+          <div className="flex-shrink-0">
+            <div className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white aspect-square ${generateColorFromName(selectedCandidate?.candidate.firstName + selectedCandidate?.candidate.lastName)}`}>
+              {getInitials(selectedCandidate?.candidate.firstName, selectedCandidate?.candidate.lastName)}
+            </div>
           </div>
           <div className="flex justify-between w-full">
             <div className="flex flex-col justify-center">

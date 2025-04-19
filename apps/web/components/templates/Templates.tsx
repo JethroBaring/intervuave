@@ -143,26 +143,81 @@ const Templates: React.FC<TemplatesProps> = () => {
   return (
     <>
       <ComponentCard header={header}>
-        <div className="grid grid-cols-4 gap-6">
-          {templates.map((template) => (
-            <TemplateCard
-              template={template}
-              key={template.id}
-              onClick={() => {
-                setSelectedTemplate(template);
-                openViewTemplateModal();
-              }}
-              onEdit={() => {
-                setSelectedTemplate(template);
-                openEditTemplateModal();
-              }}
-              onDelete={() => {
-                openWarningModal();
-                setSelectedTemplate(template);
-              }}
-            />
-          ))}
-        </div>
+        {templates.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="mb-6">
+              <svg
+                width="120"
+                height="120"
+                viewBox="0 0 120 120"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+                className="text-gray-300 dark:text-gray-600"
+              >
+                <path
+                  d="M60 0C26.8629 0 0 26.8629 0 60C0 93.1371 26.8629 120 60 120C93.1371 120 120 93.1371 120 60C120 26.8629 93.1371 0 60 0ZM60 110C32.3862 110 10 87.6138 10 60C10 32.3862 32.3862 10 60 10C87.6138 10 110 32.3862 110 60C110 87.6138 87.6138 110 60 110Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M60 20C38.9543 20 22 36.9543 22 58C22 79.0457 38.9543 96 60 96C81.0457 96 98 79.0457 98 58C98 36.9543 81.0457 20 60 20ZM60 86C43.4315 86 30 72.5685 30 56C30 39.4315 43.4315 26 60 26C76.5685 26 90 39.4315 90 56C90 72.5685 76.5685 86 60 86Z"
+                  fill="currentColor"
+                />
+                <path
+                  d="M60 40C47.8497 40 38 49.8497 38 62C38 74.1503 47.8497 84 60 84C72.1503 84 82 74.1503 82 62C82 49.8497 72.1503 40 60 40ZM60 74C53.3726 74 48 68.6274 48 62C48 55.3726 53.3726 50 60 50C66.6274 50 72 55.3726 72 62C72 68.6274 66.6274 74 60 74Z"
+                  fill="currentColor"
+                />
+              </svg>
+            </div>
+            <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+              No templates yet
+            </h3>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 max-w-md">
+              Create your first interview template to start evaluating candidates based on your company's culture and values.
+            </p>
+            <button
+              onClick={openNewTemplateModal}
+              className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white rounded-xl bg-brand-500 shadow-theme-xs hover:bg-brand-600"
+            >
+              <svg
+                className="fill-current"
+                width="20"
+                height="20"
+                viewBox="0 0 20 20"
+                fill="none"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  fillRule="evenodd"
+                  clipRule="evenodd"
+                  d="M9.2502 4.99951C9.2502 4.5853 9.58599 4.24951 10.0002 4.24951C10.4144 4.24951 10.7502 4.5853 10.7502 4.99951V9.24971H15.0006C15.4148 9.24971 15.7506 9.5855 15.7506 9.99971C15.7506 10.4139 15.4148 10.7497 15.0006 10.7497H10.7502V15.0001C10.7502 15.4143 10.4144 15.7501 10.0002 15.7501C9.58599 15.7501 9.2502 15.4143 9.2502 15.0001V10.7497H5C4.58579 10.7497 4.25 10.4139 4.25 9.99971C4.25 9.5855 4.58579 9.24971 5 9.24971H9.2502V4.99951Z"
+                  fill=""
+                />
+              </svg>
+              Create New Template
+            </button>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-6">
+            {templates.map((template) => (
+              <TemplateCard
+                template={template}
+                key={template.id}
+                onClick={() => {
+                  setSelectedTemplate(template);
+                  openViewTemplateModal();
+                }}
+                onEdit={() => {
+                  setSelectedTemplate(template);
+                  openEditTemplateModal();
+                }}
+                onDelete={() => {
+                  openWarningModal();
+                  setSelectedTemplate(template);
+                }}
+              />
+            ))}
+          </div>
+        )}
       </ComponentCard>
       <Modal
         isOpen={isViewTemplateModalOpen || isEditTemplateModalOpen}
@@ -265,7 +320,7 @@ const Templates: React.FC<TemplatesProps> = () => {
                   <Label className="text-base">Questions</Label>
                   {isEditTemplateModalOpen && (
                     <Label>
-                      Add questions that reflect your company’s mission, vision,
+                      Add questions that reflect your company's mission, vision,
                       culture, or values. These will be asked during the
                       interview.
                     </Label>

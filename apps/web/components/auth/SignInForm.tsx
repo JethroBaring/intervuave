@@ -38,7 +38,7 @@ export default function SignInForm() {
         message: "Login successful",
         type: "success",
       });
-      router.push("/dashboard");
+      router.push("/templates");
     }
   };
 

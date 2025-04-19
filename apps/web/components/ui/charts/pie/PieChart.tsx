@@ -75,7 +75,7 @@ export default function DonutChartWithCenter({
   };
 
   return (
-    <div className="max-w-full overflow-x-auto custom-scrollbar">
+    <div className="max-w-full overflow-hidden custom-scrollbar">
       <div id="donutChart" className="max-w-full">
         <ReactApexChart options={options} series={series} type="donut" height={height} />
       </div>
