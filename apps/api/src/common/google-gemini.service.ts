@@ -91,11 +91,11 @@ export class GeminiService {
 
       Use the company's provided Core Value definitions, Mission ("${mission}"), Vision ("${vision}"), and Culture ("${culture}") when reasoning.
       Scoring Guide for all evaluations:
-      - 1.0 = Perfect fit
-      - 0.8 = Strong fit
-      - 0.5 = Moderate fit
-      - 0.2 = Weak fit
-      - 0.0 = No fit
+      - Use a continuous scale from 0.0 to 1.0, where:
+        * 1.0 represents a perfect fit
+        * 0.0 represents no fit at all
+      - Feel free to use any decimal value between 0.0 and 1.0 to provide nuanced scoring
+      - Consider the full range of possible scores to accurately reflect alignment
 
       Be strict and realistic when scoring.
 
@@ -198,20 +198,52 @@ export class GeminiService {
         return null;
       }
 
-      const functionCall = candidates[0].content.parts[0]?.functionCall;
-      if (!functionCall || !functionCall.args) {
-        this.logger.error('Gemini function call missing.');
-        return null;
-      }
+      let responseText = candidates[0].content.parts[0]?.text;
 
-      try {
-        const parsedArgs = functionCall.args as CulturalFitEvaluation;
-        return parsedArgs;
-      } catch (error) {
-        this.logger.error(
-          'Failed to parse Gemini function call arguments:',
-          error,
-        );
+      if (responseText) {
+        try {
+          // Remove the backticks if they exist
+          if (
+            responseText.startsWith('```json') &&
+            responseText.endsWith('```')
+          ) {
+            responseText = responseText
+              .substring(7, responseText.length - 3)
+              .trim();
+          } else if (
+            responseText.startsWith('`') &&
+            responseText.endsWith('`')
+          ) {
+            responseText = responseText
+              .substring(1, responseText.length - 1)
+              .trim();
+          }
+          // Trim any leading/trailing whitespace
+          responseText = responseText.trim();
+
+          try {
+            const parsedResponse = JSON.parse(
+              responseText,
+            ) as CulturalFitEvaluation;
+            return parsedResponse;
+          } catch (parseError) {
+            this.logger.error(
+              'Failed to parse Gemini JSON response:',
+              parseError,
+              responseText,
+            );
+            return null;
+          }
+        } catch (parseError) {
+          this.logger.error(
+            'Failed to parse Gemini JSON response:',
+            parseError,
+            responseText,
+          );
+          return null;
+        }
+      } else {
+        this.logger.error('Gemini did not return a text response.');
         return null;
       }
     } catch (error) {
@@ -361,24 +393,46 @@ export class GeminiService {
         return initialEvaluation;
       }
 
-      const functionCall = candidates[0].content.parts[0]?.functionCall;
-      if (!functionCall || !functionCall.args) {
-        this.logger.warn('Gemini self-critique function call missing.');
-        return initialEvaluation;
-      }
+      let responseText = candidates[0].content.parts[0]?.text;
 
-      try {
-        const parsedArgs =
-          typeof functionCall.args === 'string'
-            ? (JSON.parse(functionCall.args as string) as CulturalFitEvaluation)
-            : (functionCall.args as unknown as CulturalFitEvaluation);
+      if (responseText) {
+        try {
+          if (
+            responseText.startsWith('```json') &&
+            responseText.endsWith('```')
+          ) {
+            responseText = responseText
+              .substring(7, responseText.length - 3)
+              .trim();
+          } else if (
+            responseText.startsWith('`') &&
+            responseText.endsWith('`')
+          ) {
+            responseText = responseText
+              .substring(1, responseText.length - 1)
+              .trim();
+          }
+          responseText = responseText.trim();
 
-        return parsedArgs;
-      } catch (err) {
-        this.logger.error(
-          'Failed to parse Gemini self-critique function call arguments',
-          err,
-        );
+          try {
+            const parsedResponse = JSON.parse(
+              responseText,
+            ) as CulturalFitEvaluation;
+            return parsedResponse;
+          } catch (parseError) {
+            this.logger.error(
+              'Failed to parse Gemini Self-Critique JSON response:',
+              parseError,
+              responseText,
+            );
+            return initialEvaluation;
+          }
+        } catch (error) {
+          this.logger.error('Error during Gemini self-critique:', error);
+          return initialEvaluation;
+        }
+      } else {
+        this.logger.warn('Gemini self-critique returned empty content.');
         return initialEvaluation;
       }
     } catch (error) {
@@ -431,20 +485,25 @@ export class GeminiService {
     }
   }
 
-  async generateTemplateQuestions(companyProfile: {
-    coreValues: Record<string, string>;
-    mission: string;
-    vision: string;
-    culture: string;
-  }, numberOfQuestions: number): Promise<InterviewQuestion[] | null> {
+  async generateTemplateQuestions(
+    companyProfile: {
+      coreValues: Record<string, string>;
+      mission: string;
+      vision: string;
+      culture: string;
+    },
+    numberOfQuestions: number,
+  ): Promise<InterviewQuestion[] | null> {
     if (!this.genAI) {
       this.logger.error('Gemini API client is not initialized.');
       return null;
     }
     const modelName = 'gemini-2.0-flash'; // Or your chosen model
-    const model = this.genAI.getGenerativeModel({ model: modelName /* ...safetySettings */ });
+    const model = this.genAI.getGenerativeModel({
+      model: modelName /* ...safetySettings */,
+    });
     const coreValueKeys = Object.keys(companyProfile.coreValues);
-    
+
     const prompt = `
       You are an expert HR professional creating interview questions to evaluate cultural fit based on the provided company information.
       Your task is to generate exactly ${numberOfQuestions} distinct interview questions.
@@ -469,7 +528,8 @@ export class GeminiService {
 
     const functionSchema = {
       name: 'generateInterviewQuestions',
-      description: 'Generates tailored interview questions aligned with company mission, vision, culture, and core values.',
+      description:
+        'Generates tailored interview questions aligned with company mission, vision, culture, and core values.',
       parameters: {
         type: SchemaType.OBJECT,
         properties: {
@@ -485,12 +545,16 @@ export class GeminiService {
                 },
                 type: {
                   type: SchemaType.STRING,
-                  description: "The single aspect this question primarily aligns with ('mission', 'vision', or 'culture').",
-                  enum: companyProfile.culture ? ['MISSION', 'VISION', 'CULTURE'] : ['MISSION', 'VISION'],
+                  description:
+                    "The single aspect this question primarily aligns with ('mission', 'vision', or 'culture').",
+                  enum: companyProfile.culture
+                    ? ['MISSION', 'VISION', 'CULTURE']
+                    : ['MISSION', 'VISION'],
                 },
                 coreValues: {
                   type: SchemaType.ARRAY,
-                  description: 'List of one or more core value names (from the provided list) that this question evaluates.',
+                  description:
+                    'List of one or more core value names (from the provided list) that this question evaluates.',
                   items: {
                     type: SchemaType.STRING,
                     description: 'A valid core value name.',
@@ -521,14 +585,21 @@ export class GeminiService {
       const firstCandidate = response?.candidates?.[0];
 
       if (!firstCandidate?.content?.parts?.length) {
-        this.logger.error('Gemini response missing candidates or parts.', { responseText: response?.text() });
+        this.logger.error('Gemini response missing candidates or parts.', {
+          responseText: response?.text(),
+        });
         return null;
       }
 
-      const functionCallPart = firstCandidate.content.parts.find((part: Part) => !!part.functionCall);
+      const functionCallPart = firstCandidate.content.parts.find(
+        (part: Part) => !!part.functionCall,
+      );
 
       if (!functionCallPart || !functionCallPart.functionCall?.args) {
-        this.logger.error('Gemini response missing function call or arguments.', { responseContent: firstCandidate.content });
+        this.logger.error(
+          'Gemini response missing function call or arguments.',
+          { responseContent: firstCandidate.content },
+        );
         return null;
       }
 
@@ -537,13 +608,16 @@ export class GeminiService {
 
       // **FIX:** Perform checks that TypeScript can use for type narrowing
       if (
-        !args ||                            // Check if args exists
-        typeof args !== 'object' ||         // Check if it's an object
-        !('questions' in args) ||         // **** Check if 'questions' property exists ****
-        !Array.isArray(args.questions)      // **** Check if 'questions' is an array ****
+        !args || // Check if args exists
+        typeof args !== 'object' || // Check if it's an object
+        !('questions' in args) || // **** Check if 'questions' property exists ****
+        !Array.isArray(args.questions) // **** Check if 'questions' is an array ****
       ) {
         // Now accessing args.questions is potentially unsafe or known to be wrong type
-        this.logger.error('Gemini function call arguments have incorrect structure or missing/invalid "questions" array.', { args });
+        this.logger.error(
+          'Gemini function call arguments have incorrect structure or missing/invalid "questions" array.',
+          { args },
+        );
         return null;
       }
 
@@ -559,64 +633,81 @@ export class GeminiService {
 
       // Detailed validation of each item in the array
       for (const index in receivedQuestions) {
-          const q = receivedQuestions[index]; // q is 'unknown' here
+        const q = receivedQuestions[index]; // q is 'unknown' here
 
-          // Validate the structure of each question object
-          if (
-              !q || typeof q !== 'object' || // Check if q is a non-null object
-              typeof (q as any).text !== 'string' || (q as any).text.trim() === '' ||
-              !['MISSION', 'VISION', 'CULTURE'].includes((q as any).type) ||
-              !Array.isArray((q as any).coreValues) || (q as any).coreValues.length === 0
-              // Add core value content check inside the loop for clarity
-          ) {
-              invalidQuestionMessages.push(`Invalid question structure at index ${index}: ${JSON.stringify(q)}`);
-              continue; // Skip to the next question
+        // Validate the structure of each question object
+        if (
+          !q ||
+          typeof q !== 'object' || // Check if q is a non-null object
+          typeof (q as any).text !== 'string' ||
+          (q as any).text.trim() === '' ||
+          !['MISSION', 'VISION', 'CULTURE'].includes((q as any).type) ||
+          !Array.isArray((q as any).coreValues) ||
+          (q as any).coreValues.length === 0
+          // Add core value content check inside the loop for clarity
+        ) {
+          invalidQuestionMessages.push(
+            `Invalid question structure at index ${index}: ${JSON.stringify(q)}`,
+          );
+          continue; // Skip to the next question
+        }
+
+        // Now q is known to be an object with the basic fields existing and having roughly correct types.
+        // We can be slightly more confident treating it like InterviewQuestion, but still validate content.
+        const potentialQuestion = q as Partial<InterviewQuestion>; // Use Partial for safety
+        const errors: string[] = [];
+
+        // Validate core values more strictly
+        const currentCoreValues = potentialQuestion.coreValues!; // Assert non-null based on Array.isArray check above
+        for (const cv of currentCoreValues) {
+          if (typeof cv !== 'string' || !validCoreValueSet.has(cv)) {
+            errors.push(`Invalid or unknown core value: ${cv}`);
           }
+        }
 
-          // Now q is known to be an object with the basic fields existing and having roughly correct types.
-          // We can be slightly more confident treating it like InterviewQuestion, but still validate content.
-          const potentialQuestion = q as Partial<InterviewQuestion>; // Use Partial for safety
-          const errors: string[] = [];
-
-          // Validate core values more strictly
-          const currentCoreValues = potentialQuestion.coreValues!; // Assert non-null based on Array.isArray check above
-          for (const cv of currentCoreValues) {
-              if (typeof cv !== 'string' || !validCoreValueSet.has(cv)) {
-                  errors.push(`Invalid or unknown core value: ${cv}`);
-              }
-          }
-
-          if (errors.length === 0) {
-              // If all checks pass, *now* cast to the definitive type
-              validQuestions.push(potentialQuestion as InterviewQuestion);
-          } else {
-              invalidQuestionMessages.push(`Invalid question content (Text: "${potentialQuestion.text?.substring(0, 50)}..."): ${errors.join(', ')}`);
-          }
+        if (errors.length === 0) {
+          // If all checks pass, *now* cast to the definitive type
+          validQuestions.push(potentialQuestion as InterviewQuestion);
+        } else {
+          invalidQuestionMessages.push(
+            `Invalid question content (Text: "${potentialQuestion.text?.substring(0, 50)}..."): ${errors.join(', ')}`,
+          );
+        }
       }
 
-
       if (invalidQuestionMessages.length > 0) {
-          this.logger.warn(`Gemini returned ${invalidQuestionMessages.length} invalid questions:\n${invalidQuestionMessages.join('\n')}`);
-          // Decide strategy: return only valid, or fail completely
+        this.logger.warn(
+          `Gemini returned ${invalidQuestionMessages.length} invalid questions:\n${invalidQuestionMessages.join('\n')}`,
+        );
+        // Decide strategy: return only valid, or fail completely
       }
 
       if (validQuestions.length === 0) {
-          this.logger.error('Gemini did not return any valid questions meeting all criteria.');
-          return null;
+        this.logger.error(
+          'Gemini did not return any valid questions meeting all criteria.',
+        );
+        return null;
       }
 
-       if (validQuestions.length !== numberOfQuestions) {
-           this.logger.warn(`Requested ${numberOfQuestions} questions, but received ${validQuestions.length} valid questions.`);
-           // Decide if this is acceptable
-       }
+      if (validQuestions.length !== numberOfQuestions) {
+        this.logger.warn(
+          `Requested ${numberOfQuestions} questions, but received ${validQuestions.length} valid questions.`,
+        );
+        // Decide if this is acceptable
+      }
 
       return validQuestions;
-
     } catch (error: any) {
-      console.log({HANNAH: error.message})
-      this.logger.error('Error during Gemini question generation:', error?.message || error);
+      console.log({ HANNAH: error.message });
+      this.logger.error(
+        'Error during Gemini question generation:',
+        error?.message || error,
+      );
       if (error.response) {
-        this.logger.error('Gemini API Error Details:', JSON.stringify(error.response, null, 2));
+        this.logger.error(
+          'Gemini API Error Details:',
+          JSON.stringify(error.response, null, 2),
+        );
       }
       return null;
     }

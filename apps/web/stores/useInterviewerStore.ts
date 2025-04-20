@@ -145,8 +145,6 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       console.error('Error detecting devices:', error);
     }
 
-    await api.patch(`${endpoints.public.startInterview(encodeURIComponent(get().interviewToken!))}`);
-
     // Setup AudioContext
     audioContext = new AudioContext();
     audioDestination = audioContext.createMediaStreamDestination();
