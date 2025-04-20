@@ -8,7 +8,7 @@ logger = get_logger("job-service")
 async def notify_status(status_callback_url: str, interview_id: str, status: str):
     """Notify NestJS API about status change"""
     try:
-        async with httpx.AsyncClient() as client:
+        async with httpx.AsyncClient(timeout=30.0) as client:
             now = datetime.now(timezone.utc)
             formatted_now = now.strftime("%Y-%m-%d %H:%M:%S.%f")[:-3]
             response = await client.patch(f"{status_callback_url}")
@@ -19,7 +19,8 @@ async def notify_status(status_callback_url: str, interview_id: str, status: str
 
 async def notify_callback(callback_url: str, interview_id: str, result_data: dict):
     try:
-        async with httpx.AsyncClient() as client:
+        # Configure client with increased timeout and transport options for large payloads
+        async with httpx.AsyncClient(timeout=120.0, transport=httpx.AsyncHTTPTransport(local_address="0.0.0.0")) as client:
             response = await client.post(callback_url, json={
                 # "jobId": interview_id,
                 # "status": "completed",

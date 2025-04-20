@@ -473,7 +473,16 @@ export class EvaluationsService {
         },
         {} as Record<string, string>,
       );
-
+      console.log({
+        HANNAH: JSON.stringify({
+          interview_id: interviewId,
+          timestamps: timestamps,
+          video_url: videoUrl,
+          questions,
+          callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
+          status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
+        })
+      })
       // Same as in submitInterview: send to FastAPI
       await fetch(
         process.env.PROCESSING_WORKER_URL ||
