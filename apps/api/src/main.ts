@@ -25,7 +25,7 @@ async function bootstrap() {
   });
   
   // Configure body parser to handle larger payloads
-  app.useBodyParser('json', { limit: '10mb' });
+  app.useBodyParser('json', { limit: '50mb' });
   
   const config = new DocumentBuilder()
     .setTitle('Intervly API')
