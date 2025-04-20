@@ -13,11 +13,6 @@ export class PublicInterviewController {
     return this.publicInterviewSerivice.accessInterview(token);
   }
 
-  @Patch(':token/start')
-  startInterview(@Param('token') token: string) {
-    return this.publicInterviewSerivice.startInterview(token);
-  }
-
   @Patch(':token/submit')
   submitInterview(@Param('token') token: string, @Body() timestamps: any) {
     return this.publicInterviewSerivice.submitInterview(token, timestamps);

@@ -59,30 +59,6 @@ export class PublicInterviewService {
     }
   }
 
-  async startInterview(token: string) {
-    try {
-      const decrypted = this.crypto.decrypt(decodeURIComponent(token));
-      const { id, expiresAt } = JSON.parse(decrypted);
-
-      if (new Date() > new Date(expiresAt)) {
-        return { valid: false, reason: 'expired' };
-      }
-
-      const interview = await this.prisma.interview.update({
-        where: { id },
-        data: {
-          status: 'IN_PROGRESS',
-          interviewStartedAt: getPrismaDateTimeNow(),
-        },
-      });
-
-      return interview;
-    } catch (err: any) {
-      console.log(err);
-      return { valid: false, reason: 'invalid' };
-    }
-  }
-
   async submitInterview(token: string, timestamps: any) {
     try {
       const decrypted = this.crypto.decrypt(decodeURIComponent(token));
