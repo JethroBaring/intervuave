@@ -509,4 +509,16 @@ export class EvaluationsService {
       return { success: false, error: error.message };
     }
   }
+
+  async reevaluateInterview(interviewId: string) {
+    const interview = await this.prisma.interview.findUnique({
+      where: { id: interviewId },
+    });
+
+    if (!interview) {
+      throw new Error('Interview not found.');
+    }
+
+    await this.evaluate(interviewId);
+  }
 }

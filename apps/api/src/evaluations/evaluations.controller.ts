@@ -45,4 +45,10 @@ export class EvaluationsController {
   reprocess(@Param('interviewId') interviewId: string) {
     return this.service.reprocessInterview(interviewId);
   }
+
+  @Post('reevaluate')
+  @UseGuards(JwtAuthGuard)
+  reevaluate(@Param('interviewId') interviewId: string) {
+    return this.service.reevaluateInterview(interviewId);
+  }
 }

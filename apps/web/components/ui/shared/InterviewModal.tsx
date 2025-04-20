@@ -907,6 +907,17 @@ const InterviewModal = () => {
             >
               Reprocess
             </Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const x = await api.post(
+                  `interviews/${selectedCandidate.interview.id}/evaluation/reevaluate`
+                );
+                console.log(x);
+              }}
+            >
+              Reevaluate
+            </Button>
           </div>
         );
       case "EXPIRED":
