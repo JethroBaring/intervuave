@@ -38,7 +38,7 @@ export default function MissionCard() {
 
             {/* Add culture here */}
             <p className="leading-relaxed text-gray-600 dark:text-gray-400">
-              {culture}
+              {culture || "No culture statement provided"}
             </p>
           </div>
 
@@ -78,7 +78,7 @@ export default function MissionCard() {
           <div className="flex flex-col">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div>
-                <Label>Culture Statement</Label>
+                <Label>Culture Statement (Optional)</Label>
                 <TextArea
                   value={draftCulture}
                   onChange={(value) => setDraftCulture(value)}

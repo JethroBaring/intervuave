@@ -180,6 +180,13 @@ export class EvaluationsService {
           select: {
             responseQualityWeight: true,
             cultureFitWeight: true,
+            missionWeight: true,
+            visionWeight: true,
+            coreValuesWeight: true,
+            cultureWeight: true,
+          },
+          include: {
+            metrics: true,
           },
         },
       },
@@ -188,11 +195,32 @@ export class EvaluationsService {
     if (!interview) {
       throw new Error('Interview not found.');
     }
-    console.log({ HANNAH143: JSON.stringify(interview, null, 2) });
     const { responses, interviewTemplate } = interview;
 
     const responseQualityWeight = interviewTemplate.responseQualityWeight ?? 30;
     const cultureFitWeight = interviewTemplate.cultureFitWeight ?? 70;
+    const missionWeight = interviewTemplate.missionWeight ?? 30;
+    const visionWeight = interviewTemplate.visionWeight ?? 30;
+    const coreValuesWeight = interviewTemplate.coreValuesWeight ?? 30;
+    const cultureWeight = interviewTemplate.cultureWeight ?? 40;
+    const confidenceWeight =
+      interviewTemplate.metrics.find((metric) => metric.name === 'Confidence')
+        ?.weight ?? 20;
+    const speechClarityWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Speech Clarity',
+      )?.weight ?? 20;
+    const emotionalToneWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Emotional Tone',
+      )?.weight ?? 20;
+    const engagementWeight =
+      interviewTemplate.metrics.find((metric) => metric.name === 'Engagement')
+        ?.weight ?? 20;
+    const bodyLanguageWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Body Language',
+      )?.weight ?? 20;
 
     const metricsByQuestionId = new Map<string, any>();
     for (const response of responses) {
@@ -329,29 +357,38 @@ export class EvaluationsService {
 
     // Overall Scores
     const avgResponseQuality =
-      (avgSpeechClarity +
-        avgConfidence +
-        avgEmotionalTone +
-        avgEngagement +
-        avgBodyLanguage) /
-      5;
+      (avgSpeechClarity * speechClarityWeight +
+        avgConfidence * confidenceWeight +
+        avgEmotionalTone * emotionalToneWeight +
+        avgEngagement * engagementWeight +
+        avgBodyLanguage * bodyLanguageWeight) /
+      (speechClarityWeight +
+        confidenceWeight +
+        emotionalToneWeight +
+        engagementWeight +
+        bodyLanguageWeight);
     const cultureScores = [
-      avgValuesFit,
-      avgMissionAlignment,
-      avgVisionAlignment,
-      avgCultureFit,
+      avgValuesFit * coreValuesWeight,
+      avgMissionAlignment * missionWeight,
+      avgVisionAlignment * visionWeight,
+      avgCultureFit * cultureWeight,
     ];
     const nonZeroCultureScores = cultureScores.filter((score) => score > 0);
-
+    const nonZeroWeights: number[] = [];
+    if (cultureScores[0] > 0) nonZeroWeights.push(coreValuesWeight);
+    if (cultureScores[1] > 0) nonZeroWeights.push(missionWeight);
+    if (cultureScores[2] > 0) nonZeroWeights.push(visionWeight);
+    if (cultureScores[3] > 0) nonZeroWeights.push(cultureWeight);
     const avgCultureFitComposite =
       nonZeroCultureScores.length > 0
         ? nonZeroCultureScores.reduce((sum, score) => sum + score, 0) /
-          nonZeroCultureScores.length
+          nonZeroWeights.reduce((sum, weight) => sum + weight, 0)
         : 0;
 
     const overallFitScore =
-      avgResponseQuality * responseQualityWeight +
-      avgCultureFitComposite * cultureFitWeight;
+      (avgResponseQuality * responseQualityWeight +
+        avgCultureFitComposite * cultureFitWeight) /
+      (responseQualityWeight + cultureFitWeight);
     const overallFitSummary = {
       overallFitScore,
       avgResponseQuality,

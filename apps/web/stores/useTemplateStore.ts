@@ -44,6 +44,10 @@ interface TemplateStore {
   openEditQuestionModal: () => void;
   closeQuestionModal: () => void;
 
+  isGenerateQuestionsModalOpen: boolean;
+  openGenerateQuestionsModal: () => void;
+  closeGenerateQuestionsModal: () => void;
+
   currentStep: number;
   nextStep: () => void;
   prevStep: () => void;
@@ -169,6 +173,10 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
       isEditQuestionModalOpen: false,
     }),
 
+  isGenerateQuestionsModalOpen: false,
+  openGenerateQuestionsModal: () => set({ isGenerateQuestionsModalOpen: true }),
+  closeGenerateQuestionsModal: () => set({ isGenerateQuestionsModalOpen: false }),
+
   currentStep: 1,
   nextStep: () => set((state) => ({ currentStep: state.currentStep + 1 })),
   prevStep: () => set((state) => ({ currentStep: state.currentStep - 1 })),
@@ -183,6 +191,7 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
       isViewQuestionModalOpen: false,
       isEditQuestionModalOpen: false,
       isWarningModalOpen: false,
+      isGenerateQuestionsModalOpen: false,
       currentStep: 1,
     }),
 }));

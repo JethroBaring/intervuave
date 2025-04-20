@@ -227,7 +227,7 @@ export default function Interview() {
               </div>
             </div>
             <Button
-              onClick={() => setCurrentStep(2)}
+              onClick={() => setCurrentStep(3)}
               disabled={
                 !consent.videoAndAudio ||
                 !consent.privacyTerms ||
@@ -235,41 +235,11 @@ export default function Interview() {
                 !consent.aiAnalysis
               }
             >
-              Continue to System Check
+              Continue to Camera Preview
             </Button>
           </div>
         )}
 
-        {currentStep === 2 && (
-          <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
-            <h1 className="mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
-              System Compatibility
-            </h1>
-            <div className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 sm:text-lg mx-auto max-w-[250px]">
-              <div className="flex justify-between">
-                <div className="flex items-center gap-3">
-                  <Camera className="text-brand-400" />
-                  <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
-                    Camera
-                  </span>
-                </div>
-                <Check className="text-green-500" />
-              </div>
-              <div className="flex justify-between">
-                <div className="flex items-center gap-3">
-                  <Mic className="text-brand-400" />
-                  <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
-                    Microphone
-                  </span>
-                </div>
-                <Check className="text-green-500" />
-              </div>
-            </div>
-            <Button onClick={() => setCurrentStep(3)}>
-              Preview Your Camera
-            </Button>
-          </div>
-        )}
         {(currentStep === 3 || currentStep === 4) && (
           <div
             className={`${

@@ -183,7 +183,7 @@ const OnBoarding = () => {
           </p>
           <div className="flex flex-col gap-3 mx-auto text-base text-gray-700 dark:text-gray-400 sm:text-lg mb-10">
             <div>
-              <Label className="text-lg text-start">Culture Statement</Label>
+              <Label className="text-lg text-start">Culture Statement (Optional)</Label>
               <TextArea
                 placeholder="Enter your company's culture"
                 value={data.culture}
@@ -195,8 +195,8 @@ const OnBoarding = () => {
             <Button variant="outline" onClick={prevStep}>
               Back
             </Button>
-            <Button onClick={nextStep} disabled={!data.culture}>
-              Continue
+            <Button onClick={nextStep}>
+              {data.culture ? "Continue" : "Skip"}
             </Button>
           </div>
         </div>

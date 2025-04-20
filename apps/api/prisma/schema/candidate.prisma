@@ -113,7 +113,6 @@ model Response {
 enum InterviewStatus {
   DRAFT
   PENDING
-  IN_PROGRESS
   SUBMITTED
   PROCESSING
   EVALUATING

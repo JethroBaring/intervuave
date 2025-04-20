@@ -80,21 +80,6 @@ export const InterviewTimeline = ({ steps }: { steps: any[] }) => {
               {step.description}
             </p>
             <p className="text-xs text-gray-400 mt-1">{step.time}</p>
-
-            {/* Special case: Show progress bar if it's Processing step and status is PROCESSING */}
-            {step.title === "Processing Evaluation" && (
-              <div className="mt-3 w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                <div
-                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                  style={{ width: "50%" }}
-                >
-                  {/* 50% done for example */}
-                </div>
-                <p className="text-xs text-gray-400 mt-1">
-                  Processing... 50% completed
-                </p>
-              </div>
-            )}
           </div>
         </div>
       ))}
@@ -211,7 +196,9 @@ const ResponsesTab = ({
                           Aligned With
                         </p>
                         <p className="text-sm font-medium">
-                          {response?.question.alignedWith.toLowerCase().replace(/^\w/, (c: string) => c.toUpperCase())}
+                          {response?.question.alignedWith
+                            .toLowerCase()
+                            .replace(/^\w/, (c: string) => c.toUpperCase())}
                         </p>
                       </div>
                     </div>
@@ -232,10 +219,88 @@ const ResponsesTab = ({
                     <div>
                       <Label className="flex justify-between">
                         <span>Response Quality</span>
-                        <span>{(calculateAverage(Object.values(result.responseQuality)) * 100).toFixed(1)}%</span>
+                        <span>
+                          {(
+                            calculateAverage(
+                              Object.values(result.responseQuality)
+                            ) * 100
+                          ).toFixed(1)}
+                          %
+                        </span>
                       </Label>
-                      <div className="-my-3">
-                        <BarChartHorizontal
+                        <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Confidence
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.responseQuality.confidence * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.responseQuality.confidence * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Engagement
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.responseQuality.engagement * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.responseQuality.engagement * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Body Language
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Emotional Tone
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Speech Clarity
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.responseQuality.speechClarity * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.responseQuality.speechClarity * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                        </Card>
+                        {/* <BarChartHorizontal
                           categories={[
                             "Confidence",
                             "Engagement",
@@ -251,31 +316,116 @@ const ResponsesTab = ({
                             parseFloat((result.responseQuality.speechClarity * 100).toFixed(2)),
                           ]}
                           height={70 * 5}
-                        />
-                      </div>
+                        /> */}
                     </div>
                     <div>
                       <Label className="flex justify-between">
                         <span>Culture Fit Composite</span>
-                        <span>{(calculateAverage(Object.values(result.cultureFitComposite).filter((v): v is number => v !== undefined)) * 100).toFixed(1)}%</span>
+                        <span>
+                          {(
+                            calculateAverage(
+                              Object.values(result.cultureFitComposite).filter(
+                                (v): v is number => v !== undefined
+                              )
+                            ) * 100
+                          ).toFixed(1)}
+                          %
+                        </span>
                       </Label>
-                      <div className="-my-3">
-                        <BarChartHorizontal
+                      <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                          {result.cultureFitComposite.visionAlignment && (
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                                Vision Alignment
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                <div
+                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${parseFloat((result.cultureFitComposite.visionAlignment * 100).toFixed(2))}%` }}
+                                ></div>
+                              </div>
+                              <div className="w-12 text-sm font-medium text-right">
+                                {parseFloat((result.cultureFitComposite.visionAlignment * 100).toFixed(2))}%
+                              </div>
+                            </div>
+                          )}
+                          {result.cultureFitComposite.missionAlignment && (
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                                Mission Alignment
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                <div
+                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${parseFloat((result.cultureFitComposite.missionAlignment * 100).toFixed(2))}%` }}
+                                ></div>
+                              </div>
+                              <div className="w-12 text-sm font-medium text-right">
+                                {parseFloat((result.cultureFitComposite.missionAlignment * 100).toFixed(2))}%
+                              </div>
+                            </div>
+                          )}
+                          {result.cultureFitComposite.cultureFit && (
+                            <div className="flex items-center gap-3">
+                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                                Culture Alignment
+                              </div>
+                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                                <div
+                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                  style={{ width: `${parseFloat((result.cultureFitComposite.cultureFit * 100).toFixed(2))}%` }}
+                                ></div>
+                              </div>
+                              <div className="w-12 text-sm font-medium text-right">
+                                {parseFloat((result.cultureFitComposite.cultureFit * 100).toFixed(2))}%
+                              </div>
+                            </div>
+                          )}
+                                                    {result.cultureFitComposite.valuesFit && (
+                            <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Core Values Alignment
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{ width: `${parseFloat((result.cultureFitComposite.valuesFit * 100).toFixed(2))}%` }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat((result.cultureFitComposite.valuesFit * 100).toFixed(2))}%
+                            </div>
+                          </div>
+                          )}
+                        </Card>
+                      {/* <div className="-my-3"> */}
+                        {/* <BarChartHorizontal
                           categories={Object.entries(result.cultureFitComposite)
                             .filter(([_, value]) => value !== undefined)
-                            .map(([key]) => 
-                              key === 'valuesFit' ? 'Values Fit' :
-                              key === 'visionAlignment' ? 'Vision Alignment' :
-                              key === 'missionAlignment' ? 'Mission Alignment' :
-                              key === 'cultureFit' ? 'Culture Fit' :
-                              key
+                            .map(([key]) =>
+                              key === "valuesFit"
+                                ? "Values Fit"
+                                : key === "visionAlignment"
+                                ? "Vision Alignment"
+                                : key === "missionAlignment"
+                                ? "Mission Alignment"
+                                : key === "cultureFit"
+                                ? "Culture Fit"
+                                : key
                             )}
                           data={Object.values(result.cultureFitComposite)
                             .filter((v): v is number => v !== undefined)
-                            .map(value => parseFloat((value * 100).toFixed(2)))}
-                          height={90 * Object.entries(result.cultureFitComposite).filter(([_, value]) => value !== undefined).length}
-                        />
-                      </div>
+                            .map((value) =>
+                              parseFloat((value * 100).toFixed(2))
+                            )}
+                          height={
+                            90 *
+                            Object.entries(result.cultureFitComposite).filter(
+                              ([_, value]) => value !== undefined
+                            ).length
+                          }
+                        /> */}
+                      {/* </div> */}
                     </div>
                   </div>
                 </div>
@@ -345,9 +495,11 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
     },
   ];
 
-  const perValueBreakdownData = Object.entries(evaluation.perValueBreakdown || {}).map(([value, score]) => ({
+  const perValueBreakdownData = Object.entries(
+    evaluation.perValueBreakdown || {}
+  ).map(([value, score]) => ({
     label: value,
-    value: (score as number) * 100
+    value: (score as number) * 100,
   }));
 
   const filteredCultureFitData = cultureFitData.filter(
@@ -358,13 +510,15 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
   const getPercentage = (id: string) => {
     switch (id) {
       case "responseQuality":
-        return `${(evaluation.responseQualityAverage*100).toFixed(1)}%`;
+        return `${(evaluation.responseQualityAverage * 100).toFixed(1)}%`;
 
       case "cultureFit":
-        return `${(evaluation.cultureFitCompositeAverage*100).toFixed(1)}%`;
+        return `${(evaluation.cultureFitCompositeAverage * 100).toFixed(1)}%`;
 
       case "valuesBreakdown":
-        return `${(evaluation.cultureFitComposite.valuesFit*100).toFixed(1)}%`;
+        return `${(evaluation.cultureFitComposite.valuesFit * 100).toFixed(
+          1
+        )}%`;
     }
   };
 
@@ -386,10 +540,20 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
               height={250}
             />
             <div className="absolute flex flex-col items-center justify-center bottom-1/2">
-              <div className="text-2xl font-bold text-primary">{(evaluation.overallFitScore * 100).toFixed(2)}%</div>{" "}
+              <div className="text-2xl font-bold text-primary">
+                {(evaluation.overallFitScore * 100).toFixed(2)}%
+              </div>{" "}
               {/* 🎯 Your big overall fit score */}
-              <div className={`text-sm font-medium ${evaluation.aiDecision?.toLowerCase() === "approved" ? "text-green-500" : "text-red-500"}`}>
-                {evaluation.aiDecision?.toLowerCase() === "approved" ? "Approved" : "Rejected"}
+              <div
+                className={`text-sm font-medium ${
+                  evaluation.aiDecision?.toLowerCase() === "approved"
+                    ? "text-green-500"
+                    : "text-red-500"
+                }`}
+              >
+                {evaluation.aiDecision?.toLowerCase() === "approved"
+                  ? "Approved"
+                  : "Rejected"}
               </div>{" "}
               {/* 🎯 Your decision */}
             </div>
@@ -444,11 +608,27 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                       "Speech Clarity",
                     ]}
                     data={[
-                      parseFloat((evaluation.responseQuality.confidence * 100).toFixed(2)),
-                      parseFloat((evaluation.responseQuality.engagement * 100).toFixed(2)),
-                      parseFloat((evaluation.responseQuality.bodyLanguage * 100).toFixed(2)),
-                      parseFloat((evaluation.responseQuality.emotionalTone * 100).toFixed(2)),
-                      parseFloat((evaluation.responseQuality.speechClarity * 100).toFixed(2)),
+                      parseFloat(
+                        (evaluation.responseQuality.confidence * 100).toFixed(2)
+                      ),
+                      parseFloat(
+                        (evaluation.responseQuality.engagement * 100).toFixed(2)
+                      ),
+                      parseFloat(
+                        (evaluation.responseQuality.bodyLanguage * 100).toFixed(
+                          2
+                        )
+                      ),
+                      parseFloat(
+                        (
+                          evaluation.responseQuality.emotionalTone * 100
+                        ).toFixed(2)
+                      ),
+                      parseFloat(
+                        (
+                          evaluation.responseQuality.speechClarity * 100
+                        ).toFixed(2)
+                      ),
                     ]}
                     height={70 * 5}
                   />
@@ -460,7 +640,9 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                     categories={filteredCultureFitData.map(
                       (item) => item.label
                     )}
-                    data={filteredCultureFitData.map((item) => parseFloat((item.value).toFixed(2)))}
+                    data={filteredCultureFitData.map((item) =>
+                      parseFloat(item.value.toFixed(2))
+                    )}
                     height={90 * filteredCultureFitData.length}
                   />
                 </div>
@@ -468,8 +650,10 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
               {card.id === "valuesBreakdown" && (
                 <div className="-my-3">
                   <BarChartHorizontal
-                    categories={perValueBreakdownData.map(item => item.label)}
-                    data={perValueBreakdownData.map(item => parseFloat(item.value.toFixed(2)))}
+                    categories={perValueBreakdownData.map((item) => item.label)}
+                    data={perValueBreakdownData.map((item) =>
+                      parseFloat(item.value.toFixed(2))
+                    )}
                     height={90 * perValueBreakdownData.length}
                   />
                 </div>
@@ -532,16 +716,16 @@ const getTimeline = (interview: any) => {
 const generateColorFromName = (name: string) => {
   // List of visually appealing colors
   const colors = [
-    'bg-blue-500',
-    'bg-green-500',
-    'bg-purple-500',
-    'bg-pink-500',
-    'bg-indigo-500',
-    'bg-teal-500',
-    'bg-orange-500',
-    'bg-cyan-500',
-    'bg-rose-500',
-    'bg-violet-500',
+    "bg-blue-500",
+    "bg-green-500",
+    "bg-purple-500",
+    "bg-pink-500",
+    "bg-indigo-500",
+    "bg-teal-500",
+    "bg-orange-500",
+    "bg-cyan-500",
+    "bg-rose-500",
+    "bg-violet-500",
   ];
 
   // Simple hash function to convert name to a number
@@ -556,7 +740,7 @@ const generateColorFromName = (name: string) => {
 };
 
 const getInitials = (firstName: string, lastName: string) => {
-  return `${firstName?.[0] || ''}${lastName?.[0] || ''}`.toUpperCase();
+  return `${firstName?.[0] || ""}${lastName?.[0] || ""}`.toUpperCase();
 };
 
 const InterviewModal = () => {
@@ -712,10 +896,15 @@ const InterviewModal = () => {
             <Button size="sm" variant="outline">
               Close
             </Button>
-            <Button size="sm" onClick={async() => {
-              const x = await api.post(`interviews/${selectedCandidate.interview.id}/evaluation/reprocess`)
-              console.log(x)
-            }}>
+            <Button
+              size="sm"
+              onClick={async () => {
+                const x = await api.post(
+                  `interviews/${selectedCandidate.interview.id}/evaluation/reprocess`
+                );
+                console.log(x);
+              }}
+            >
               Reprocess
             </Button>
           </div>
@@ -751,8 +940,16 @@ const InterviewModal = () => {
 
         <div className="mx-2 my-5 flex">
           <div className="flex-shrink-0">
-            <div className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white aspect-square ${generateColorFromName(selectedCandidate?.candidate.firstName + selectedCandidate?.candidate.lastName)}`}>
-              {getInitials(selectedCandidate?.candidate.firstName, selectedCandidate?.candidate.lastName)}
+            <div
+              className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white aspect-square ${generateColorFromName(
+                selectedCandidate?.candidate.firstName +
+                  selectedCandidate?.candidate.lastName
+              )}`}
+            >
+              {getInitials(
+                selectedCandidate?.candidate.firstName,
+                selectedCandidate?.candidate.lastName
+              )}
             </div>
           </div>
           <div className="flex justify-between w-full">
@@ -801,7 +998,7 @@ const InterviewModal = () => {
                 ))}
               </nav>
             </div>
-            <div className="pt-4 dark:border-gray-800 overflow-scroll min-h-[500px] max-h-[500px]">
+            <div className="pt-4 dark:border-gray-800 overflow-auto min-h-[500px] max-h-[500px] [&::-webkit-scrollbar-thumb]:rounded-full [&::-webkit-scrollbar-thumb]:bg-gray-200 dark:[&::-webkit-scrollbar-thumb]:bg-gray-600 dark:[&::-webkit-scrollbar-track]:bg-transparent [&::-webkit-scrollbar]:w-1.5">
               {renderTabContent()}
             </div>
           </div>

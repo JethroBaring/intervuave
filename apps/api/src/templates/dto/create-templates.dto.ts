@@ -19,4 +19,8 @@ export class CreateTemplatesDto {
   metrics: CreateMetricDto[];
   responseQualityWeight: number;
   cultureFitWeight: number;
+  missionWeight: number;
+  visionWeight: number;
+  cultureWeight: number;
+  coreValuesWeight: number;
 }

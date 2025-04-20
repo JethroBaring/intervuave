@@ -24,10 +24,12 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
   const [selectedOptions, setSelectedOptions] =
     useState<string[]>(defaultSelected);
   const [isOpen, setIsOpen] = useState(false);
-  const wrapperRef = useRef<HTMLDivElement>(null); // 👈 add a ref
+  const wrapperRef = useRef<HTMLDivElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const toggleDropdown = () => {
+  const toggleDropdown = (e: React.MouseEvent) => {
     if (disabled) return;
+    e.stopPropagation();
     setIsOpen((prev) => !prev);
   };
 
@@ -40,7 +42,8 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     if (onChange) onChange(newSelectedOptions);
   };
 
-  const removeOption = (index: number, value: string) => {
+  const removeOption = (e: React.MouseEvent, value: string) => {
+    e.stopPropagation(); // Prevent triggering dropdown toggle
     const newSelectedOptions = selectedOptions.filter((opt) => opt !== value);
     setSelectedOptions(newSelectedOptions);
     if (onChange) onChange(newSelectedOptions);
@@ -52,7 +55,10 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (wrapperRef.current && !wrapperRef.current.contains(event.target as Node)) {
+      if (
+        wrapperRef.current &&
+        !wrapperRef.current.contains(event.target as Node)
+      ) {
         setIsOpen(false);
       }
     };
@@ -63,6 +69,39 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
     };
   }, []);
 
+  // When dropdown opens, prevent body scrolling
+  useEffect(() => {
+    if (isOpen) {
+      // Save current scroll position
+      const scrollPosition =
+        window.pageYOffset || document.documentElement.scrollTop;
+      const bodyEl = document.body;
+
+      // Store original styles
+      const originalStyles = {
+        overflow: bodyEl.style.overflow,
+        paddingRight: bodyEl.style.paddingRight,
+      };
+
+      // Calculate scrollbar width
+      const scrollbarWidth =
+        window.innerWidth - document.documentElement.clientWidth;
+
+      // Apply styles to prevent scrolling while maintaining position
+      bodyEl.style.overflow = "hidden";
+      bodyEl.style.paddingRight = `${scrollbarWidth}px`;
+
+      return () => {
+        // Restore original styles when dropdown closes
+        bodyEl.style.overflow = originalStyles.overflow;
+        bodyEl.style.paddingRight = originalStyles.paddingRight;
+
+        // Restore scroll position
+        window.scrollTo(0, scrollPosition);
+      };
+    }
+  }, [isOpen]);
+
   return (
     <div className="w-full" ref={wrapperRef}>
       <label className="mb-1.5 block text-sm font-medium text-gray-700 dark:text-gray-400">
@@ -71,7 +110,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
       <div className="relative z-20 inline-block w-full">
         <div className="relative flex flex-col items-center">
-          <div onClick={toggleDropdown}  className="w-full">
+          <div onClick={toggleDropdown} className="w-full">
             <div className="mb-2 flex h-11 rounded-lg border border-gray-300 py-1.5 pl-3 pr-3 shadow-theme-xs outline-hidden transition focus:border-brand-300 focus:shadow-focus-ring dark:border-gray-700 dark:bg-gray-900 dark:focus:border-brand-300">
               <div className="flex flex-wrap flex-auto gap-2">
                 {selectedValuesText.length > 0 ? (
@@ -82,27 +121,29 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                     >
                       <span className="flex-initial max-w-full">{text}</span>
                       <div className="flex flex-row-reverse flex-auto">
-                        <div
-                          onClick={() =>
-                            removeOption(index, selectedOptions[index])
-                          }
-                          className="pl-2 text-gray-500 cursor-pointer group-hover:text-gray-400 dark:text-gray-400"
-                        >
-                          <svg
-                            className="fill-current"
-                            role="button"
-                            width="14"
-                            height="14"
-                            viewBox="0 0 14 14"
-                            xmlns="http://www.w3.org/2000/svg"
+                        {!disabled && (
+                          <div
+                            onClick={(e) =>
+                              removeOption(e, selectedOptions[index])
+                            }
+                            className="pl-2 text-gray-500 cursor-pointer group-hover:text-gray-400 dark:text-gray-400"
                           >
-                            <path
-                              fillRule="evenodd"
-                              clipRule="evenodd"
-                              d="M3.40717 4.46881C3.11428 4.17591 3.11428 3.70104 3.40717 3.40815C3.70006 3.11525 4.17494 3.11525 4.46783 3.40815L6.99943 5.93975L9.53095 3.40822C9.82385 3.11533 10.2987 3.11533 10.5916 3.40822C10.8845 3.70112 10.8845 4.17599 10.5916 4.46888L8.06009 7.00041L10.5916 9.53193C10.8845 9.82482 10.8845 10.2997 10.5916 10.5926C10.2987 10.8855 9.82385 10.8855 9.53095 10.5926L6.99943 8.06107L4.46783 10.5927C4.17494 10.8856 3.70006 10.8856 3.40717 10.5927C3.11428 10.2998 3.11428 9.8249 3.40717 9.53201L5.93877 7.00041L3.40717 4.46881Z"
-                            />
-                          </svg>
-                        </div>
+                            <svg
+                              className="fill-current"
+                              role="button"
+                              width="14"
+                              height="14"
+                              viewBox="0 0 14 14"
+                              xmlns="http://www.w3.org/2000/svg"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                clipRule="evenodd"
+                                d="M3.40717 4.46881C3.11428 4.17591 3.11428 3.70104 3.40717 3.40815C3.70006 3.11525 4.17494 3.11525 4.46783 3.40815L6.99943 5.93975L9.53095 3.40822C9.82385 3.11533 10.2987 3.11533 10.5916 3.40822C10.8845 3.70112 10.8845 4.17599 10.5916 4.46888L8.06009 7.00041L10.5916 9.53193C10.8845 9.82482 10.8845 10.2997 10.5916 10.5926C10.2987 10.8855 9.82385 10.8855 9.53095 10.5926L6.99943 8.06107L4.46783 10.5927C4.17494 10.8856 3.70006 10.8856 3.40717 10.5927C3.11428 10.2998 3.11428 9.8249 3.40717 9.53201L5.93877 7.00041L3.40717 4.46881Z"
+                              />
+                            </svg>
+                          </div>
+                        )}
                       </div>
                     </div>
                   ))
@@ -118,7 +159,7 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
               <div className="flex items-center py-1 pl-1 pr-1 w-7">
                 <button
                   type="button"
-                  onClick={toggleDropdown} 
+                  onClick={toggleDropdown}
                   className="w-5 h-5 text-gray-700 outline-hidden cursor-pointer focus:outline-hidden dark:text-gray-400"
                 >
                   <svg
@@ -144,7 +185,21 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
 
           {isOpen && (
             <div
-              className="absolute left-0 z-40 w-full overflow-y-auto bg-white rounded-lg shadow-sm top-full max-h-select dark:bg-gray-900 border border-gray-300 dark:border-gray-700"
+              ref={dropdownRef}
+              className="fixed bg-white rounded-lg shadow-lg border border-gray-300 dark:bg-gray-900 dark:border-gray-700 z-40 w-full"
+              style={{
+                top: wrapperRef.current
+                  ? wrapperRef.current.getBoundingClientRect().bottom + 2
+                  : 0,
+                left: wrapperRef.current
+                  ? wrapperRef.current.getBoundingClientRect().left
+                  : 0,
+                width: wrapperRef.current
+                  ? wrapperRef.current.getBoundingClientRect().width
+                  : "100%",
+                maxHeight: "250px",
+                overflowY: "auto",
+              }}
               onClick={(e) => e.stopPropagation()}
             >
               <div className="flex flex-col">
@@ -152,7 +207,11 @@ const MultiSelect: React.FC<MultiSelectProps> = ({
                   <div key={index}>
                     <div
                       className={`hover:bg-primary/5 w-full cursor-pointer rounded-t border-b border-gray-200 dark:border-gray-800`}
-                      onClick={() => handleSelect(option.value)}
+                      onClick={(e) => {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        handleSelect(option.value);
+                      }}
                     >
                       <div
                         className={`relative flex w-full items-center p-2 pl-2 ${

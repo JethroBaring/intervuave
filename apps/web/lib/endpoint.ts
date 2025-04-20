@@ -34,6 +34,7 @@ export const endpoints = {
     find: (templateId: string) => `/templates/${templateId}`,
     update: (templateId: string) => `/templates/${templateId}`,
     delete: (templateId: string) => `/templates/${templateId}`,
+    generateQuestions: (companyId: string) => `/templates/company/${companyId}/generate-questions`,
   },
 
   roles: {

@@ -1,7 +1,14 @@
 "use client";
 import React, { useEffect, useState } from "react";
 import ComponentCard from "../ui/common/ComponentCard";
-import { ChevronDown, Percent, Plus, PuzzleIcon } from "lucide-react";
+import {
+  ChevronDown,
+  Loader,
+  Percent,
+  Plus,
+  PuzzleIcon,
+  Sparkle,
+} from "lucide-react";
 import { Modal } from "../ui/modal";
 import Label from "../ui/form/Label";
 import TextArea from "../ui/form/input/TextArea";
@@ -18,6 +25,9 @@ import { useTemplateForm } from "@/hooks-test/useTemplateForm";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useTemplateStore } from "@/stores/useTemplateStore";
 import MultiSelect from "../ui/form/MultiSelect";
+import api from "@/lib/axios";
+import { endpoints } from "@/lib/endpoint";
+import { useToastStore } from "@/stores/useToastStore";
 
 interface TemplatesProps {}
 
@@ -45,6 +55,9 @@ const Templates: React.FC<TemplatesProps> = () => {
     isEditQuestionModalOpen,
     openEditQuestionModal,
     closeQuestionModal,
+    isGenerateQuestionsModalOpen,
+    openGenerateQuestionsModal,
+    closeGenerateQuestionsModal,
     currentStep,
     nextStep,
     prevStep,
@@ -70,7 +83,16 @@ const Templates: React.FC<TemplatesProps> = () => {
     cultureFitWeight,
     setResponseQualityWeight,
     setCultureFitWeight,
-    totalOverallFitWeight
+    totalOverallFitWeight,
+    totalCultureFitCompositeWeight,
+    missionWeight,
+    visionWeight,
+    cultureWeight,
+    coreValuesWeight,
+    setMissionWeight,
+    setVisionWeight,
+    setCultureWeight,
+    setCoreValuesWeight,
   } = useTemplateForm(selectedTemplate!);
 
   const { templates, coreValues } = useCompanyStore(
@@ -81,6 +103,16 @@ const Templates: React.FC<TemplatesProps> = () => {
       }))
     )
   );
+
+  const [numberOfQuestions, setNumberOfQuestions] = useState(1);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [isGeneratingQuestions, setIsGeneratingQuestions] = useState(false);
+  const companyId = useCompanyStore((state) => state.companyId);
+  const culture = useCompanyStore((state) => state.culture);
+  const filteredTemplates = templates.filter((template) => {
+    const searchLower = searchQuery.toLowerCase();
+    return template.name.toLowerCase().includes(searchLower);
+  });
 
   const clearState = () => {
     reset();
@@ -114,6 +146,8 @@ const Templates: React.FC<TemplatesProps> = () => {
             placeholder="Search..."
             className="dark:bg-dark-900 h-11 w-full rounded-xl border border-gray-300 bg-transparent py-2.5 pl-[42px] pr-3.5 text-sm text-gray-800 shadow-theme-xs placeholder:text-gray-400 focus:border-brand-300 focus:outline-hidden focus:ring-3 focus:ring-brand-500/10 dark:border-gray-700 dark:bg-gray-900 dark:text-white/90 dark:placeholder:text-white/30 dark:focus:border-brand-800 xl:w-[300px]"
             type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
           />
         </div>
         <button
@@ -143,62 +177,120 @@ const Templates: React.FC<TemplatesProps> = () => {
   return (
     <>
       <ComponentCard header={header}>
-        {templates.length === 0 ? (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="mb-6">
-              <svg
-                width="120"
-                height="120"
-                viewBox="0 0 120 120"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
-                className="text-gray-300 dark:text-gray-600"
+        {filteredTemplates.length === 0 ? (
+          templates.length === 0 ? (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-6">
+                <svg
+                  width="120"
+                  height="120"
+                  viewBox="0 0 120 120"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-gray-300 dark:text-gray-600"
+                >
+                  <path
+                    d="M60 0C26.8629 0 0 26.8629 0 60C0 93.1371 26.8629 120 60 120C93.1371 120 120 93.1371 120 60C120 26.8629 93.1371 0 60 0ZM60 110C32.3862 110 10 87.6138 10 60C10 32.3862 32.3862 10 60 10C87.6138 10 110 32.3862 110 60C110 87.6138 87.6138 110 60 110Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M60 20C38.9543 20 22 36.9543 22 58C22 79.0457 38.9543 96 60 96C81.0457 96 98 79.0457 98 58C98 36.9543 81.0457 20 60 20ZM60 86C43.4315 86 30 72.5685 30 56C30 39.4315 43.4315 26 60 26C76.5685 26 90 39.4315 90 56C90 72.5685 76.5685 86 60 86Z"
+                    fill="currentColor"
+                  />
+                  <path
+                    d="M60 40C47.8497 40 38 49.8497 38 62C38 74.1503 47.8497 84 60 84C72.1503 84 82 74.1503 82 62C82 49.8497 72.1503 40 60 40ZM60 74C53.3726 74 48 68.6274 48 62C48 55.3726 53.3726 50 60 50C66.6274 50 72 55.3726 72 62C72 68.6274 66.6274 74 60 74Z"
+                    fill="currentColor"
+                  />
+                </svg>
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                No templates yet
+              </h3>
+              <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                Create your first interview template to start evaluating
+                candidates based on your company's culture and values.
+              </p>
+              <button
+                onClick={openNewTemplateModal}
+                className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white rounded-xl bg-brand-500 shadow-theme-xs hover:bg-brand-600"
               >
-                <path
-                  d="M60 0C26.8629 0 0 26.8629 0 60C0 93.1371 26.8629 120 60 120C93.1371 120 120 93.1371 120 60C120 26.8629 93.1371 0 60 0ZM60 110C32.3862 110 10 87.6138 10 60C10 32.3862 32.3862 10 60 10C87.6138 10 110 32.3862 110 60C110 87.6138 87.6138 110 60 110Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M60 20C38.9543 20 22 36.9543 22 58C22 79.0457 38.9543 96 60 96C81.0457 96 98 79.0457 98 58C98 36.9543 81.0457 20 60 20ZM60 86C43.4315 86 30 72.5685 30 56C30 39.4315 43.4315 26 60 26C76.5685 26 90 39.4315 90 56C90 72.5685 76.5685 86 60 86Z"
-                  fill="currentColor"
-                />
-                <path
-                  d="M60 40C47.8497 40 38 49.8497 38 62C38 74.1503 47.8497 84 60 84C72.1503 84 82 74.1503 82 62C82 49.8497 72.1503 40 60 40ZM60 74C53.3726 74 48 68.6274 48 62C48 55.3726 53.3726 50 60 50C66.6274 50 72 55.3726 72 62C72 68.6274 66.6274 74 60 74Z"
-                  fill="currentColor"
-                />
-              </svg>
+                <svg
+                  className="fill-current"
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    fillRule="evenodd"
+                    clipRule="evenodd"
+                    d="M9.2502 4.99951C9.2502 4.5853 9.58599 4.24951 10.0002 4.24951C10.4144 4.24951 10.7502 4.5853 10.7502 4.99951V9.24971H15.0006C15.4148 9.24971 15.7506 9.5855 15.7506 9.99971C15.7506 10.4139 15.4148 10.7497 15.0006 10.7497H10.7502V15.0001C10.7502 15.4143 10.4144 15.7501 10.0002 15.7501C9.58599 15.7501 9.2502 15.4143 9.2502 15.0001V10.7497H5C4.58579 10.7497 4.25 10.4139 4.25 9.99971C4.25 9.5855 4.58579 9.24971 5 9.24971H9.2502V4.99951Z"
+                    fill=""
+                  />
+                </svg>
+                Create New Template
+              </button>
             </div>
-            <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
-              No templates yet
-            </h3>
-            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 max-w-md">
-              Create your first interview template to start evaluating candidates based on your company's culture and values.
-            </p>
-            <button
-              onClick={openNewTemplateModal}
-              className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white rounded-xl bg-brand-500 shadow-theme-xs hover:bg-brand-600"
-            >
-              <svg
-                className="fill-current"
-                width="20"
-                height="20"
-                viewBox="0 0 20 20"
-                fill="none"
-                xmlns="http://www.w3.org/2000/svg"
+          ) : (
+            <div className="flex flex-col items-center justify-center py-12 text-center">
+              <div className="mb-6">
+                <svg
+                  width="120"
+                  height="120"
+                  viewBox="0 0 120 120"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="text-gray-300 dark:text-gray-600"
+                >
+                  <path
+                    d="M113.1 99.2L93.6 79.6C99.9 71.2 103.5 60.5 103.5 48.9C103.5 22.3 82 0.7 55.4 0.7C28.8 0.7 7.3 22.3 7.3 48.9C7.3 75.5 28.8 97.1 55.4 97.1C67 97.1 77.7 93.5 86.1 87.2L105.6 106.8C106.8 108 108.3 108.6 109.9 108.6C111.5 108.6 113 108 114.2 106.8C116.6 104.3 116.6 101 113.1 99.2Z"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    strokeMiterlimit="10"
+                    strokeLinecap="round"
+                  />
+                  <path
+                    d="M55.4 18.2C38.6 18.2 24.8 32 24.8 48.8C24.8 65.6 38.6 79.4 55.4 79.4C72.2 79.4 86 65.6 86 48.8C86 32 72.3 18.2 55.4 18.2Z"
+                    stroke="currentColor"
+                    strokeWidth="8"
+                    strokeMiterlimit="10"
+                    strokeLinecap="round"
+                  />
+                </svg>
+              </div>
+              <h3 className="mb-2 text-lg font-semibold text-gray-800 dark:text-white/90">
+                No matches found
+              </h3>
+              <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 max-w-md">
+                No templates match your search query "{searchQuery}". Try
+                different keywords or clear your search.
+              </p>
+              <button
+                onClick={() => setSearchQuery("")}
+                className="flex items-center justify-center gap-2 px-4 py-3 text-sm font-medium text-white rounded-xl bg-brand-500 shadow-theme-xs hover:bg-brand-600"
               >
-                <path
-                  fillRule="evenodd"
-                  clipRule="evenodd"
-                  d="M9.2502 4.99951C9.2502 4.5853 9.58599 4.24951 10.0002 4.24951C10.4144 4.24951 10.7502 4.5853 10.7502 4.99951V9.24971H15.0006C15.4148 9.24971 15.7506 9.5855 15.7506 9.99971C15.7506 10.4139 15.4148 10.7497 15.0006 10.7497H10.7502V15.0001C10.7502 15.4143 10.4144 15.7501 10.0002 15.7501C9.58599 15.7501 9.2502 15.4143 9.2502 15.0001V10.7497H5C4.58579 10.7497 4.25 10.4139 4.25 9.99971C4.25 9.5855 4.58579 9.24971 5 9.24971H9.2502V4.99951Z"
-                  fill=""
-                />
-              </svg>
-              Create New Template
-            </button>
-          </div>
+                <svg
+                  width="20"
+                  height="20"
+                  viewBox="0 0 20 20"
+                  fill="none"
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="fill-current"
+                >
+                  <path
+                    d="M9.2502 4.99951C9.2502 4.5853 9.58599 4.24951 10.0002 4.24951C10.4144 4.24951 10.7502 4.5853 10.7502 4.99951V9.24971H15.0006C15.4148 9.24971 15.7506 9.5855 15.7506 9.99971C15.7506 10.4139 15.4148 10.7497 15.0006 10.7497H10.7502V15.0001C10.7502 15.4143 10.4144 15.7501 10.0002 15.7501C9.58599 15.7501 9.2502 15.4143 9.2502 15.0001V10.7497H5C4.58579 10.7497 4.25 10.4139 4.25 9.99971C4.25 9.5855 4.58579 9.24971 5 9.24971H9.2502V4.99951Z"
+                    fill=""
+                    transform="rotate(45 10 10)"
+                  />
+                </svg>
+                Clear Search
+              </button>
+            </div>
+          )
         ) : (
           <div className="grid grid-cols-4 gap-6">
-            {templates.map((template) => (
+            {filteredTemplates.map((template) => (
               <TemplateCard
                 template={template}
                 key={template.id}
@@ -242,6 +334,53 @@ const Templates: React.FC<TemplatesProps> = () => {
                   />
                 </div>
               </div>
+              <div className="px-2 flex flex-col gap-3">
+                <div>
+                  <Label className="text-base">Questions</Label>
+                  {isEditTemplateModalOpen && (
+                    <Label>
+                      Add questions that reflect your company's mission, vision,
+                      culture, or values. These will be asked during the
+                      interview.
+                    </Label>
+                  )}
+                </div>
+                <div className="flex flex-col gap-3 max-h-[450px] overflow-y-auto custom-scrollbar">
+                  {questions.map((question) => (
+                    <QuestionCard
+                      id={question.id!}
+                      key={question.id}
+                      title={question.questionText}
+                      deleteQuestion={() => deleteQuestion(question.id!)}
+                      edit={() => {
+                        setQuestion(
+                          questions.find((q) => q.id === question.id)!
+                        );
+                        openEditQuestionModal();
+                      }}
+                      view={() => {
+                        setQuestion(
+                          questions.find((q) => q.id === question.id)!
+                        );
+                        openViewQuestionModal();
+                      }}
+                      isView={isViewTemplateModalOpen}
+                    />
+                  ))}
+                </div>
+                {isEditTemplateModalOpen && (
+                  <Button
+                    variant="outline"
+                    className="h-[44px] flex gap-3"
+                    onClick={openNewQuestionModal}
+                    disabled={isViewTemplateModalOpen}
+                  >
+                    <Plus className="h-4 w-4" />
+                    Add question
+                  </Button>
+                )}
+              </div>
+
               <div className="px-2 flex flex-col gap-3">
                 <div>
                   <Label className="text-base">Response Quality Weights</Label>
@@ -315,44 +454,101 @@ const Templates: React.FC<TemplatesProps> = () => {
                     : "All good! Metric weights are properly distributed."}
                 </p>
               )}
+
               <div className="px-2 flex flex-col gap-3">
                 <div>
-                  <Label className="text-base">Questions</Label>
+                  <Label className="text-base">Overall Fit Score Weights</Label>
                   {isEditTemplateModalOpen && (
                     <Label>
-                      Add questions that reflect your company's mission, vision,
-                      culture, or values. These will be asked during the
-                      interview.
+                      Adjust the importance of each metric. Total should equal
+                      100%.
                     </Label>
                   )}
                 </div>
-                {questions.map((question) => (
-                  <QuestionCard
-                    id={question.id!}
-                    key={question.id}
-                    title={question.questionText}
-                    deleteQuestion={() => deleteQuestion(question.id!)}
-                    edit={() => {
-                      setQuestion(questions.find((q) => q.id === question.id)!);
-                      openEditQuestionModal();
-                    }}
-                    view={() => {
-                      setQuestion(questions.find((q) => q.id === question.id)!);
-                      openViewQuestionModal();
-                    }}
-                    isView={isViewTemplateModalOpen}
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Response Quality</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Describes the quality of the candidate's response.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={responseQualityWeight}
+                        onChange={(e) =>
+                          setResponseQualityWeight(parseInt(e.target.value))
+                        }
+                        disabled={isViewTemplateModalOpen}
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    className="accent-brand-500 [&:disabled]:accent-brand-500"
+                    value={responseQualityWeight}
+                    onChange={(e) =>
+                      setResponseQualityWeight(parseInt(e.target.value))
+                    }
+                    disabled={isViewTemplateModalOpen}
                   />
-                ))}
-                <Button
-                  variant="outline"
-                  className="h-[44px] flex gap-3"
-                  onClick={openNewQuestionModal}
-                  disabled={isViewTemplateModalOpen}
-                >
-                  <Plus className="h-4 w-4" />
-                  Add question
-                </Button>
+                </div>
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Culture Fit</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Describes the cultural fit of the candidate.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={cultureFitWeight}
+                        onChange={(e) =>
+                          setCultureFitWeight(parseInt(e.target.value))
+                        }
+                        disabled={isViewTemplateModalOpen}
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    className="accent-brand-500 [&:disabled]:accent-brand-500"
+                    value={cultureFitWeight}
+                    onChange={(e) =>
+                      setCultureFitWeight(parseInt(e.target.value))
+                    }
+                    disabled={isViewTemplateModalOpen}
+                  />
+                </div>
               </div>
+              {isEditTemplateModalOpen && (
+                <p
+                  className={`mb-1.5 block text-sm font-medium  px-2 ${
+                    totalOverallFitWeight !== 100
+                      ? "text-red-500"
+                      : "text-green-500"
+                  }`}
+                >
+                  {totalOverallFitWeight !== 100
+                    ? `Total weight is ${totalOverallFitWeight}%. Please make sure it adds up to 100%.`
+                    : "All good! Metric weights are properly distributed."}
+                </p>
+              )}
 
               <div className="flex items-center gap-3 px-2 lg:justify-end">
                 <Button size="sm" variant="outline" onClick={clearState}>
@@ -375,8 +571,12 @@ const Templates: React.FC<TemplatesProps> = () => {
                           coreValues: question.coreValues,
                           alignedWith: question.alignedWith,
                         })),
-                        responseQualityWeight: 0,
-                        cultureFitWeight: 0,
+                        responseQualityWeight: responseQualityWeight,
+                        cultureFitWeight: cultureFitWeight,
+                        missionWeight: missionWeight,
+                        visionWeight: visionWeight,
+                        cultureWeight: cultureWeight,
+                        coreValuesWeight: coreValuesWeight,
                       });
                       clearState();
                     }}
@@ -444,6 +644,89 @@ const Templates: React.FC<TemplatesProps> = () => {
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
               Create a question set with customizable metrics to evaluate
               candidates based on your culture and values. You can reuse this
+              across multiple roles.
+            </p>
+          </div>
+          <div className="flex flex-col gap-6">
+            <div className="px-2 flex flex-col gap-3">
+              <div>
+                <Label className="text-base">Interview Questions</Label>
+                <Label>
+                  Add questions linked to your company's core values and aligned
+                  with either its mission, vision, or culture.
+                </Label>
+              </div>
+              <div className="flex flex-col gap-3 max-h-[450px] overflow-y-auto custom-scrollbar relative">
+                {questions.map((question) => (
+                  <QuestionCard
+                    id={question.id!}
+                    key={question.id}
+                    title={question.questionText}
+                    deleteQuestion={() => deleteQuestion(question.id!)}
+                    edit={() => {
+                      setQuestion(questions.find((q) => q.id === question.id)!);
+                      openEditQuestionModal();
+                    }}
+                    view={() => {
+                      setQuestion(questions.find((q) => q.id === question.id)!);
+                      openViewQuestionModal();
+                    }}
+                  />
+                ))}
+              </div>
+              <div className="flex gap-3 w-full">
+                <Button
+                  variant="outline"
+                  className="h-[44px] flex gap-3 flex-1"
+                  onClick={openNewQuestionModal}
+                >
+                  <Plus className="h-4 w-4" />
+                  Add question
+                </Button>
+                <Button
+                  className="h-[44px] flex gap-3 flex-1"
+                  onClick={openGenerateQuestionsModal}
+                  disabled={isGeneratingQuestions}
+                >
+                  {isGeneratingQuestions ? (
+                    <Loader className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Sparkle className="h-4 w-4" />
+                  )}
+                  {isGeneratingQuestions
+                    ? "Generating..."
+                    : "Generate Questions"}
+                </Button>
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-2 lg:justify-end">
+              <Button size="sm" variant="outline" onClick={prevStep}>
+                Previous
+              </Button>
+              <Button
+                size="sm"
+                onClick={nextStep}
+                disabled={questions.length === 0 || isGeneratingQuestions}
+              >
+                Next
+              </Button>
+            </div>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isNewTemplateModalOpen && currentStep === 3}
+        onClose={clearState}
+        className="max-w-[700px] m-4"
+      >
+        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Create interview template
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              Create a question set with customizable metrics to evaluate
+              candidates based on your culture and values. You can reuse this
               across multiple interviews.
             </p>
           </div>
@@ -489,6 +772,7 @@ const Templates: React.FC<TemplatesProps> = () => {
                     type="range"
                     min={0}
                     max={100}
+                    step={5}
                     className="accent-brand-500"
                     value={metric.weight}
                     onChange={(e) =>
@@ -529,7 +813,7 @@ const Templates: React.FC<TemplatesProps> = () => {
         </div>
       </Modal>
       <Modal
-        isOpen={isNewTemplateModalOpen && currentStep === 3}
+        isOpen={isNewTemplateModalOpen && currentStep === 4}
         onClose={clearState}
         className="max-w-[700px] m-4"
       >
@@ -541,61 +825,171 @@ const Templates: React.FC<TemplatesProps> = () => {
             <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
               Create a question set with customizable metrics to evaluate
               candidates based on your culture and values. You can reuse this
-              across multiple roles.
+              across multiple interviews.
             </p>
           </div>
           <div className="flex flex-col gap-6">
             <div className="px-2 flex flex-col gap-3">
               <div>
-                <Label className="text-base">Interview Questions</Label>
+                <Label className="text-base">
+                  Culture Fit Composite Weights
+                </Label>
                 <Label>
-                  Add questions linked to your company's core values and aligned
-                  with either its mission, vision, or culture (70% of total fit
-                  score)
+                  Customize how much each metric affects candidate evaluation
                 </Label>
               </div>
-              {questions.map((question) => (
-                <QuestionCard
-                  id={question.id!}
-                  key={question.id}
-                  title={question.questionText}
-                  deleteQuestion={() => deleteQuestion(question.id!)}
-                  edit={() => {
-                    setQuestion(questions.find((q) => q.id === question.id)!);
-                    openEditQuestionModal();
-                  }}
-                  view={() => {
-                    setQuestion(questions.find((q) => q.id === question.id)!);
-                    openViewQuestionModal();
-                  }}
+              <div className="w-full flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1 justify-center">
+                    <Label className="m-0">Mission</Label>
+                    <Label className="m-0 font-normal text-xs">
+                      Aligns with the company's mission.
+                    </Label>
+                  </div>
+                  <div className="relative w-[70px]">
+                    <Input
+                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={missionWeight}
+                      onChange={(e) =>
+                        setMissionWeight(parseInt(e.target.value))
+                      }
+                    />
+                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="accent-brand-500"
+                  value={missionWeight}
+                  onChange={(e) => setMissionWeight(parseInt(e.target.value))}
                 />
-              ))}
-              <Button
-                variant="outline"
-                className="h-[44px] flex gap-3"
-                onClick={openNewQuestionModal}
-              >
-                <Plus className="h-4 w-4" />
-                Add question
-              </Button>
+              </div>
+              <div className="w-full flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1 justify-center">
+                    <Label className="m-0">Vision</Label>
+                    <Label className="m-0 font-normal text-xs">
+                      Aligns with the company's vision.
+                    </Label>
+                  </div>
+                  <div className="relative w-[70px]">
+                    <Input
+                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={visionWeight}
+                      onChange={(e) =>
+                        setVisionWeight(parseInt(e.target.value))
+                      }
+                    />
+                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="accent-brand-500"
+                  value={visionWeight}
+                  onChange={(e) => setVisionWeight(parseInt(e.target.value))}
+                />
+              </div>
+              {culture && (
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Culture</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Aligns with the company's culture.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={cultureWeight}
+                        onChange={(e) =>
+                          setCultureWeight(parseInt(e.target.value))
+                        }
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="accent-brand-500"
+                    value={cultureWeight}
+                    onChange={(e) => setCultureWeight(parseInt(e.target.value))}
+                  />
+                </div>
+              )}
+              <div className="w-full flex flex-col gap-3">
+                <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-1 justify-center">
+                    <Label className="m-0">Core Values</Label>
+                    <Label className="m-0 font-normal text-xs">
+                      Aligns with the company's core values.
+                    </Label>
+                  </div>
+                  <div className="relative w-[70px]">
+                    <Input
+                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                      type="number"
+                      min="0"
+                      max="100"
+                      value={coreValuesWeight}
+                      onChange={(e) =>
+                        setCoreValuesWeight(parseInt(e.target.value))
+                      }
+                    />
+                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                  </div>
+                </div>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  step={5}
+                  className="accent-brand-500"
+                  value={coreValuesWeight}
+                  onChange={(e) =>
+                    setCoreValuesWeight(parseInt(e.target.value))
+                  }
+                />
+              </div>
             </div>
+            <p
+              className={`mb-1.5 block text-sm font-medium  px-2 ${
+                totalCultureFitCompositeWeight !== 100
+                  ? "text-red-500"
+                  : "text-green-500"
+              }`}
+            >
+              {totalCultureFitCompositeWeight !== 100
+                ? `Total weight is ${totalCultureFitCompositeWeight}%. Please make sure it adds up to 100%.`
+                : "All good! Metric weights are properly distributed."}
+            </p>
             <div className="flex items-center gap-3 px-2 lg:justify-end">
               <Button size="sm" variant="outline" onClick={prevStep}>
                 Previous
               </Button>
               <Button
                 size="sm"
-                // onClick={() => {
-                //   addTemplate({
-                //     name: name,
-                //     companyId: "cm8l7il910007vgi8ano9wwz1",
-                //     questions: questions.map(({ id, ...rest }) => rest),
-                //     metrics: metrics.map(({ id, ...rest }) => rest),
-                //   });
-                //   clearState();
-                // }}
                 onClick={nextStep}
-                disabled={questions.length === 0}
+                disabled={totalCultureFitCompositeWeight !== 100}
               >
                 Next
               </Button>
@@ -604,7 +998,7 @@ const Templates: React.FC<TemplatesProps> = () => {
         </div>
       </Modal>
       <Modal
-        isOpen={isNewTemplateModalOpen && currentStep === 4}
+        isOpen={isNewTemplateModalOpen && currentStep === 5}
         onClose={clearState}
         className="max-w-[700px] m-4"
       >
@@ -696,7 +1090,9 @@ const Templates: React.FC<TemplatesProps> = () => {
             </div>
             <p
               className={`mb-1.5 block text-sm font-medium  px-2 ${
-                totalOverallFitWeight !== 100 ? "text-red-500" : "text-green-500"
+                totalOverallFitWeight !== 100
+                  ? "text-red-500"
+                  : "text-green-500"
               }`}
             >
               {totalOverallFitWeight !== 100
@@ -715,8 +1111,12 @@ const Templates: React.FC<TemplatesProps> = () => {
                     companyId: "cm8l7il910007vgi8ano9wwz1",
                     questions: questions.map(({ id, ...rest }) => rest),
                     metrics: metrics.map(({ id, ...rest }) => rest),
-                    responseQualityWeight: parseFloat(`${responseQualityWeight/100}`),
-                    cultureFitWeight: parseFloat(`${cultureFitWeight/100}`)
+                    responseQualityWeight: responseQualityWeight,
+                    cultureFitWeight: cultureFitWeight,
+                    missionWeight: missionWeight,
+                    visionWeight: visionWeight,
+                    cultureWeight: cultureWeight,
+                    coreValuesWeight: coreValuesWeight,
                   });
                   clearState();
                 }}
@@ -800,8 +1200,13 @@ const Templates: React.FC<TemplatesProps> = () => {
                       options={[
                         { value: "MISSION", label: "Mission" },
                         { value: "VISION", label: "Vision" },
-                        { value: "CULTURE", label: "Culture" },
-                      ]}
+                        culture
+                          ? { value: "CULTURE", label: "Culture" }
+                          : undefined,
+                      ].filter(
+                        (option): option is { value: string; label: string } =>
+                          option !== undefined
+                      )}
                       onChange={(value) =>
                         setQuestion((prev) => ({
                           ...prev,
@@ -909,6 +1314,81 @@ const Templates: React.FC<TemplatesProps> = () => {
             >
               Delete
             </button>
+          </div>
+        </div>
+      </Modal>
+      <Modal
+        isOpen={isGenerateQuestionsModalOpen}
+        onClose={closeGenerateQuestionsModal}
+        className="max-w-[700px] m-4"
+      >
+        <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
+          <div className="px-2 pr-14">
+            <h4 className="mb-2 text-2xl font-semibold text-gray-800 dark:text-white/90">
+              Generate Questions
+            </h4>
+            <p className="mb-6 text-sm text-gray-500 dark:text-gray-400 lg:mb-7">
+              Enter the number of questions you want to generate based on your
+              company's core values.
+            </p>
+          </div>
+          <div className="flex flex-col gap-6">
+            <div className="px-2 overflow-y-auto custom-scrollbar">
+              <div>
+                <Label>Number of Questions</Label>
+                <Input
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={numberOfQuestions}
+                  onChange={(e) =>
+                    setNumberOfQuestions(parseInt(e.target.value))
+                  }
+                />
+              </div>
+            </div>
+            <div className="flex items-center gap-3 px-2 lg:justify-end">
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={closeGenerateQuestionsModal}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={async () => {
+                  try {
+                    closeGenerateQuestionsModal();
+                    setIsGeneratingQuestions(true);
+                    const { data } = await api.post(
+                      endpoints.templates.generateQuestions(companyId),
+                      { numberOfQuestions },
+                      {
+                        withCredentials: true,
+                      }
+                    );
+                    setIsGeneratingQuestions(false);
+                    const processedQuestions = data.map((question: any) => ({
+                      id: crypto.randomUUID(),
+                      ...question,
+                    }));
+                    setQuestions((prev) => [...prev, ...processedQuestions]);
+                  } catch (error) {
+                    setIsGeneratingQuestions(false);
+                    closeGenerateQuestionsModal();
+                    useToastStore.getState().showToast({
+                      title: "Error",
+                      message: "Error generating questions. Please try again.",
+                      type: "error",
+                    });
+                  }
+                }}
+                disabled={numberOfQuestions < 1 || numberOfQuestions > 10}
+              >
+                Generate
+              </Button>
+            </div>
           </div>
         </div>
       </Modal>

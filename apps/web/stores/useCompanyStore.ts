@@ -64,7 +64,7 @@ export const useCompanyStore = create<CompanyStore>((set) => ({
         mission: company.data.mission || "",
         vision: company.data.vision || "",
         culture: company.data.culture || "",
-        isOnboarding: !company.data.mission || !company.data.vision || !company.data.culture || company.data.coreValues.lenght === 0
+        isOnboarding: !company.data.mission || !company.data.vision || company.data.coreValues.lenght === 0
       });
       console.log(company.data.roles)
     } catch (err: any) {

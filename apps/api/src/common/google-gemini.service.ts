@@ -8,6 +8,8 @@ import {
   SchemaType,
   GenerateContentRequest,
   Tool,
+  Part,
+  FunctionDeclarationSchema,
 } from '@google/generative-ai';
 
 // Define the expected structure of the function call arguments
@@ -24,6 +26,18 @@ interface CulturalFitEvaluation {
       feedback?: string;
     }
   >;
+}
+
+// Define the expected structure for a single question (useful for validation)
+interface InterviewQuestion {
+  text: string;
+  type: 'MISSION' | 'VISION' | 'CULTURE';
+  coreValues: string[];
+}
+
+// Define the expected structure for the function call arguments
+interface FunctionCallArgs {
+  questions: InterviewQuestion[];
 }
 
 @Injectable()
@@ -413,6 +427,197 @@ export class GeminiService {
       return generatedFeedback || null;
     } catch (error) {
       this.logger.error('Error during AI feedback generation:', error);
+      return null;
+    }
+  }
+
+  async generateTemplateQuestions(companyProfile: {
+    coreValues: Record<string, string>;
+    mission: string;
+    vision: string;
+    culture: string;
+  }, numberOfQuestions: number): Promise<InterviewQuestion[] | null> {
+    if (!this.genAI) {
+      this.logger.error('Gemini API client is not initialized.');
+      return null;
+    }
+    const modelName = 'gemini-2.0-flash'; // Or your chosen model
+    const model = this.genAI.getGenerativeModel({ model: modelName /* ...safetySettings */ });
+    const coreValueKeys = Object.keys(companyProfile.coreValues);
+    
+    const prompt = `
+      You are an expert HR professional creating interview questions to evaluate cultural fit based on the provided company information.
+      Your task is to generate exactly ${numberOfQuestions} distinct interview questions.
+      NOTE: Only generate ${numberOfQuestions} questions. Do not generate more or less.
+
+      Each question must strictly adhere to the following criteria:
+      1.  Be aligned with ONLY ONE of the company's primary aspects: 'mission', 'vision', or 'culture'.
+      2.  Evaluate AT LEAST ONE, and potentially multiple, of the company's specified core values. The core values provided are: ${coreValueKeys.join(', ')}.
+      3.  Be open-ended and behavioral (asking for past experiences or hypothetical scenarios related to the values/aspects).
+      4.  Be professional, clear, concise, and appropriate for a job interview setting.
+      5.  Do NOT ask generic questions. Each question should be tailored to the provided company information.
+
+      Company Information:
+      - Mission: "${companyProfile.mission}"
+      - Vision: "${companyProfile.vision}"
+      ${companyProfile.culture ? `- Culture: "${companyProfile.culture}"` : ''}
+      - Core Values (Name: Description):
+        ${JSON.stringify(companyProfile.coreValues, null, 2)}
+
+      Use the provided 'generateInterviewQuestions' function to format your response. Ensure the 'coreValues' array for each question contains only valid core value names from the list: ${coreValueKeys.join(', ')}.
+    `.trim();
+
+    const functionSchema = {
+      name: 'generateInterviewQuestions',
+      description: 'Generates tailored interview questions aligned with company mission, vision, culture, and core values.',
+      parameters: {
+        type: SchemaType.OBJECT,
+        properties: {
+          questions: {
+            type: SchemaType.ARRAY,
+            description: `List of exactly ${numberOfQuestions} generated interview questions.`,
+            items: {
+              type: SchemaType.OBJECT,
+              properties: {
+                text: {
+                  type: SchemaType.STRING,
+                  description: 'The full text of the interview question.',
+                },
+                type: {
+                  type: SchemaType.STRING,
+                  description: "The single aspect this question primarily aligns with ('mission', 'vision', or 'culture').",
+                  enum: companyProfile.culture ? ['MISSION', 'VISION', 'CULTURE'] : ['MISSION', 'VISION'],
+                },
+                coreValues: {
+                  type: SchemaType.ARRAY,
+                  description: 'List of one or more core value names (from the provided list) that this question evaluates.',
+                  items: {
+                    type: SchemaType.STRING,
+                    description: 'A valid core value name.',
+                  },
+                },
+              },
+              required: ['text', 'type', 'coreValues'],
+            },
+          },
+        },
+        required: ['questions'],
+      },
+    };
+
+    const generateContentRequest: GenerateContentRequest = {
+      contents: [{ role: 'user', parts: [{ text: prompt }] }],
+      tools: [
+        {
+          functionDeclarations: [functionSchema],
+        } as Tool,
+      ],
+      // toolConfig: { functionCallingConfig: { mode: 'ANY' } }
+    };
+
+    try {
+      const result = await model.generateContent(generateContentRequest);
+      const response = result.response;
+      const firstCandidate = response?.candidates?.[0];
+
+      if (!firstCandidate?.content?.parts?.length) {
+        this.logger.error('Gemini response missing candidates or parts.', { responseText: response?.text() });
+        return null;
+      }
+
+      const functionCallPart = firstCandidate.content.parts.find((part: Part) => !!part.functionCall);
+
+      if (!functionCallPart || !functionCallPart.functionCall?.args) {
+        this.logger.error('Gemini response missing function call or arguments.', { responseContent: firstCandidate.content });
+        return null;
+      }
+
+      // --- Runtime Validation & Type Guard ---
+      const args = functionCallPart.functionCall.args;
+
+      // **FIX:** Perform checks that TypeScript can use for type narrowing
+      if (
+        !args ||                            // Check if args exists
+        typeof args !== 'object' ||         // Check if it's an object
+        !('questions' in args) ||         // **** Check if 'questions' property exists ****
+        !Array.isArray(args.questions)      // **** Check if 'questions' is an array ****
+      ) {
+        // Now accessing args.questions is potentially unsafe or known to be wrong type
+        this.logger.error('Gemini function call arguments have incorrect structure or missing/invalid "questions" array.', { args });
+        return null;
+      }
+
+      // **** After the checks above, TypeScript knows args is an object ****
+      // **** AND it has a property 'questions' which is an array.        ****
+      // Type is narrowed to something like: { questions: unknown[] } & object
+
+      // Now we can safely access args.questions
+      const receivedQuestions: unknown[] = args.questions; // Store it safely as unknown[] first
+      const validQuestions: InterviewQuestion[] = [];
+      const invalidQuestionMessages: string[] = [];
+      const validCoreValueSet = new Set(coreValueKeys);
+
+      // Detailed validation of each item in the array
+      for (const index in receivedQuestions) {
+          const q = receivedQuestions[index]; // q is 'unknown' here
+
+          // Validate the structure of each question object
+          if (
+              !q || typeof q !== 'object' || // Check if q is a non-null object
+              typeof (q as any).text !== 'string' || (q as any).text.trim() === '' ||
+              !['MISSION', 'VISION', 'CULTURE'].includes((q as any).type) ||
+              !Array.isArray((q as any).coreValues) || (q as any).coreValues.length === 0
+              // Add core value content check inside the loop for clarity
+          ) {
+              invalidQuestionMessages.push(`Invalid question structure at index ${index}: ${JSON.stringify(q)}`);
+              continue; // Skip to the next question
+          }
+
+          // Now q is known to be an object with the basic fields existing and having roughly correct types.
+          // We can be slightly more confident treating it like InterviewQuestion, but still validate content.
+          const potentialQuestion = q as Partial<InterviewQuestion>; // Use Partial for safety
+          const errors: string[] = [];
+
+          // Validate core values more strictly
+          const currentCoreValues = potentialQuestion.coreValues!; // Assert non-null based on Array.isArray check above
+          for (const cv of currentCoreValues) {
+              if (typeof cv !== 'string' || !validCoreValueSet.has(cv)) {
+                  errors.push(`Invalid or unknown core value: ${cv}`);
+              }
+          }
+
+          if (errors.length === 0) {
+              // If all checks pass, *now* cast to the definitive type
+              validQuestions.push(potentialQuestion as InterviewQuestion);
+          } else {
+              invalidQuestionMessages.push(`Invalid question content (Text: "${potentialQuestion.text?.substring(0, 50)}..."): ${errors.join(', ')}`);
+          }
+      }
+
+
+      if (invalidQuestionMessages.length > 0) {
+          this.logger.warn(`Gemini returned ${invalidQuestionMessages.length} invalid questions:\n${invalidQuestionMessages.join('\n')}`);
+          // Decide strategy: return only valid, or fail completely
+      }
+
+      if (validQuestions.length === 0) {
+          this.logger.error('Gemini did not return any valid questions meeting all criteria.');
+          return null;
+      }
+
+       if (validQuestions.length !== numberOfQuestions) {
+           this.logger.warn(`Requested ${numberOfQuestions} questions, but received ${validQuestions.length} valid questions.`);
+           // Decide if this is acceptable
+       }
+
+      return validQuestions;
+
+    } catch (error: any) {
+      console.log({HANNAH: error.message})
+      this.logger.error('Error during Gemini question generation:', error?.message || error);
+      if (error.response) {
+        this.logger.error('Gemini API Error Details:', JSON.stringify(error.response, null, 2));
+      }
       return null;
     }
   }

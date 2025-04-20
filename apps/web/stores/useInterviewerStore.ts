@@ -30,6 +30,9 @@ interface InterviewState {
   isSubmitting: boolean;
   currentStep: number;
   nextDisable: boolean;
+  cameraType: 'BUILT_IN' | 'EXTERNAL' | null;
+  micType: 'BUILT_IN' | 'EXTERNAL' | null;
+  deviceType: 'DESKTOP' | 'TABLET' | 'MOBILE' | null;
   setCurrentStep: (step: number) => void;
   startInterview: () => Promise<void>;
   nextQuestion: () => Promise<void>;
@@ -70,6 +73,9 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
   role: "",
   currentStep: 0,
   nextDisable: false,
+  cameraType: null,
+  micType: null,
+  deviceType: null,
 
   setCurrentStep: (step: number) => {
     set({ currentStep: step });
@@ -101,6 +107,43 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
 
   startInterview: async () => {
     if (get().isRecording || !videoRef?.current) return;
+
+    // Detect devices before starting interview
+    try {
+      const devices = await navigator.mediaDevices.enumerateDevices();
+      const videoDevices = devices.filter(device => device.kind === 'videoinput');
+      const audioDevices = devices.filter(device => device.kind === 'audioinput');
+
+      const videoTrack = cameraStream?.getVideoTracks()[0];
+      const audioTrack = audioStream?.getAudioTracks()[0];
+
+      const videoDevice = videoDevices.find(device => 
+        device.label.includes(videoTrack?.label || '') || 
+        device.label === videoTrack?.label
+      );
+
+      const audioDevice = audioDevices.find(device => 
+        device.label.includes(audioTrack?.label || '') || 
+        device.label === audioTrack?.label
+      );
+
+      const isBuiltInCamera = videoDevice?.label.toLowerCase().includes('built-in') || 
+                             videoDevice?.label.toLowerCase().includes('integrated');
+      const isBuiltInMic = audioDevice?.label.toLowerCase().includes('built-in') || 
+                          audioDevice?.label.toLowerCase().includes('integrated');
+
+      const deviceType = window.innerWidth <= 768 ? 'MOBILE' : 
+                        window.innerWidth <= 1024 ? 'TABLET' : 
+                        'DESKTOP';
+
+      set({
+        cameraType: isBuiltInCamera ? 'BUILT_IN' : 'EXTERNAL',
+        micType: isBuiltInMic ? 'BUILT_IN' : 'EXTERNAL',
+        deviceType
+      });
+    } catch (error) {
+      console.error('Error detecting devices:', error);
+    }
 
     await api.patch(`${endpoints.public.startInterview(encodeURIComponent(get().interviewToken!))}`);
 

@@ -46,7 +46,14 @@ export class TemplatesController {
 
   @Delete(':templateId')
   @UseGuards(JwtAuthGuard)
-  emove(@Param('templateId') id: string) {
+  remove(@Param('templateId') id: string) {
     return this.service.remove(id);
   }
+
+  @Post('company/:companyId/generate-questions')
+  @UseGuards(JwtAuthGuard)
+  generateQuestions(@Param('companyId') companyId: string, @Body() numberOfQuestions: any) {
+    return this.service.generateQuestions(companyId, numberOfQuestions.numberOfQuestions);
+  }
+
 }

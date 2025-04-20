@@ -31,6 +31,10 @@ export interface Candidate {
 export interface InterviewTemplate {
   id?: string;
   name: string;
+  missionWeight: number;
+  visionWeight: number;
+  cultureWeight: number;
+  coreValuesWeight: number;
   responseQualityWeight: number;
   cultureFitWeight: number;
   companyId?: string;

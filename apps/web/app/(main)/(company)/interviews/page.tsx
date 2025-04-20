@@ -17,7 +17,7 @@ export default function page() {
 
   return (
     <div className="h-full flex flex-col text-gray-500 dark:text-gray-400 ">
-      <PageBreadcrumb pageTitle="Candidates" />
+      <PageBreadcrumb pageTitle="Interviews" />
       {/* <Kanban /> */}
       <Kanban />
     </div>

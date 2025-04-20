@@ -1,7 +1,9 @@
 import { InterviewTemplate, Metric, Question } from "@/lib/types";
+import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useState, useEffect } from "react";
 
 export const useTemplateForm = (initial?: InterviewTemplate | null) => {
+  const culture = useCompanyStore((state) => state.culture);
   const defaultMetrics = [
     {
       id: crypto.randomUUID(),
@@ -36,8 +38,12 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
   ];
 
   const [name, setName] = useState("");
-  const [responseQualityWeight, setResponseQualityWeight] = useState(0);
-  const [cultureFitWeight, setCultureFitWeight] = useState(0)
+  const [responseQualityWeight, setResponseQualityWeight] = useState(30);
+  const [cultureFitWeight, setCultureFitWeight] = useState(70)
+  const [missionWeight, setMissionWeight] = useState(culture ? 25 : 35);
+  const [visionWeight, setVisionWeight] = useState(culture ? 25 : 35);
+  const [cultureWeight, setCultureWeight] = useState(culture ? 25 : 0);
+  const [coreValuesWeight, setCoreValuesWeight] = useState(culture ? 25 : 30);
   const [order, setOrder] = useState(0);
   const [question, setQuestion] = useState<Question>({
     id: crypto.randomUUID(),
@@ -51,6 +57,7 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
 
   const totalMetricsWeights = metrics.reduce((sum, m) => sum + m.weight, 0);
   const totalOverallFitWeight = responseQualityWeight + cultureFitWeight;
+  const totalCultureFitCompositeWeight = cultureWeight + coreValuesWeight + missionWeight + visionWeight;
   // When editing, populate form with existing values
   useEffect(() => {
     if (initial) {
@@ -59,6 +66,12 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
         initial.questions!
       );
       setMetrics(initial.metrics!);
+      setResponseQualityWeight(initial.responseQualityWeight!);
+      setCultureFitWeight(initial.cultureFitWeight!);
+      setMissionWeight(initial.missionWeight!);
+      setVisionWeight(initial.visionWeight!);
+      setCultureWeight(initial.cultureWeight!);
+      setCoreValuesWeight(initial.coreValuesWeight!);
     }
   }, [initial]);
 
@@ -66,8 +79,8 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
     setName("");
     setQuestions([]);
     setMetrics(defaultMetrics);
-    setResponseQualityWeight(0);
-    setCultureFitWeight(0);
+    setResponseQualityWeight(30);
+    setCultureFitWeight(70);
   };
 
   const addQuestion = (question: Question) => {
@@ -115,6 +128,15 @@ export const useTemplateForm = (initial?: InterviewTemplate | null) => {
     cultureFitWeight,
     setResponseQualityWeight,
     setCultureFitWeight,
-    totalOverallFitWeight
+    totalOverallFitWeight,
+    totalCultureFitCompositeWeight,
+    missionWeight,
+    visionWeight,
+    cultureWeight,
+    coreValuesWeight,
+    setMissionWeight,
+    setVisionWeight,
+    setCultureWeight,
+    setCoreValuesWeight,
   };
 };
