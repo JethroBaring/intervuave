@@ -8,7 +8,6 @@ export class ResponsesController {
   constructor(private readonly responsesService: ResponsesService) {}
 
   @Post('bulk')
-  @UseGuards(JwtAuthGuard)
   bulkCreate(
     @Param('interviewId') interviewId: string,
     @Body() createResponseDto: CreateResponsesDto,
