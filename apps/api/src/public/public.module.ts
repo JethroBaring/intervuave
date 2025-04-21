@@ -6,7 +6,7 @@ import { PublicInterviewService } from './interview/public-interview.service';
 import { GoogleStorageService } from 'src/common/google-storage.service';
 import { ConfigService } from '@nestjs/config';
 import { GoogleTasksService } from 'src/common/google-tasks.service';
-import { WorkerService } from "src/common/worker.service";
+import { ProcessingWorkerService } from "src/common/processing-worker.service";
 
 @Module({
   controllers: [PublicInterviewController],
@@ -16,7 +16,7 @@ import { WorkerService } from "src/common/worker.service";
     GoogleStorageService,
     GoogleTasksService,
     ConfigService,
-    WorkerService
+    ProcessingWorkerService
   ],
 })
 export class PublicModule {}

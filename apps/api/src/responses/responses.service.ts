@@ -1,3 +1,4 @@
+import { EvaluationWorkerService } from './../common/evaluation-worker.service';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
@@ -8,7 +9,7 @@ import { EvaluationsService } from 'src/evaluations/evaluations.service';
 export class ResponsesService {
   constructor(
     private readonly prisma: PrismaService,
-    private readonly evaluation: EvaluationsService,
+    private readonly evaluationWorker: EvaluationWorkerService
   ) {}
 
   async bulkCreate(interviewId: string, createResponseDto: CreateResponsesDto) {
@@ -47,7 +48,8 @@ export class ResponsesService {
         status: 'EVALUATING',
       },
     });
-    await this.evaluation.evaluate(interviewId);
+    
+    this.evaluationWorker.executeTask(interviewId);
     return { message: 'Responses saved successfully' };
   }
 }

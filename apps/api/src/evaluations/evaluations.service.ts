@@ -14,8 +14,8 @@ import { GeminiService } from 'src/common/google-gemini.service';
 import { Decision } from '@prisma/client';
 import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 import { GoogleStorageService } from 'src/common/google-storage.service';
-import { WorkerService } from "src/common/worker.service";
-
+import { ProcessingWorkerService } from "src/common/processing-worker.service";
+import { EvaluationWorkerService } from "src/common/evaluation-worker.service";
 @Injectable()
 export class EvaluationsService {
   private readonly logger = new Logger(EvaluationsService.name);
@@ -24,7 +24,8 @@ export class EvaluationsService {
     private readonly prisma: PrismaService,
     private readonly gemini: GeminiService,
     private readonly storage: GoogleStorageService,
-    private readonly workerService: WorkerService,
+    private readonly processingWorkerService: ProcessingWorkerService,
+    private readonly evaluationWorkerService: EvaluationWorkerService,
   ) {}
 
   async create(createDto: CreateEvaluationsDto) {
@@ -80,95 +81,104 @@ export class EvaluationsService {
     }
   }
 
-  async evaluate(interviewId: string) {
-    const interview = await this.prisma.interview.findUnique({
-      where: { id: interviewId },
-      include: {
-        responses: {
-          take: 10,
-          select: {
-            questionId: true,
-            question: {
-              select: {
-                alignedWith: true,
-                questionText: true,
-                coreValues: true,
+  async evaluate(interviewId: string, taskId: string) {
+    try {
+      const interview = await this.prisma.interview.findUnique({
+        where: { id: interviewId },
+        include: {
+          responses: {
+            take: 10,
+            select: {
+              questionId: true,
+              question: {
+                select: {
+                  alignedWith: true,
+                  questionText: true,
+                  coreValues: true,
+                },
               },
+              transcript: true,
             },
-            transcript: true,
+          },
+          interviewTemplate: {
+            include: {
+              questions: true,
+            },
+          },
+          company: {
+            include: {
+              coreValues: true,
+            },
           },
         },
-        interviewTemplate: {
-          include: {
-            questions: true,
-          },
+      });
+  
+      const cleanedData = {
+        responses: interview?.responses.map((response) => ({
+          questionId: response.questionId,
+          questionText: response.question.questionText,
+          transcript: response.transcript,
+          coreValues: response.question.coreValues.split(','),
+          alignsWith: response.question.alignedWith,
+        })),
+        companyProfile: {
+          coreValues: interview?.company.coreValues.reduce(
+            (acc, coreValue) => {
+              acc[coreValue.name] = coreValue.description;
+              return acc;
+            },
+            {} as Record<string, string>,
+          ),
+          mission: interview?.company.mission,
+          vision: interview?.company.vision,
+          culture: interview?.company.culture,
         },
-        company: {
-          include: {
-            coreValues: true,
-          },
+      };
+  
+      // Step 1: Evaluate using Gemini
+      await this.evaluationWorkerService.updateTaskStatus(taskId, 'EVALUATING');
+      const initialEvaluation = await this.gemini.evaluateWithGemini(cleanedData);
+  
+      if (!initialEvaluation) {
+        throw new Error('Evaluation failed.');
+      }
+  
+      // Step 2: Self-Critique the Evaluation
+      const correctedEvaluation =
+        await this.gemini.selfCritique(initialEvaluation);
+  
+      if (!correctedEvaluation) {
+        throw new Error('Self-critique failed.');
+      }
+  
+      // Step 3: Calculate scores
+      const calculatedEvaluation = await this.calculateFinalScores(
+        interviewId,
+        correctedEvaluation,
+      );
+  
+      await this.prisma.evaluation.upsert({
+        where: { id: interviewId },
+        update: calculatedEvaluation,
+        create: calculatedEvaluation,
+      });
+  
+      await this.prisma.interview.update({
+        where: { id: interviewId },
+        data: {
+          status: 'EVALUATED',
+          evaluatedAt: getPrismaDateTimeNow(),
         },
-      },
-    });
-
-    const cleanedData = {
-      responses: interview?.responses.map((response) => ({
-        questionId: response.questionId,
-        questionText: response.question.questionText,
-        transcript: response.transcript,
-        coreValues: response.question.coreValues.split(','),
-        alignsWith: response.question.alignedWith,
-      })),
-      companyProfile: {
-        coreValues: interview?.company.coreValues.reduce(
-          (acc, coreValue) => {
-            acc[coreValue.name] = coreValue.description;
-            return acc;
-          },
-          {} as Record<string, string>,
-        ),
-        mission: interview?.company.mission,
-        vision: interview?.company.vision,
-        culture: interview?.company.culture,
-      },
-    };
-
-    // Step 1: Evaluate using Gemini
-    const initialEvaluation = await this.gemini.evaluateWithGemini(cleanedData);
-
-    if (!initialEvaluation) {
-      throw new Error('Evaluation failed.');
+      });
+  
+      await this.evaluationWorkerService.updateTaskStatus(taskId, 'EVALUATED');
+  
+      return { message: 'success' };
+    } catch (error) {
+      this.logger.error('Failed to evaluate interview', error);
+      await this.evaluationWorkerService.updateTaskStatus(taskId, 'FAILED_EVALUATION');
+      throw new InternalServerErrorException('Failed to evaluate interview');
     }
-
-    // Step 2: Self-Critique the Evaluation
-    const correctedEvaluation =
-      await this.gemini.selfCritique(initialEvaluation);
-
-    if (!correctedEvaluation) {
-      throw new Error('Self-critique failed.');
-    }
-
-    // Step 3: Calculate scores
-    const calculatedEvaluation = await this.calculateFinalScores(
-      interviewId,
-      correctedEvaluation,
-    );
-
-    await this.prisma.evaluation.upsert({
-      where: { id: interviewId },
-      update: calculatedEvaluation,
-      create: calculatedEvaluation,
-    });
-
-    await this.prisma.interview.update({
-      where: { id: interviewId },
-      data: {
-        status: 'EVALUATED',
-        evaluatedAt: getPrismaDateTimeNow(),
-      },
-    });
-
-    return { message: 'success' };
   }
 
   async calculateFinalScores(interviewId: string, correctedEvaluation: any) {
@@ -444,91 +454,10 @@ export class EvaluationsService {
   }
 
   async reprocessInterview(interviewId: string) {
-    await this.workerService.addTask(interviewId);
-    // try {
-    //   const interview = await this.prisma.interview.findUnique({
-    //     where: { id: interviewId },
-    //     select: {
-    //       id: true,
-    //       filename: true,
-    //       timestamps: true, // <-- use this
-    //     },
-    //   });
-    //   console.log('hello');
-    //   if (!interview) {
-    //     throw new Error('Interview not found.');
-    //   }
-
-    //   if (!interview.filename) {
-    //     throw new Error('Interview video filename is missing.');
-    //   }
-
-    //   if (!interview.timestamps) {
-    //     throw new Error('Timestamps are missing.');
-    //   }
-
-    //   // Generate a signed URL to access the video
-    //   const videoUrl = await this.storage.generateInterviewViewUrl(
-    //     interview.filename,
-    //     60, // 1 hour expiry
-    //   );
-
-    //   const timestamps = interview.timestamps as any[]; // Already stored from submitInterview
-    //   const questions = timestamps.reduce(
-    //     (acc, t) => {
-    //       if (t.questionId && t.questionText) {
-    //         acc[t.questionId] = t.questionText;
-    //       }
-    //       return acc;
-    //     },
-    //     {} as Record<string, string>,
-    //   );
-    //   console.log({
-    //     HANNAH: JSON.stringify({
-    //       interview_id: interviewId,
-    //       timestamps: timestamps,
-    //       video_url: videoUrl,
-    //       questions,
-    //       callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
-    //       status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
-    //     })
-    //   })
-    //   // Same as in submitInterview: send to FastAPI
-    //   await fetch(
-    //     process.env.PROCESSING_WORKER_URL ||
-    //       'https://jethrob123-processing-worker.hf.space/process-interview',
-    //     {
-    //       method: 'POST',
-    //       headers: {
-    //         'Content-Type': 'application/json',
-    //       },
-    //       body: JSON.stringify({
-    //         interview_id: interviewId,
-    //         timestamps: timestamps,
-    //         video_url: videoUrl,
-    //         questions,
-    //         callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
-    //         status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
-    //       }),
-    //     },
-    //   );
-
-    //   return { success: true };
-    // } catch (error) {
-    //   console.error('Error during reprocessing interview:', error);
-    //   return { success: false, error: error.message };
-    // }
+    await this.processingWorkerService.addTask(interviewId);
   }
 
   async reevaluateInterview(interviewId: string) {
-    const interview = await this.prisma.interview.findUnique({
-      where: { id: interviewId },
-    });
-
-    if (!interview) {
-      throw new Error('Interview not found.');
-    }
-
-    await this.evaluate(interviewId);
+    await this.evaluationWorkerService.executeTask(interviewId);
   }
 }

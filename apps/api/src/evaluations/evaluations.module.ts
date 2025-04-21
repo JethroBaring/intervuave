@@ -4,15 +4,21 @@ import { EvaluationsController } from './evaluations.controller';
 import { GeminiService } from 'src/common/google-gemini.service';
 import { GoogleStorageService } from 'src/common/google-storage.service';
 import { ConfigService } from '@nestjs/config';
-import { WorkerService } from 'src/common/worker.service';
-@Module({
+import { ProcessingWorkerService } from 'src/common/processing-worker.service';
+import { EvaluationWorkerService } from "src/common/evaluation-worker.service";
+import { GoogleTasksService } from "src/common/google-tasks.service";
+
+  @Module({
+  imports: [],
   controllers: [EvaluationsController],
   providers: [
     EvaluationsService,
     GeminiService,
     GoogleStorageService,
     ConfigService,
-    WorkerService,
+    ProcessingWorkerService,
+    EvaluationWorkerService,
+    GoogleTasksService,
   ],
 })
 export class EvaluationsModule {}

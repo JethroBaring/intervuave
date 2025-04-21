@@ -14,6 +14,7 @@ import { GoogleStorageService } from 'src/common/google-storage.service';
 import { Prisma } from '@prisma/client';
 import { GoogleTasksService } from 'src/common/google-tasks.service';
 import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
+import { ProcessingWorkerService } from "src/common/processing-worker.service";
 
 @Injectable()
 export class PublicInterviewService {
@@ -23,7 +24,7 @@ export class PublicInterviewService {
     private readonly prisma: PrismaService,
     private readonly crypto: CryptoService,
     private readonly storage: GoogleStorageService,
-    private readonly queue: GoogleTasksService,
+    private readonly processingWorker: ProcessingWorkerService
   ) {}
 
   async accessInterview(token: string) {
@@ -68,55 +69,9 @@ export class PublicInterviewService {
         return { valid: false, reason: 'expired' };
       }
 
-      const interview = await this.prisma.interview.update({
-        where: { id },
-        data: {
-          status: 'SUBMITTED',
-          timestamps: (timestamps.timestamps ?? []) as Prisma.JsonArray,
-          submittedAt: getPrismaDateTimeNow(),
-        },
-      });
+      await this.processingWorker.addTask(id);
 
-      const videoUrl = await this.storage.generateInterviewViewUrl(
-        interview.filename!,
-        60,
-      );
-
-      const questions = (timestamps.timestamps as any[]).reduce(
-        (acc, t) => {
-          if (t.questionId && t.questionText) {
-            acc[t.questionId] = t.questionText;
-          }
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-
-      await this.queue.addTask({
-        interview_id: id,
-        timestamps: timestamps.timestamps,
-        video_url: videoUrl,
-        questions,
-        callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${id}/responses/bulk`,
-        status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${id}/process`,
-      });
-
-      // await fetch('http://localhost:8000/process-interview', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify({
-      //     interview_id: id,
-      //     timestamps: timestamps.timestamps,
-      //     video_url: videoUrl,
-      //     questions,
-      //     callback_url: `http://localhost:3000/api/v1/interviews/${id}/responses/bulk`,
-      //     status_callback_url: `http://localhost:3000/api/v1/public/interviews/${id}/process`,
-      //   }),
-      // });
-
-      return interview;
+      return { success: true };
     } catch (err: any) {
       console.log(err);
       return { valid: false, reason: 'invalid' };

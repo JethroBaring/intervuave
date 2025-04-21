@@ -2,30 +2,30 @@ model Worker {
   id        String       @id @default(uuid())
   name      String
   url       String
-  status    WorkerStatus @default(ACTIVE)
-  tasks     WorkerTask[]
+  status    WorkerStatus @default(AVAILABLE)
   createdAt DateTime     @default(now())
   updatedAt DateTime     @updatedAt
 }
 
 enum WorkerStatus {
-  ACTIVE
-  WAITING
+  BUSY
+  AVAILABLE
 }
 
-model WorkerTask {
+model Task {
   id        String   @id @default(uuid())
-  workerId  String
-  worker    Worker   @relation(fields: [workerId], references: [id])
   interviewId String
-  status    WorkerTaskStatus @default(PENDING)
+  status    TaskStatus @default(PENDING)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 }
 
-enum WorkerTaskStatus {
+enum TaskStatus {
   PENDING
-  COMPLETED
   PROCESSING
-  FAILED
+  PROCESSED
+  EVALUATING
+  EVALUATED
+  FAILED_PROCESSING
+  FAILED_EVALUATION
 }

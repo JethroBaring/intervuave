@@ -1,12 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { PublicInterviewService } from './public-interview.service';
 import { GenerateUploadUrlDto } from './dto/generate-upload-url.dto';
-import { WorkerService } from 'src/common/worker.service';
+import { ProcessingWorkerService } from 'src/common/processing-worker.service';
 @Controller({ path: 'public/interviews', version: '1' })
 export class PublicInterviewController {
   constructor(
     private readonly publicInterviewSerivice: PublicInterviewService,
-    private readonly workerService: WorkerService,
+    private readonly processingWorker: ProcessingWorkerService,
   ) {}
 
   @Get(':token')
@@ -32,13 +32,14 @@ export class PublicInterviewController {
     return this.publicInterviewSerivice.generateSignedInterviewUrl(token, dto);
   }
 
-  @Post(':workerId/next-task')
-  processNextTask(@Param('workerId') workerId: string) {
-    return this.workerService.processNextTaskForWorker(workerId);
+  @Patch(':taskId/update-task-status')
+  updateTaskStatus(@Param('taskId') taskId: string, @Body() dto: { status: 'PENDING' | 'PROCESSING' | 'PROCESSED' | 'EVALUATING' | 'EVALUATED' | 'FAILED_PROCESSING'  }) {
+    return this.processingWorker.updateTaskStatus(taskId, dto.status);
   }
 
-  @Post(':taskId/retry-task')
-  retryTask(@Param('taskId') taskId: string) {
-    return this.workerService.retryTask(taskId);
+  @Patch(':workerId/update-worker-status')
+  updateWorkerStatus(@Param('workerId') workerId: string, @Body() dto: { status: 'AVAILABLE' | 'BUSY' }) {
+    return this.processingWorker.updateWorkerStatus(workerId, dto.status);
   }
+
 }
