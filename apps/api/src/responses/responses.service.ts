@@ -1,18 +1,24 @@
 import { EvaluationWorkerService } from './../common/evaluation-worker.service';
 /* eslint-disable @typescript-eslint/no-unsafe-assignment */
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateResponsesDto } from './dto/create-response.dto';
 import { EvaluationsService } from 'src/evaluations/evaluations.service';
 
 @Injectable()
 export class ResponsesService {
+
+  private readonly logger = new Logger(ResponsesService.name);
+
   constructor(
     private readonly prisma: PrismaService,
     private readonly evaluationWorker: EvaluationWorkerService
   ) {}
 
   async bulkCreate(interviewId: string, createResponseDto: CreateResponsesDto) {
+    this.logger.log(`Creating ${createResponseDto.responses.length} responses for interview ${interviewId}`);
+    this.logger.log(createResponseDto.responses.map((item) => item.questionId));
+
     const data = createResponseDto.responses.map((item) => ({
       interviewId,
       questionId: item.questionId,
