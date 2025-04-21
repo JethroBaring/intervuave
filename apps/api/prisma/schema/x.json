@@ -1,0 +1,43 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "functionCall": {
+              "name": "returnCulturalFitEvaluation",
+              "args": {
+                "perQuestionResults": [
+                  {
+                    "questionText": "Share an experience where collaboration helped you succeed.",
+                    "feedback": "The candidate provided a clear example of how collaboration led to a successful outcome, aligning well with the company's culture that values teamwork.",
+                    "cultureFitComposite": {
+                      "missionAlignment": null,
+                      "cultureFit": 0.8,
+                      "visionAlignment": null,
+                      "valuesFit": [
+                        { "score": 0.8, "coreValue": "Collaboration" }
+                      ]
+                    },
+                    "questionId": "cm9q24rzr0002pv12yvbh9ggv"
+                  }
+                ]
+              }
+            }
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.08764164622237043
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 675,
+    "candidatesTokenCount": 82,
+    "totalTokenCount": 757,
+    "promptTokensDetails": [{ "modality": "TEXT", "tokenCount": 675 }],
+    "candidatesTokensDetails": [{ "modality": "TEXT", "tokenCount": 82 }]
+  },
+  "modelVersion": "gemini-2.0-flash"
+}

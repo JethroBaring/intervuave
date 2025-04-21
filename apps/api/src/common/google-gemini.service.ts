@@ -102,6 +102,8 @@ export class GeminiService {
 
       Core Values Scoring:
       Score each core value (valuesFit) individually based on how much the candidate's response reflects that value. Use the same 0.0-1.0 scale.
+
+      Please return the evaluation using the returnCulturalFitEvaluation function call schema.
       `.trim();
 
     this.logger.log(`Prompt: ${prompt}`);

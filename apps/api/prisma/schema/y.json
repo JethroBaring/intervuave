@@ -1,0 +1,24 @@
+{
+  "candidates": [
+    {
+      "content": {
+        "parts": [
+          {
+            "text": "```json\n{\n \"perQuestionResults\": [\n {\n \"questionId\": \"cm9fnytx60028n210lt8pwkfq\",\n \"questionText\": \"Can you describe a time when you took ownership of a project or task, and how did you communicate progress and collaborate with others to achieve success?\",\n \"cultureFitComposite\": {\n \"valuesFit\": [\n {\n \"coreValue\": \"Culture of Excellence\",\n \"score\": 0.5\n }\n ],\n \"cultureFit\": 0.5,\n \"missionAlignment\": null,\n \"visionAlignment\": null\n },\n \"feedback\": \"The candidate describes contributing ideas and working on backend tasks. The response is moderate, but doesn't fully demonstrate ownership and proactive communication of progress. The collaboration aspect is mentioned, but lacks depth. Therefore, a score of 0.5 is appropriate for Culture of Excellence and overall Culture Fit.\",\n \"alignsWith\": \"CULTURE\"\n },\n {\n \"questionId\": \"cm9fnytx70029n2100nq78xh4\",\n \"questionText\": \"In what ways do you foster creativity and innovation in your problem-solving and decision-making? Can you provide an example of a unique and effective solution you developed to solve a complex problem in your previous work experience?\",\n \"cultureFitComposite\": {\n \"valuesFit\": [\n {\n \"coreValue\": \"Culture of Excellence\",\n \"score\": 0.8\n }\n ],\n \"cultureFit\": 0.8,\n \"missionAlignment\": null,\n \"visionAlignment\": null\n },\n \"feedback\": \"The candidate describes fostering creativity by looking for different solutions and perspectives. The example of an adaptive learning platform demonstrates innovation in educational technology through research and creative reuse of content. This shows a strong alignment with Culture of Excellence, meriting a score of 0.8 for both the core value and the overall Culture Fit.\",\n \"alignsWith\": \"CULTURE\"\n }\n ]\n}\n```"
+          }
+        ],
+        "role": "model"
+      },
+      "finishReason": "STOP",
+      "avgLogprobs": -0.12201629250736559
+    }
+  ],
+  "usageMetadata": {
+    "promptTokenCount": 1132,
+    "candidatesTokenCount": 472,
+    "totalTokenCount": 1604,
+    "promptTokensDetails": [{ "modality": "TEXT", "tokenCount": 1132 }],
+    "candidatesTokensDetails": [{ "modality": "TEXT", "tokenCount": 472 }]
+  },
+  "modelVersion": "gemini-2.0-flash"
+}
