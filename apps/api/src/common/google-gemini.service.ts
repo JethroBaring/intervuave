@@ -106,8 +106,6 @@ export class GeminiService {
       Please return the evaluation using the returnCulturalFitEvaluation function call schema.
       `.trim();
 
-    this.logger.log(`Prompt: ${prompt}`);
-
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const functionSchema = {

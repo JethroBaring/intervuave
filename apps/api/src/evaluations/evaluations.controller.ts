@@ -16,15 +16,6 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 export class EvaluationsController {
   constructor(private readonly service: EvaluationsService) {}
 
-  @Post()
-  @UseGuards(JwtAuthGuard)
-  create(
-    @Param('interviewId') interviewId: string,
-    @Body() dto: CreateEvaluationsDto,
-  ) {
-    return this.service.create(dto);
-  }
-
   @Get()
   @UseGuards(JwtAuthGuard)
   findOne(@Param('interviewId') interviewId: string) {
