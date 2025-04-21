@@ -28,6 +28,7 @@ export class ProcessingWorkerService {
 
         if (task) {
           await this.updateWorkerStatus(worker.id, 'BUSY');
+          await this.updateTaskStatus(task.id, 'PROCESSING');
           this.executeTask(worker.id, task.id);
         }
       }
