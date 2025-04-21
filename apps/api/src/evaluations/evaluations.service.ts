@@ -10,12 +10,24 @@ import {
 import { PrismaService } from 'nestjs-prisma';
 import { CreateEvaluationsDto } from './dto/create-evaluations.dto';
 import { UpdateEvaluationsDto } from './dto/update-evaluations.dto';
-import { GeminiService } from 'src/common/google-gemini.service';
+import {
+  CulturalFitEvaluation,
+  GeminiService,
+} from 'src/common/google-gemini.service';
 import { Decision } from '@prisma/client';
 import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 import { GoogleStorageService } from 'src/common/google-storage.service';
-import { ProcessingWorkerService } from "src/common/processing-worker.service";
-import { EvaluationWorkerService } from "src/common/evaluation-worker.service";
+import { ProcessingWorkerService } from 'src/common/processing-worker.service';
+import { EvaluationWorkerService } from 'src/common/evaluation-worker.service';
+
+interface ResponseItem {
+  questionId: string;
+  questionText: string;
+  transcript: string;
+  coreValues: string[];
+  alignsWith: 'MISSION' | 'VISION' | 'CULTURE' | null;
+}
+
 @Injectable()
 export class EvaluationsService {
   private readonly logger = new Logger(EvaluationsService.name);
@@ -84,6 +96,7 @@ export class EvaluationsService {
   async evaluate(interviewId: string, taskId: string) {
     try {
       this.logger.log(`Evaluating interview ${interviewId}`);
+      // Fetch interview data as you do now
       const interview = await this.prisma.interview.findUnique({
         where: { id: interviewId },
         include: {
@@ -113,55 +126,96 @@ export class EvaluationsService {
           },
         },
       });
-  
-      const cleanedData = {
-        responses: interview?.responses.map((response) => ({
+
+      if (!interview) {
+        throw new Error(`Interview with ID ${interviewId} not found`);
+      }
+
+      // Prepare the data as before
+      const responses: ResponseItem[] = interview?.responses.map(
+        (response) => ({
           questionId: response.questionId,
           questionText: response.question.questionText,
           transcript: response.transcript,
           coreValues: response.question.coreValues.split(','),
           alignsWith: response.question.alignedWith,
-        })),
-        companyProfile: {
-          coreValues: interview?.company.coreValues.reduce(
-            (acc, coreValue) => {
-              acc[coreValue.name] = coreValue.description;
-              return acc;
-            },
-            {} as Record<string, string>,
-          ),
-          mission: interview?.company.mission,
-          vision: interview?.company.vision,
-          culture: interview?.company.culture,
-        },
+        }),
+      );
+
+      const companyProfile = {
+        coreValues: interview?.company.coreValues.reduce(
+          (acc, coreValue) => {
+            acc[coreValue.name] = coreValue.description;
+            return acc;
+          },
+          {} as Record<string, string>,
+        ),
+        mission: interview?.company.mission,
+        vision: interview?.company.vision,
+        culture: interview?.company.culture,
       };
-  
-      // Step 1: Evaluate using Gemini
+
       await this.evaluationWorkerService.updateTaskStatus(taskId, 'EVALUATING');
-      const initialEvaluation = await this.gemini.evaluateWithGemini(cleanedData);
-  
-      if (!initialEvaluation) {
-        throw new Error('Evaluation failed.');
+
+      // Create chunks with explicit typing and array method instead of push
+      const CHUNK_SIZE = 5; // Process 3 responses at a time
+
+      // Create chunks using Array.from
+      const chunks: ResponseItem[][] = Array.from(
+        { length: Math.ceil(responses.length / CHUNK_SIZE) },
+        (_, i) => responses.slice(i * CHUNK_SIZE, (i + 1) * CHUNK_SIZE),
+      );
+
+      // Process each chunk
+      const chunkResults: CulturalFitEvaluation[] = [];
+      for (let i = 0; i < chunks.length; i++) {
+        this.logger.log(`Processing chunk ${i + 1} of ${chunks.length}`);
+
+        const chunkData = {
+          responses: chunks[i],
+          companyProfile: companyProfile,
+        };
+
+        // Evaluate this chunk
+        const chunkEvaluation = await this.gemini.evaluateWithGemini(chunkData);
+
+        if (!chunkEvaluation) {
+          this.logger.error(`Chunk ${i + 1} evaluation failed, skipping`);
+          continue;
+        }
+
+        chunkResults.push(chunkEvaluation);
       }
-  
-      // Step 2: Self-Critique the Evaluation
+
+      // Combine results from all chunks
+      const combinedEvaluation = this.combineChunkResults(chunkResults);
+
+      if (
+        !combinedEvaluation ||
+        !combinedEvaluation.perQuestionResults ||
+        combinedEvaluation.perQuestionResults.length === 0
+      ) {
+        throw new Error('All chunk evaluations failed.');
+      }
+
+      // Proceed with self-critique using the combined results
       const correctedEvaluation =
-        await this.gemini.selfCritique(initialEvaluation);
-  
+        await this.gemini.selfCritique(combinedEvaluation);
+
       if (!correctedEvaluation) {
         throw new Error('Self-critique failed.');
       }
-  
-      // Step 3: Calculate scores
+
+      // Calculate scores and save as before
       const calculatedEvaluation = await this.calculateFinalScores(
         interviewId,
         correctedEvaluation,
       );
-  
+
       await this.prisma.evaluation.create({
         data: calculatedEvaluation,
       });
-  
+
       await this.prisma.interview.update({
         where: { id: interviewId },
         data: {
@@ -169,15 +223,60 @@ export class EvaluationsService {
           evaluatedAt: getPrismaDateTimeNow(),
         },
       });
-  
+
       await this.evaluationWorkerService.updateTaskStatus(taskId, 'EVALUATED');
-  
+
       return { message: 'success' };
     } catch (error) {
       this.logger.error('Failed to evaluate interview', error);
-      await this.evaluationWorkerService.updateTaskStatus(taskId, 'FAILED_EVALUATION');
+      await this.evaluationWorkerService.updateTaskStatus(
+        taskId,
+        'FAILED_EVALUATION',
+      );
       throw new InternalServerErrorException('Failed to evaluate interview');
     }
+  }
+
+  // Add this helper method to combine results from chunks
+  private combineChunkResults(
+    chunkResults: CulturalFitEvaluation[],
+  ): CulturalFitEvaluation {
+    // Initialize with empty array for results
+    const combined: CulturalFitEvaluation = {
+      perQuestionResults: [],
+    };
+
+    // Merge all perQuestionResults from each chunk
+    chunkResults.forEach((result) => {
+      if (
+        result &&
+        result.perQuestionResults &&
+        Array.isArray(result.perQuestionResults)
+      ) {
+        // Use type assertion to help TypeScript understand this is an array
+        const resultArray = result.perQuestionResults as Array<{
+          questionId: string;
+          cultureFitComposite?: {
+            valuesFit?: Array<{
+              coreValue: string;
+              score: number;
+            }>;
+            missionAlignment?: number;
+            visionAlignment?: number;
+            cultureFit?: number;
+          };
+          feedback?: string;
+        }>;
+
+        // Now TypeScript knows this is an array
+        combined.perQuestionResults = [
+          ...(combined.perQuestionResults || []),
+          ...resultArray,
+        ];
+      }
+    });
+
+    return combined;
   }
 
   async calculateFinalScores(interviewId: string, correctedEvaluation: any) {
@@ -461,8 +560,8 @@ export class EvaluationsService {
       data: {
         interviewId,
         status: 'PROCESSED',
-      }
-    })
+      },
+    });
     await this.evaluationWorkerService.executeTask(task.id);
   }
 }

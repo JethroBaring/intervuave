@@ -13,19 +13,20 @@ import {
 } from '@google/generative-ai';
 
 // Define the expected structure of the function call arguments
-interface CulturalFitEvaluation {
-  perQuestionResults?: Record<
-    string,
-    {
-      cultureFitComposite?: {
-        valuesFit?: Record<string, number>;
-        missionAlignment?: number;
-        visionAlignment?: number;
-        cultureFit?: number;
-      };
-      feedback?: string;
-    }
-  >;
+export interface CulturalFitEvaluation {
+  perQuestionResults?: Array<{
+    questionId: string;
+    cultureFitComposite?: {
+      valuesFit?: Array<{
+        coreValue: string;
+        score: number;
+      }>;
+      missionAlignment?: number;
+      visionAlignment?: number;
+      cultureFit?: number;
+    };
+    feedback?: string;
+  }>;
 }
 
 // Define the expected structure for a single question (useful for validation)
