@@ -459,6 +459,12 @@ export class EvaluationsService {
   }
 
   async reevaluateInterview(interviewId: string) {
-    await this.evaluationWorkerService.executeTask(interviewId);
+    const task = await this.prisma.task.create({
+      data: {
+        interviewId,
+        status: 'PROCESSED',
+      }
+    })
+    await this.evaluationWorkerService.executeTask(task.id);
   }
 }
