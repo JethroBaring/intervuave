@@ -158,10 +158,8 @@ export class EvaluationsService {
         correctedEvaluation,
       );
   
-      await this.prisma.evaluation.upsert({
-        where: { id: interviewId },
-        update: calculatedEvaluation,
-        create: calculatedEvaluation,
+      await this.prisma.evaluation.create({
+        data: calculatedEvaluation,
       });
   
       await this.prisma.interview.update({
