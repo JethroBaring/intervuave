@@ -22,9 +22,11 @@ export class EvaluationWorkerService {
   constructor(
     private readonly prisma: PrismaService,
     private readonly gemini: GeminiService,
-  ) {}
+  ) {
+    console.log('EvaluationWorkerService INSTANTIATED!'); // <--- ADD THIS LOG
+  }
 
-  @Cron(CronExpression.EVERY_5_MINUTES)
+  @Cron(CronExpression.EVERY_MINUTE)
   async executeTasks() {
     try {
       const task = await this.prisma.task.findFirst({
@@ -33,6 +35,7 @@ export class EvaluationWorkerService {
       });
 
       if (task) {
+        this.logger.log(`Executing task ${task.id}`);
         this.executeTask(task.id);
       }
     } catch (error) {
@@ -155,7 +158,7 @@ export class EvaluationWorkerService {
       await this.updateTaskStatus(taskId, 'EVALUATING');
 
       // Create chunks with explicit typing and array method instead of push
-      const CHUNK_SIZE = 5; // Process 3 responses at a time
+      const CHUNK_SIZE = 3; // Process 3 responses at a time
 
       // Create chunks using Array.from
       const chunks: ResponseItem[][] = Array.from(
@@ -166,7 +169,6 @@ export class EvaluationWorkerService {
       // Process each chunk
       const chunkResults: CulturalFitEvaluation[] = [];
       for (let i = 0; i < chunks.length; i++) {
-        this.logger.log(`Processing chunk ${i + 1} of ${chunks.length}`);
 
         const chunkData = {
           responses: chunks[i],
@@ -174,12 +176,11 @@ export class EvaluationWorkerService {
         };
 
         // Evaluate this chunk
-        this.logger.log(`Chunk data: ${JSON.stringify(chunkData)}`);
         const chunkEvaluation = await this.gemini.evaluateWithGemini(chunkData);
 
         if (!chunkEvaluation) {
           this.logger.error(`Chunk ${i + 1} evaluation failed, skipping`);
-          continue;
+          throw new Error('Chunk evaluation failed');
         }
 
         chunkResults.push(chunkEvaluation);
@@ -231,7 +232,7 @@ export class EvaluationWorkerService {
         taskId,
         'FAILED_EVALUATION',
       );
-      throw new InternalServerErrorException('Failed to evaluate interview');
+      // throw new InternalServerErrorException('Failed to evaluate interview');
     }
   }
 

@@ -3,7 +3,6 @@ import { EvaluationWorkerService } from './../common/evaluation-worker.service';
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from 'nestjs-prisma';
 import { CreateResponsesDto } from './dto/create-response.dto';
-import { EvaluationsService } from 'src/evaluations/evaluations.service';
 
 @Injectable()
 export class ResponsesService {

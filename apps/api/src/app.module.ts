@@ -7,7 +7,6 @@ import { AuthModule } from './auth/auth.module';
 import { CompaniesModule } from './companies/companies.module';
 import { InterviewsModule } from './interviews/interviews.module';
 import { CandidatesModule } from './candidates/candidates.module';
-import { EvaluationsModule } from './evaluations/evaluations.module';
 import { CoreValuesModule } from './core-values/core-values.module';
 import { TemplatesModule } from './templates/templates.module';
 import { FeedbackModule } from './feedback/feedback.module';
@@ -35,15 +34,12 @@ import { ScheduleModule } from '@nestjs/schedule';
     CompaniesModule,
     InterviewsModule,
     CandidatesModule,
-    EvaluationsModule,
     CoreValuesModule,
     TemplatesModule,
     FeedbackModule,
-    EvaluationsModule,
     UploadModule,
     PublicModule,
     ResponsesModule,
-    EvaluationsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

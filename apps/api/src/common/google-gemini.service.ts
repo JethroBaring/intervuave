@@ -196,8 +196,6 @@ export class GeminiService {
       const response = result.response;
       const candidates = response.candidates || [];
 
-      this.logger.log(`Response: ${JSON.stringify(response)}`);
-
       if (!candidates.length || !candidates[0]?.content?.parts?.length) {
         this.logger.error('Gemini returned empty evaluation.');
         return null;
