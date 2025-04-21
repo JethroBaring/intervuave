@@ -149,9 +149,10 @@ export class ProcessingWorkerService {
         JSON.stringify({
           interview_id: interviewId,
           worker_url: worker.url,
+          questions: questions,
         }),
       );
-
+      
       await this.queue.addTask({
         interview_id: interviewId,
         timestamps: timestamps,

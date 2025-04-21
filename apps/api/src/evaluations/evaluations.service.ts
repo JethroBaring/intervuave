@@ -83,6 +83,7 @@ export class EvaluationsService {
 
   async evaluate(interviewId: string, taskId: string) {
     try {
+      this.logger.log(`Evaluating interview ${interviewId}`);
       const interview = await this.prisma.interview.findUnique({
         where: { id: interviewId },
         include: {

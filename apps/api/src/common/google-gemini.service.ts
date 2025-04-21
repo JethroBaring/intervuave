@@ -91,11 +91,11 @@ export class GeminiService {
 
       Use the company's provided Core Value definitions, Mission ("${mission}"), Vision ("${vision}"), and Culture ("${culture}") when reasoning.
       Scoring Guide for all evaluations:
-      - Use a continuous scale from 0.0 to 1.0, where:
-        * 1.0 represents a perfect fit
-        * 0.0 represents no fit at all
-      - Feel free to use any decimal value between 0.0 and 1.0 to provide nuanced scoring
-      - Consider the full range of possible scores to accurately reflect alignment
+      - 1.0 = Perfect fit
+      - 0.8 = Strong fit
+      - 0.5 = Moderate fit
+      - 0.2 = Weak fit
+      - 0.0 = No fit
 
       Be strict and realistic when scoring.
 
@@ -198,52 +198,20 @@ export class GeminiService {
         return null;
       }
 
-      let responseText = candidates[0].content.parts[0]?.text;
+      const functionCall = candidates[0].content.parts[0]?.functionCall;
+      if (!functionCall || !functionCall.args) {
+        this.logger.error('Gemini function call missing.');
+        return null;
+      }
 
-      if (responseText) {
-        try {
-          // Remove the backticks if they exist
-          if (
-            responseText.startsWith('```json') &&
-            responseText.endsWith('```')
-          ) {
-            responseText = responseText
-              .substring(7, responseText.length - 3)
-              .trim();
-          } else if (
-            responseText.startsWith('`') &&
-            responseText.endsWith('`')
-          ) {
-            responseText = responseText
-              .substring(1, responseText.length - 1)
-              .trim();
-          }
-          // Trim any leading/trailing whitespace
-          responseText = responseText.trim();
-
-          try {
-            const parsedResponse = JSON.parse(
-              responseText,
-            ) as CulturalFitEvaluation;
-            return parsedResponse;
-          } catch (parseError) {
-            this.logger.error(
-              'Failed to parse Gemini JSON response:',
-              parseError,
-              responseText,
-            );
-            return null;
-          }
-        } catch (parseError) {
-          this.logger.error(
-            'Failed to parse Gemini JSON response:',
-            parseError,
-            responseText,
-          );
-          return null;
-        }
-      } else {
-        this.logger.error('Gemini did not return a text response.');
+      try {
+        const parsedArgs = functionCall.args as CulturalFitEvaluation;
+        return parsedArgs;
+      } catch (error) {
+        this.logger.error(
+          'Failed to parse Gemini function call arguments:',
+          error,
+        );
         return null;
       }
     } catch (error) {
@@ -393,46 +361,24 @@ export class GeminiService {
         return initialEvaluation;
       }
 
-      let responseText = candidates[0].content.parts[0]?.text;
+      const functionCall = candidates[0].content.parts[0]?.functionCall;
+      if (!functionCall || !functionCall.args) {
+        this.logger.warn('Gemini self-critique function call missing.');
+        return initialEvaluation;
+      }
 
-      if (responseText) {
-        try {
-          if (
-            responseText.startsWith('```json') &&
-            responseText.endsWith('```')
-          ) {
-            responseText = responseText
-              .substring(7, responseText.length - 3)
-              .trim();
-          } else if (
-            responseText.startsWith('`') &&
-            responseText.endsWith('`')
-          ) {
-            responseText = responseText
-              .substring(1, responseText.length - 1)
-              .trim();
-          }
-          responseText = responseText.trim();
+      try {
+        const parsedArgs =
+          typeof functionCall.args === 'string'
+            ? (JSON.parse(functionCall.args as string) as CulturalFitEvaluation)
+            : (functionCall.args as unknown as CulturalFitEvaluation);
 
-          try {
-            const parsedResponse = JSON.parse(
-              responseText,
-            ) as CulturalFitEvaluation;
-            return parsedResponse;
-          } catch (parseError) {
-            this.logger.error(
-              'Failed to parse Gemini Self-Critique JSON response:',
-              parseError,
-              responseText,
-            );
-            return initialEvaluation;
-          }
-        } catch (error) {
-          this.logger.error('Error during Gemini self-critique:', error);
-          return initialEvaluation;
-        }
-      } else {
-        this.logger.warn('Gemini self-critique returned empty content.');
+        return parsedArgs;
+      } catch (err) {
+        this.logger.error(
+          'Failed to parse Gemini self-critique function call arguments',
+          err,
+        );
         return initialEvaluation;
       }
     } catch (error) {

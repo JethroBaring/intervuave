@@ -47,14 +47,7 @@ export class ResponsesService {
       qualityFlag: item.qualityFlag,
     }));
 
-    await this.prisma.response.createMany({ data });
-    await this.prisma.interview.update({
-      where: { id: interviewId },
-      data: {
-        status: 'EVALUATING',
-      },
-    });
-    
+    await this.prisma.response.createMany({ data });    
     this.evaluationWorker.executeTask(interviewId);
     return { message: 'Responses saved successfully' };
   }
