@@ -177,6 +177,7 @@ export class EvaluationsService {
         };
 
         // Evaluate this chunk
+        this.logger.log(`Chunk data: ${JSON.stringify(chunkData)}`);
         const chunkEvaluation = await this.gemini.evaluateWithGemini(chunkData);
 
         if (!chunkEvaluation) {

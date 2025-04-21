@@ -104,6 +104,8 @@ export class GeminiService {
       Score each core value (valuesFit) individually based on how much the candidate's response reflects that value. Use the same 0.0-1.0 scale.
       `.trim();
 
+    this.logger.log(`Prompt: ${prompt}`);
+
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
 
     const functionSchema = {
@@ -193,6 +195,8 @@ export class GeminiService {
       const result = await model.generateContent(generateContentRequest);
       const response = result.response;
       const candidates = response.candidates || [];
+
+      this.logger.log(`Response: ${JSON.stringify(response)}`);
 
       if (!candidates.length || !candidates[0]?.content?.parts?.length) {
         this.logger.error('Gemini returned empty evaluation.');
