@@ -5,6 +5,7 @@ import { EvaluationsService } from 'src/evaluations/evaluations.service';
 @Injectable()
 export class EvaluationWorkerService {
   private readonly logger = new Logger(EvaluationWorkerService.name);
+  private isExecuting = false;
   constructor(
     private readonly prisma: PrismaService,
     @Inject(forwardRef(() => EvaluationsService))
@@ -29,19 +30,29 @@ export class EvaluationWorkerService {
   }
 
   async executeTask(taskId: string) {
-    try {
-      const task = await this.prisma.task.findUnique({
-        where: { id: taskId },
-      });
-
-      if (!task) {
-        throw new Error('Task not found.');
+    if(!this.isExecuting) {
+      this.isExecuting = true;
+      try {
+        const task = await this.prisma.task.findUnique({
+          where: { id: taskId },
+        });
+  
+        if (!task) {
+          throw new Error('Task not found.');
+        }
+  
+        await this.evaluation.evaluate(task.interviewId, taskId);
+  
+        return { success: true };
+      } catch (error) {
+        this.logger.error(error);
+        throw new Error('Failed to execute tasks');
+      } finally {
+        this.isExecuting = false;
       }
-
-      await this.evaluation.evaluate(task.interviewId, taskId);
-
-      return { success: true };
-    } catch (error) {}
+    } else {
+      this.logger.warn('executeTasks skipped because another execution is in progress.');
+    }
   }
 
   async updateTaskStatus(
