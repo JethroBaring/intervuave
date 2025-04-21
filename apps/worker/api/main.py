@@ -23,6 +23,8 @@ class InterviewRequest(BaseModel):
     questions: Dict[str, str]
     callback_url: Optional[str] = None
     status_callback_url: Optional[str] = None
+    task_status_callback_url: Optional[str] = None
+    worker_status_callback_url: Optional[str] = None
 
 
 class InterviewResponse(BaseModel):
@@ -46,7 +48,9 @@ async def create_processing_job(request: InterviewRequest, background_tasks: Bac
         request.timestamps,
         request.questions,
         request.callback_url,
-        request.status_callback_url
+        request.status_callback_url,
+        request.task_status_callback_url,
+        request.worker_status_callback_url,
     )
     
     # result = process_interview(job_id, {

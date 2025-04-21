@@ -158,7 +158,7 @@ export class EvaluationsService {
       await this.evaluationWorkerService.updateTaskStatus(taskId, 'EVALUATING');
 
       // Create chunks with explicit typing and array method instead of push
-      const CHUNK_SIZE = 3; // Process 3 responses at a time
+      const CHUNK_SIZE = 2; // Process 3 responses at a time
 
       // Create chunks using Array.from
       const chunks: ResponseItem[][] = Array.from(

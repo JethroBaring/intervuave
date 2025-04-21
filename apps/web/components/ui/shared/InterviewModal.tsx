@@ -228,95 +228,133 @@ const ResponsesTab = ({
                           %
                         </span>
                       </Label>
-                        <Card className="p-3 flex flex-col gap-5 text-gray-500">
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                              Confidence
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.responseQuality.confidence * 100).toFixed(2))}%` }}
-                              ></div>
-                            </div>
-                            <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.responseQuality.confidence * 100).toFixed(2))}%
-                            </div>
+                      <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                            Confidence
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                              Engagement
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.responseQuality.engagement * 100).toFixed(2))}%` }}
-                              ></div>
-                            </div>
-                            <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.responseQuality.engagement * 100).toFixed(2))}%
-                            </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${parseFloat(
+                                  (
+                                    result.responseQuality.confidence * 100
+                                  ).toFixed(2)
+                                )}%`,
+                              }}
+                            ></div>
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                              Body Language
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2))}%` }}
-                              ></div>
-                            </div>
-                            <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2))}%
-                            </div>
+                          <div className="w-12 text-sm font-medium text-right">
+                            {parseFloat(
+                              (result.responseQuality.confidence * 100).toFixed(
+                                2
+                              )
+                            )}
+                            %
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                              Emotional Tone
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2))}%` }}
-                              ></div>
-                            </div>
-                            <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2))}%
-                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                            Engagement
                           </div>
-                          <div className="flex items-center gap-3">
-                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                              Speech Clarity
-                            </div>
-                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                              <div
-                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.responseQuality.speechClarity * 100).toFixed(2))}%` }}
-                              ></div>
-                            </div>
-                            <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.responseQuality.speechClarity * 100).toFixed(2))}%
-                            </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${parseFloat(
+                                  (
+                                    result.responseQuality.engagement * 100
+                                  ).toFixed(2)
+                                )}%`,
+                              }}
+                            ></div>
                           </div>
-                        </Card>
-                        {/* <BarChartHorizontal
-                          categories={[
-                            "Confidence",
-                            "Engagement",
-                            "Body Language",
-                            "Emotional Tone",
-                            "Speech Clarity",
-                          ]}
-                          data={[
-                            parseFloat((result.responseQuality.confidence * 100).toFixed(2)),
-                            parseFloat((result.responseQuality.engagement * 100).toFixed(2)),
-                            parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2)),
-                            parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2)),
-                            parseFloat((result.responseQuality.speechClarity * 100).toFixed(2)),
-                          ]}
-                          height={70 * 5}
-                        /> */}
+                          <div className="w-12 text-sm font-medium text-right">
+                            {parseFloat(
+                              (result.responseQuality.engagement * 100).toFixed(
+                                2
+                              )
+                            )}
+                            %
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                            Body Language
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${parseFloat(
+                                  (
+                                    result.responseQuality.bodyLanguage * 100
+                                  ).toFixed(2)
+                                )}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="w-12 text-sm font-medium text-right">
+                            {parseFloat(
+                              (
+                                result.responseQuality.bodyLanguage * 100
+                              ).toFixed(2)
+                            )}
+                            %
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                            Emotional Tone
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${parseFloat(
+                                  (
+                                    result.responseQuality.emotionalTone * 100
+                                  ).toFixed(2)
+                                )}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="w-12 text-sm font-medium text-right">
+                            {parseFloat(
+                              (
+                                result.responseQuality.emotionalTone * 100
+                              ).toFixed(2)
+                            )}
+                            %
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                          <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                            Speech Clarity
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                            <div
+                              className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                              style={{
+                                width: `${parseFloat(
+                                  (
+                                    result.responseQuality.speechClarity * 100
+                                  ).toFixed(2)
+                                )}%`,
+                              }}
+                            ></div>
+                          </div>
+                          <div className="w-12 text-sm font-medium text-right">
+                            {parseFloat(
+                              (
+                                result.responseQuality.speechClarity * 100
+                              ).toFixed(2)
+                            )}
+                            %
+                          </div>
+                        </div>
+                      </Card>
                     </div>
                     <div>
                       <Label className="flex justify-between">
@@ -333,99 +371,120 @@ const ResponsesTab = ({
                         </span>
                       </Label>
                       <Card className="p-3 flex flex-col gap-5 text-gray-500">
-                          {result.cultureFitComposite.visionAlignment && (
-                            <div className="flex items-center gap-3">
-                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                                Vision Alignment
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                                <div
-                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                  style={{ width: `${parseFloat((result.cultureFitComposite.visionAlignment * 100).toFixed(2))}%` }}
-                                ></div>
-                              </div>
-                              <div className="w-12 text-sm font-medium text-right">
-                                {parseFloat((result.cultureFitComposite.visionAlignment * 100).toFixed(2))}%
-                              </div>
+                        {result.cultureFitComposite.visionAlignment && (
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Vision Alignment
                             </div>
-                          )}
-                          {result.cultureFitComposite.missionAlignment && (
-                            <div className="flex items-center gap-3">
-                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                                Mission Alignment
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                                <div
-                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                  style={{ width: `${parseFloat((result.cultureFitComposite.missionAlignment * 100).toFixed(2))}%` }}
-                                ></div>
-                              </div>
-                              <div className="w-12 text-sm font-medium text-right">
-                                {parseFloat((result.cultureFitComposite.missionAlignment * 100).toFixed(2))}%
-                              </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${parseFloat(
+                                    (
+                                      result.cultureFitComposite
+                                        .visionAlignment * 100
+                                    ).toFixed(2)
+                                  )}%`,
+                                }}
+                              ></div>
                             </div>
-                          )}
-                          {result.cultureFitComposite.cultureFit && (
-                            <div className="flex items-center gap-3">
-                              <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
-                                Culture Alignment
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
-                                <div
-                                  className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                  style={{ width: `${parseFloat((result.cultureFitComposite.cultureFit * 100).toFixed(2))}%` }}
-                                ></div>
-                              </div>
-                              <div className="w-12 text-sm font-medium text-right">
-                                {parseFloat((result.cultureFitComposite.cultureFit * 100).toFixed(2))}%
-                              </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat(
+                                (
+                                  result.cultureFitComposite.visionAlignment *
+                                  100
+                                ).toFixed(2)
+                              )}
+                              %
                             </div>
-                          )}
-                                                    {result.cultureFitComposite.valuesFit && (
-                            <div className="flex items-center gap-3">
+                          </div>
+                        )}
+                        {result.cultureFitComposite.missionAlignment && (
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Mission Alignment
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${parseFloat(
+                                    (
+                                      result.cultureFitComposite
+                                        .missionAlignment * 100
+                                    ).toFixed(2)
+                                  )}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat(
+                                (
+                                  result.cultureFitComposite.missionAlignment *
+                                  100
+                                ).toFixed(2)
+                              )}
+                              %
+                            </div>
+                          </div>
+                        )}
+                        {result.cultureFitComposite.cultureFit && (
+                          <div className="flex items-center gap-3">
+                            <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                              Culture Alignment
+                            </div>
+                            <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                              <div
+                                className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                                style={{
+                                  width: `${parseFloat(
+                                    (
+                                      result.cultureFitComposite.cultureFit *
+                                      100
+                                    ).toFixed(2)
+                                  )}%`,
+                                }}
+                              ></div>
+                            </div>
+                            <div className="w-12 text-sm font-medium text-right">
+                              {parseFloat(
+                                (
+                                  result.cultureFitComposite.cultureFit * 100
+                                ).toFixed(2)
+                              )}
+                              %
+                            </div>
+                          </div>
+                        )}
+                        {result.cultureFitComposite.valuesFit && (
+                          <div className="flex items-center gap-3">
                             <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
                               Core Values Alignment
                             </div>
                             <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
                               <div
                                 className="bg-brand-500 h-2 rounded-full transition-all duration-500"
-                                style={{ width: `${parseFloat((result.cultureFitComposite.valuesFit * 100).toFixed(2))}%` }}
+                                style={{
+                                  width: `${parseFloat(
+                                    (
+                                      result.cultureFitComposite.valuesFit * 100
+                                    ).toFixed(2)
+                                  )}%`,
+                                }}
                               ></div>
                             </div>
                             <div className="w-12 text-sm font-medium text-right">
-                              {parseFloat((result.cultureFitComposite.valuesFit * 100).toFixed(2))}%
+                              {parseFloat(
+                                (
+                                  result.cultureFitComposite.valuesFit * 100
+                                ).toFixed(2)
+                              )}
+                              %
                             </div>
                           </div>
-                          )}
-                        </Card>
-                      {/* <div className="-my-3"> */}
-                        {/* <BarChartHorizontal
-                          categories={Object.entries(result.cultureFitComposite)
-                            .filter(([_, value]) => value !== undefined)
-                            .map(([key]) =>
-                              key === "valuesFit"
-                                ? "Values Fit"
-                                : key === "visionAlignment"
-                                ? "Vision Alignment"
-                                : key === "missionAlignment"
-                                ? "Mission Alignment"
-                                : key === "cultureFit"
-                                ? "Culture Fit"
-                                : key
-                            )}
-                          data={Object.values(result.cultureFitComposite)
-                            .filter((v): v is number => v !== undefined)
-                            .map((value) =>
-                              parseFloat((value * 100).toFixed(2))
-                            )}
-                          height={
-                            90 *
-                            Object.entries(result.cultureFitComposite).filter(
-                              ([_, value]) => value !== undefined
-                            ).length
-                          }
-                        /> */}
-                      {/* </div> */}
+                        )}
+                      </Card>
                     </div>
                   </div>
                 </div>
@@ -527,8 +586,8 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
       <Card className="px-4 py-3 ">
         <div className="flex w-full justify-between items-center text-left text-gray-800 dark:text-white/90 font-semibold">
           <div className="flex items-center gap-2">
-            <ThumbsUp className="h-4 w-4 text-brand-400" />
-            <span>Candidate Evaluation</span>
+            {/* <ThumbsUp className="h-4 w-4 text-brand-400" /> */}
+            <span>Evaluation Summary</span>
           </div>
         </div>
         <div className="px-4 pb-4 relative">
@@ -566,102 +625,359 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
           </Card>
         </div>
       </Card>
-      {cards.map((card) => (
-        <Card key={card.id} className="">
-          <button
-            onClick={() => toggleQuestion(card.id)}
-            className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
-          >
-            <div className="flex items-center gap-2">
-              {card.icon}
-              <span>{card.label}</span>
+      <Card>
+        <button
+          onClick={() => toggleQuestion("detailedEvaluation")}
+          className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
+        >
+          <div className="flex items-center gap-2">
+            <span>Detailed Evaluation</span>
+          </div>
+          <div className="flex items-center">
+            <svg
+              className={`h-4 w-4 transform transition-transform ${
+                openQuestion === "detailedEvaluation" ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+        </button>
+        {openQuestion === "detailedEvaluation" && (
+          <div className="px-4 pb-4 flex flex-col gap-4">
+            <div>
+              <Label className="flex justify-between">
+                <span>Response Quality</span>
+                <span>{getPercentage("responseQuality")}</span>
+              </Label>
+              <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                    Confidence
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${parseFloat(
+                          (evaluation.responseQuality.confidence * 100).toFixed(
+                            2
+                          )
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm font-medium text-right">
+                    {parseFloat(
+                      (evaluation.responseQuality.confidence * 100).toFixed(2)
+                    )}
+                    %
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                    Engagement
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${parseFloat(
+                          (evaluation.responseQuality.engagement * 100).toFixed(
+                            2
+                          )
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm font-medium text-right">
+                    {parseFloat(
+                      (evaluation.responseQuality.engagement * 100).toFixed(2)
+                    )}
+                    %
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                    Body Language
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${parseFloat(
+                          (
+                            evaluation.responseQuality.bodyLanguage * 100
+                          ).toFixed(2)
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm font-medium text-right">
+                    {parseFloat(
+                      (evaluation.responseQuality.bodyLanguage * 100).toFixed(2)
+                    )}
+                    %
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                    Emotional Tone
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${parseFloat(
+                          (
+                            evaluation.responseQuality.emotionalTone * 100
+                          ).toFixed(2)
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm font-medium text-right">
+                    {parseFloat(
+                      (evaluation.responseQuality.emotionalTone * 100).toFixed(
+                        2
+                      )
+                    )}
+                    %
+                  </div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                    Speech Clarity
+                  </div>
+                  <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                    <div
+                      className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                      style={{
+                        width: `${parseFloat(
+                          (
+                            evaluation.responseQuality.speechClarity * 100
+                          ).toFixed(2)
+                        )}%`,
+                      }}
+                    ></div>
+                  </div>
+                  <div className="w-12 text-sm font-medium text-right">
+                    {parseFloat(
+                      (evaluation.responseQuality.speechClarity * 100).toFixed(
+                        2
+                      )
+                    )}
+                    %
+                  </div>
+                </div>
+              </Card>
+              {/* <BarChartHorizontal
+                          categories={[
+                            "Confidence",
+                            "Engagement",
+                            "Body Language",
+                            "Emotional Tone",
+                            "Speech Clarity",
+                          ]}
+                          data={[
+                            parseFloat((result.responseQuality.confidence * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.engagement * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.bodyLanguage * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.emotionalTone * 100).toFixed(2)),
+                            parseFloat((result.responseQuality.speechClarity * 100).toFixed(2)),
+                          ]}
+                          height={70 * 5}
+                        /> */}
             </div>
-            <div className="flex items-center">
-              {card.id !== "companyFeedback" && <p>{getPercentage(card.id)}</p>}
-              <svg
-                className={`h-4 w-4 transform transition-transform ${
-                  openQuestion === card.id ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  strokeWidth={2}
-                  d="M19 9l-7 7-7-7"
-                />
-              </svg>
-            </div>
-          </button>
-          {openQuestion === card.id && (
-            <div className="px-4 pb-4 relative">
-              {card.id === "responseQuality" && (
-                <div className="-my-3">
-                  <BarChartHorizontal
-                    categories={[
-                      "Confidence",
-                      "Engagement",
-                      "Body Language",
-                      "Emotional Tone",
-                      "Speech Clarity",
-                    ]}
-                    data={[
-                      parseFloat(
-                        (evaluation.responseQuality.confidence * 100).toFixed(2)
-                      ),
-                      parseFloat(
-                        (evaluation.responseQuality.engagement * 100).toFixed(2)
-                      ),
-                      parseFloat(
-                        (evaluation.responseQuality.bodyLanguage * 100).toFixed(
-                          2
-                        )
-                      ),
-                      parseFloat(
+            <div>
+              <Label className="flex justify-between">
+                <span>Culture Fit Composite</span>
+                <span>{getPercentage("cultureFit")}</span>
+              </Label>
+              <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                {evaluation.cultureFitComposite.visionAlignment && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                      Vision Alignment
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                      <div
+                        className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${parseFloat(
+                            (
+                              evaluation.cultureFitComposite.visionAlignment *
+                              100
+                            ).toFixed(2)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-sm font-medium text-right">
+                      {parseFloat(
                         (
-                          evaluation.responseQuality.emotionalTone * 100
+                          evaluation.cultureFitComposite.visionAlignment * 100
                         ).toFixed(2)
-                      ),
-                      parseFloat(
+                      )}
+                      %
+                    </div>
+                  </div>
+                )}
+                {evaluation.cultureFitComposite.missionAlignment && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                      Mission Alignment
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                      <div
+                        className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${parseFloat(
+                            (
+                              evaluation.cultureFitComposite.missionAlignment *
+                              100
+                            ).toFixed(2)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-sm font-medium text-right">
+                      {parseFloat(
                         (
-                          evaluation.responseQuality.speechClarity * 100
+                          evaluation.cultureFitComposite.missionAlignment * 100
                         ).toFixed(2)
-                      ),
-                    ]}
-                    height={70 * 5}
-                  />
-                </div>
-              )}
-              {card.id === "cultureFit" && (
-                <div className="-my-3">
-                  <BarChartHorizontal
-                    categories={filteredCultureFitData.map(
-                      (item) => item.label
-                    )}
-                    data={filteredCultureFitData.map((item) =>
-                      parseFloat(item.value.toFixed(2))
-                    )}
-                    height={90 * filteredCultureFitData.length}
-                  />
-                </div>
-              )}
-              {card.id === "valuesBreakdown" && (
-                <div className="-my-3">
-                  <BarChartHorizontal
-                    categories={perValueBreakdownData.map((item) => item.label)}
-                    data={perValueBreakdownData.map((item) =>
-                      parseFloat(item.value.toFixed(2))
-                    )}
-                    height={90 * perValueBreakdownData.length}
-                  />
-                </div>
-              )}
+                      )}
+                      %
+                    </div>
+                  </div>
+                )}
+                {evaluation.cultureFitComposite.cultureFit && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                      Culture Alignment
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                      <div
+                        className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${parseFloat(
+                            (
+                              evaluation.cultureFitComposite.cultureFit * 100
+                            ).toFixed(2)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-sm font-medium text-right">
+                      {parseFloat(
+                        (
+                          evaluation.cultureFitComposite.cultureFit * 100
+                        ).toFixed(2)
+                      )}
+                      %
+                    </div>
+                  </div>
+                )}
+                {evaluation.cultureFitComposite.valuesFit && (
+                  <div className="flex items-center gap-3">
+                    <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                      Core Values Alignment
+                    </div>
+                    <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                      <div
+                        className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                        style={{
+                          width: `${parseFloat(
+                            (
+                              evaluation.cultureFitComposite.valuesFit * 100
+                            ).toFixed(2)
+                          )}%`,
+                        }}
+                      ></div>
+                    </div>
+                    <div className="w-12 text-sm font-medium text-right">
+                      {parseFloat(
+                        (
+                          evaluation.cultureFitComposite.valuesFit * 100
+                        ).toFixed(2)
+                      )}
+                      %
+                    </div>
+                  </div>
+                )}
+              </Card>
             </div>
-          )}
-        </Card>
-      ))}
+            <div>
+              <Label className="flex justify-between">
+                <span>Values Breakdown</span>
+                <span>{getPercentage("valuesBreakdown")}</span>
+              </Label>
+              <Card className="p-3 flex flex-col gap-5 text-gray-500">
+                {perValueBreakdownData
+                  .filter((item) => item.value > 0)
+                  .map((item) => (
+                    <div className="flex items-center gap-3" key={item.label}>
+                      <div className="text-sm font-medium min-w-[100px] max-w-[100px] truncate">
+                        {item.label}
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2 dark:bg-gray-700">
+                        <div
+                          className="bg-brand-500 h-2 rounded-full transition-all duration-500"
+                          style={{
+                            width: `${parseFloat(item.value.toFixed(2))}%`,
+                          }}
+                        ></div>
+                      </div>
+                      <div className="w-12 text-sm font-medium text-right">
+                        {parseFloat(item.value.toFixed(2))}%
+                      </div>
+                    </div>
+                  ))}
+              </Card>
+            </div>
+          </div>
+        )}
+      </Card>
+      <Card>
+        <button
+          onClick={() => toggleQuestion("companyFeedback")}
+          className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
+        >
+          <div className="flex items-center gap-2">
+            <span>Company Feedback</span>
+          </div>
+          <div className="flex items-center">
+            <svg
+              className={`h-4 w-4 transform transition-transform ${
+                openQuestion === "detailedEvaluation" ? "rotate-180" : ""
+              }`}
+              fill="none"
+              stroke="currentColor"
+              viewBox="0 0 24 24"
+            >
+              <path
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                strokeWidth={2}
+                d="M19 9l-7 7-7-7"
+              />
+            </svg>
+          </div>
+        </button>
+        {openQuestion === "companyFeedback" && (
+          <div className="px-4 pb-4 flex flex-col gap-4">
+            
+          </div>
+        )}
+      </Card>
     </div>
   );
 };
