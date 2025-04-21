@@ -1,11 +1,12 @@
 import { Body, Controller, Get, Param, Patch, Post } from '@nestjs/common';
 import { PublicInterviewService } from './public-interview.service';
 import { GenerateUploadUrlDto } from './dto/generate-upload-url.dto';
-
+import { WorkerService } from 'src/common/worker.service';
 @Controller({ path: 'public/interviews', version: '1' })
 export class PublicInterviewController {
   constructor(
     private readonly publicInterviewSerivice: PublicInterviewService,
+    private readonly workerService: WorkerService,
   ) {}
 
   @Get(':token')
@@ -29,5 +30,15 @@ export class PublicInterviewController {
     @Body() dto: GenerateUploadUrlDto,
   ) {
     return this.publicInterviewSerivice.generateSignedInterviewUrl(token, dto);
+  }
+
+  @Post(':workerId/next-task')
+  processNextTask(@Param('workerId') workerId: string) {
+    return this.workerService.processNextTaskForWorker(workerId);
+  }
+
+  @Post(':taskId/retry-task')
+  retryTask(@Param('taskId') taskId: string) {
+    return this.workerService.retryTask(taskId);
   }
 }

@@ -5,7 +5,7 @@ import { EvaluationsService } from 'src/evaluations/evaluations.service';
 import { GeminiService } from 'src/common/google-gemini.service';
 import { GoogleStorageService } from 'src/common/google-storage.service';
 import { ConfigService } from '@nestjs/config';
-
+import { WorkerService } from 'src/common/worker.service';
 @Module({
   controllers: [ResponsesController],
   providers: [
@@ -14,6 +14,7 @@ import { ConfigService } from '@nestjs/config';
     GeminiService,
     GoogleStorageService,
     ConfigService,
+    WorkerService,
   ],
 })
 export class ResponsesModule {}

@@ -15,9 +15,11 @@ import { UploadModule } from './upload/upload.module';
 import { MailModule } from './mail/mail.module';
 import { PublicModule } from './public/public.module';
 import { ResponsesModule } from './responses/responses.module';
+import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({
   imports: [
+    ScheduleModule.forRoot(),
     PrismaModule.forRootAsync({
       isGlobal: true,
       useFactory: () => ({

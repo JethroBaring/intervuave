@@ -14,6 +14,7 @@ import { GeminiService } from 'src/common/google-gemini.service';
 import { Decision } from '@prisma/client';
 import getPrismaDateTimeNow from 'src/utils/prismaDateTime';
 import { GoogleStorageService } from 'src/common/google-storage.service';
+import { WorkerService } from "src/common/worker.service";
 
 @Injectable()
 export class EvaluationsService {
@@ -23,6 +24,7 @@ export class EvaluationsService {
     private readonly prisma: PrismaService,
     private readonly gemini: GeminiService,
     private readonly storage: GoogleStorageService,
+    private readonly workerService: WorkerService,
   ) {}
 
   async create(createDto: CreateEvaluationsDto) {
@@ -442,79 +444,80 @@ export class EvaluationsService {
   }
 
   async reprocessInterview(interviewId: string) {
-    try {
-      const interview = await this.prisma.interview.findUnique({
-        where: { id: interviewId },
-        select: {
-          id: true,
-          filename: true,
-          timestamps: true, // <-- use this
-        },
-      });
-      console.log('hello');
-      if (!interview) {
-        throw new Error('Interview not found.');
-      }
+    await this.workerService.addTask(interviewId);
+    // try {
+    //   const interview = await this.prisma.interview.findUnique({
+    //     where: { id: interviewId },
+    //     select: {
+    //       id: true,
+    //       filename: true,
+    //       timestamps: true, // <-- use this
+    //     },
+    //   });
+    //   console.log('hello');
+    //   if (!interview) {
+    //     throw new Error('Interview not found.');
+    //   }
 
-      if (!interview.filename) {
-        throw new Error('Interview video filename is missing.');
-      }
+    //   if (!interview.filename) {
+    //     throw new Error('Interview video filename is missing.');
+    //   }
 
-      if (!interview.timestamps) {
-        throw new Error('Timestamps are missing.');
-      }
+    //   if (!interview.timestamps) {
+    //     throw new Error('Timestamps are missing.');
+    //   }
 
-      // Generate a signed URL to access the video
-      const videoUrl = await this.storage.generateInterviewViewUrl(
-        interview.filename,
-        60, // 1 hour expiry
-      );
+    //   // Generate a signed URL to access the video
+    //   const videoUrl = await this.storage.generateInterviewViewUrl(
+    //     interview.filename,
+    //     60, // 1 hour expiry
+    //   );
 
-      const timestamps = interview.timestamps as any[]; // Already stored from submitInterview
-      const questions = timestamps.reduce(
-        (acc, t) => {
-          if (t.questionId && t.questionText) {
-            acc[t.questionId] = t.questionText;
-          }
-          return acc;
-        },
-        {} as Record<string, string>,
-      );
-      console.log({
-        HANNAH: JSON.stringify({
-          interview_id: interviewId,
-          timestamps: timestamps,
-          video_url: videoUrl,
-          questions,
-          callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
-          status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
-        })
-      })
-      // Same as in submitInterview: send to FastAPI
-      await fetch(
-        process.env.PROCESSING_WORKER_URL ||
-          'https://jethrob123-processing-worker.hf.space/process-interview',
-        {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            interview_id: interviewId,
-            timestamps: timestamps,
-            video_url: videoUrl,
-            questions,
-            callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
-            status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
-          }),
-        },
-      );
+    //   const timestamps = interview.timestamps as any[]; // Already stored from submitInterview
+    //   const questions = timestamps.reduce(
+    //     (acc, t) => {
+    //       if (t.questionId && t.questionText) {
+    //         acc[t.questionId] = t.questionText;
+    //       }
+    //       return acc;
+    //     },
+    //     {} as Record<string, string>,
+    //   );
+    //   console.log({
+    //     HANNAH: JSON.stringify({
+    //       interview_id: interviewId,
+    //       timestamps: timestamps,
+    //       video_url: videoUrl,
+    //       questions,
+    //       callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
+    //       status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
+    //     })
+    //   })
+    //   // Same as in submitInterview: send to FastAPI
+    //   await fetch(
+    //     process.env.PROCESSING_WORKER_URL ||
+    //       'https://jethrob123-processing-worker.hf.space/process-interview',
+    //     {
+    //       method: 'POST',
+    //       headers: {
+    //         'Content-Type': 'application/json',
+    //       },
+    //       body: JSON.stringify({
+    //         interview_id: interviewId,
+    //         timestamps: timestamps,
+    //         video_url: videoUrl,
+    //         questions,
+    //         callback_url: `https://api.intervuave.jethdev.tech/api/v1/interviews/${interviewId}/responses/bulk`,
+    //         status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
+    //       }),
+    //     },
+    //   );
 
-      return { success: true };
-    } catch (error) {
-      console.error('Error during reprocessing interview:', error);
-      return { success: false, error: error.message };
-    }
+    //   return { success: true };
+    // } catch (error) {
+    //   console.error('Error during reprocessing interview:', error);
+    //   return { success: false, error: error.message };
+    // }
   }
 
   async reevaluateInterview(interviewId: string) {
