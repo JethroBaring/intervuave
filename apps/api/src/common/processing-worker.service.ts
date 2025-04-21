@@ -161,7 +161,7 @@ export class ProcessingWorkerService {
         status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${interviewId}/process`,
         task_status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${taskId}/update-task-status`,
         worker_status_callback_url: `https://api.intervuave.jethdev.tech/api/v1/public/interviews/${workerId}/update-worker-status`,
-      }, worker.url);
+      }, `${worker.url}/process-interview`);
 
       return { success: true };
     } catch (error) {
