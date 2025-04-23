@@ -234,9 +234,9 @@ export function CardDisplay({
         <CardShadow dragging={state.dragging} />
       ) : null}
       <div
-        className={`rounded-lg border border-gray-200 bg-white dark:border-gray-800 dark:bg-white/[0.03] flex flex-col gap-3 p-4 text-slate-300 ${
+        className={`rounded-lg border border-gray-200  dark:border-gray-800 dark:bg-white/[0.03] flex flex-col gap-3 p-4 text-slate-300 ${
           innerStyles[state.type]
-        }`}
+        } ${card.interview.status !== 'DRAFT' ? 'cursor-pointer' : ''}`}
         ref={innerRef}
         style={
           state.type === "preview"
@@ -275,40 +275,45 @@ export function BoardCard({
     invariant(outer && inner);
 
     return combine(
-      draggable({
-        element: inner,
-        getInitialData: ({ element }) =>
-          getCardData({
-            card,
-            columnId,
-            rect: element.getBoundingClientRect(),
-          }),
-        onGenerateDragPreview({ nativeSetDragImage, location, source }) {
-          const data = source.data;
-          invariant(isCardData(data));
-          setCustomNativeDragPreview({
-            nativeSetDragImage,
-            getOffset: preserveOffsetOnSource({
+      // only draft-status cards can be dragged
+      ...(card.interview.status === "DRAFT"
+        ? [
+            draggable({
               element: inner,
-              input: location.current.input,
+              getInitialData: ({ element }) =>
+                getCardData({
+                  card,
+                  columnId,
+                  rect: element.getBoundingClientRect(),
+                }),
+              onGenerateDragPreview({ nativeSetDragImage, location, source }) {
+                const data = source.data;
+                invariant(isCardData(data));
+                setCustomNativeDragPreview({
+                  nativeSetDragImage,
+                  getOffset: preserveOffsetOnSource({
+                    element: inner,
+                    input: location.current.input,
+                  }),
+                  render({ container }) {
+                    setState({
+                      type: "preview",
+                      container,
+                      dragging: inner.getBoundingClientRect(),
+                    });
+                  },
+                });
+              },
+              onDragStart() {
+                setState({ type: "is-dragging" });
+              },
+              onDrop() {
+                setState(idle);
+              },
             }),
-            render({ container }) {
-              // Demonstrating using a react portal to generate a preview
-              setState({
-                type: "preview",
-                container,
-                dragging: inner.getBoundingClientRect(),
-              });
-            },
-          });
-        },
-        onDragStart() {
-          setState({ type: "is-dragging" });
-        },
-        onDrop() {
-          setState(idle);
-        },
-      }),
+          ]
+        : []),
+      // cards always remain drop-targets for reordering
       dropTargetForElements({
         element: outer,
         getIsSticky: () => true,
@@ -379,6 +384,7 @@ export function BoardCard({
       })
     );
   }, [card, columnId]);
+
   return (
     <>
       <CardDisplay

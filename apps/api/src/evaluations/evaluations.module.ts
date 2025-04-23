@@ -13,12 +13,7 @@ import { GoogleTasksService } from "src/common/google-tasks.service";
   controllers: [EvaluationsController],
   providers: [
     EvaluationsService,
-    GeminiService,
-    GoogleStorageService,
     ConfigService,
-    ProcessingWorkerService,
-    EvaluationWorkerService,
-    GoogleTasksService,
   ],
 })
 export class EvaluationsModule {}

@@ -30,7 +30,9 @@ api.interceptors.response.use(
   async (error: AxiosError) => {
     const originalRequest = error.config as any;
 
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (error.response?.status === 401 && !originalRequest._retry &&
+      !originalRequest.url?.includes('/api/v1/auth/login') && 
+      !originalRequest.url?.includes('/api/v1/auth/signup')) {
       originalRequest._retry = true;
 
       if (isRefreshing) {

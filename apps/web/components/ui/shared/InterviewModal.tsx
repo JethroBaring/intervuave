@@ -22,10 +22,14 @@ import {
   Users,
   Star,
   MessageCircle,
+  Loader,
 } from "lucide-react";
 import BarChartHorizontal from "../charts/bar/BarChartHorizontal";
 import PieChartComponent from "../charts/pie/PieChart";
 import DonutChartWithCenter from "../charts/pie/PieChart";
+import { InterviewStatus } from "@/lib/types";
+import { useToastStore } from "@/stores/useToastStore";
+import TextArea from "../form/input/TextArea";
 
 export enum InterviewStatusNum {
   DRAFT = 0,
@@ -152,7 +156,9 @@ const ResponsesTab = ({
               {/* Collapse Header */}
               <button
                 onClick={() => toggleQuestion(questionId)}
-                className="flex w-full justify-between items-start px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold h-[48px]"
+                className={`flex w-full justify-between items-start px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold ${
+                  openQuestion === questionId ? "" : "h-[48px]"
+                }`}
               >
                 <span
                   className={`${openQuestion === questionId ? "" : "truncate"}`}
@@ -581,6 +587,18 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
     }
   };
 
+  const [feedbackDecision, setFeedbackDecision] = useState("");
+  const [feedbackReason, setFeedbackReason] = useState("");
+
+  useEffect(() => {
+    if (openQuestion === "companyFeedback") {
+      if (evaluation?.feedback) {
+        setFeedbackDecision(evaluation?.feedback?.agreement);
+        setFeedbackReason(evaluation?.feedback?.comment);
+      }
+    }
+  }, [openQuestion]);
+
   return (
     <div className="flex flex-col gap-5">
       <Card className="px-4 py-3 ">
@@ -952,29 +970,154 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
           className="flex w-full justify-between items-center px-4 py-3 text-left text-gray-800 dark:text-white/90 font-semibold"
         >
           <div className="flex items-center gap-2">
-            <span>Company Feedback</span>
+            <span>Evaluation Feedback</span>
           </div>
-          <div className="flex items-center">
-            <svg
-              className={`h-4 w-4 transform transition-transform ${
-                openQuestion === "detailedEvaluation" ? "rotate-180" : ""
-              }`}
-              fill="none"
-              stroke="currentColor"
-              viewBox="0 0 24 24"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                strokeWidth={2}
-                d="M19 9l-7 7-7-7"
-              />
-            </svg>
-          </div>
+          {evaluation?.feedback && (
+            <div className="flex items-center">
+              <svg
+                className={`h-4 w-4 transform transition-transform ${
+                  openQuestion === "evaluationFeedback" ? "rotate-180" : ""
+                }`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth={2}
+                  d="M19 9l-7 7-7-7"
+                />
+              </svg>
+            </div>
+          )}
         </button>
-        {openQuestion === "companyFeedback" && (
+        {(openQuestion === "companyFeedback" || !evaluation?.feedback) && (
           <div className="px-4 pb-4 flex flex-col gap-4">
-            
+            <div>
+              <Label>Do you agree with the AI Evaluation?</Label>
+              <div className="flex gap-5">
+                <button
+                  onClick={() => {
+                    if (feedbackDecision === "AGREE") {
+                      setFeedbackDecision("");
+                    } else {
+                      setFeedbackDecision("AGREE");
+                    }
+                  }}
+                  className={`border-gray-600  ${
+                    feedbackDecision === "AGREE"
+                      ? "bg-brand-500/50 border-brand-500"
+                      : ""
+                  } hover:border-brand-500 disabled:bg-brand-300 border flex-1 px-5 py-3.5 text-sm  text-white shadow-theme-xs  inline-flex items-center justify-center font-medium gap-2 rounded-xl transition`}
+                >
+                  Yes
+                </button>
+                <button
+                  onClick={() => {
+                    if (feedbackDecision === "DISAGREE") {
+                      setFeedbackDecision("");
+                    } else {
+                      setFeedbackDecision("DISAGREE");
+                    }
+                  }}
+                  className={`border-gray-600 border  ${
+                    feedbackDecision === "DISAGREE"
+                      ? "bg-brand-500/50 border border-brand-500"
+                      : ""
+                  } hover:border-brand-500 disabled:bg-brand-300 flex-1 px-5 py-3.5 text-sm  text-white shadow-theme-xs  inline-flex items-center justify-center font-medium gap-2 rounded-xl transition`}
+                >
+                  No
+                </button>
+                {/* <Button className="flex-1 border border-brand-400 bg-brand-400/10">Yes</Button>
+              <Button className="flex-1" variant="outline">No</Button> */}
+              </div>
+            </div>
+            <div>
+              <Label>Please provide your reason:</Label>
+              <TextArea
+                placeholder="Enter your reason"
+                value={feedbackReason}
+                onChange={(value) => setFeedbackReason(value)}
+              />
+            </div>
+            {evaluation?.feedback ? (
+              <Button
+                size="sm"
+                disabled={
+                  !feedbackDecision ||
+                  !feedbackReason ||
+                  (feedbackReason === evaluation?.feedback?.comment &&
+                    feedbackDecision === evaluation?.feedback?.agreement)
+                }
+                onClick={async () => {
+                  try {
+                    await api.patch(
+                      `${endpoints.feedback.update(evaluation?.feedback?.id)}`,
+                      {
+                        agreement:
+                          feedbackDecision,
+                        comment: feedbackReason,
+                      }
+                    );
+
+                    useToastStore.getState().showToast({
+                      title: "Feedback Updated",
+                      message:
+                        "Evaluation feedback has been updated successfully.",
+                      type: "success",
+                    });
+                  } catch (error) {
+                    useToastStore.getState().showToast({
+                      title: "Error updating feedback",
+                      message:
+                        "There's an error updating the feedback. Please try again.",
+                      type: "error",
+                    });
+                  }
+                }}
+              >
+                Update Feedback
+              </Button>
+            ) : (
+              <Button
+                size="sm"
+                disabled={!feedbackDecision || !feedbackReason}
+                onClick={async () => {
+                  try {
+                    await api.post(
+                      `${endpoints.feedback.create(evaluation.id)}`,
+                      {
+                        agreement:
+                          feedbackDecision === "Yes" ? "AGREE" : "DISAGREE",
+                        comment: feedbackReason,
+                      }
+                    );
+                    useToastStore.getState().showToast({
+                      title: "Feedback Submitted",
+                      message:
+                        "Evaluation feedback has been submitted successfully.",
+                      type: "success",
+                    });
+                  } catch (error) {
+                    useToastStore.getState().showToast({
+                      title: "Error submitting feedback",
+                      message:
+                        "There's an error submitting the feedback. Please try again.",
+                      type: "error",
+                    });
+                  }
+                }}
+              >
+                Submit Feedback
+              </Button>
+            )}
+            <Label className="text-center">
+              Your input helps us refine how this AI evaluates candidates
+              specifically for this company's hiring needs. This feedback will
+              help improves the interviewer bot's alignment with this company's
+              unique recruitment priorities.
+            </Label>
           </div>
         )}
       </Card>
@@ -1173,6 +1316,11 @@ const InterviewModal = () => {
     }
   };
 
+  const [sendingInterviewLink, setSendingInterviewLink] = useState(false);
+  const [sendingInterviewReminder, setSendingInterviewReminder] =
+    useState(false);
+  const [expiringLink, setExpiringLink] = useState(false);
+
   const renderFooter = () => {
     switch (selectedCandidate?.interview?.status) {
       case "DRAFT":
@@ -1181,7 +1329,42 @@ const InterviewModal = () => {
             <Button size="sm" variant="outline">
               Close
             </Button>
-            <Button size="sm">Send Interview Link</Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                try {
+                  setSendingInterviewLink(true);
+                  const { data } = await api.patch(
+                    `${endpoints.interviews["send-interview-link"](
+                      companyId,
+                      selectedCandidate?.interview?.id
+                    )}`
+                  );
+                  if (data) {
+                    setSendingInterviewLink(false);
+                    closeCardModal();
+                    useToastStore.getState().showToast({
+                      title: "Success",
+                      message: "Interview link has been sent.",
+                      type: "success",
+                    });
+                  }
+                } catch (error) {
+                  useToastStore.getState().showToast({
+                    title: "Error",
+                    message:
+                      "There's an error sending the interview link. Please try again.",
+                    type: "error",
+                  });
+                }
+              }}
+              disabled={sendingInterviewLink}
+            >
+              {sendingInterviewLink && (
+                <Loader className="h-4 w-4 animate-spin" />
+              )}
+              Send Interview Link
+            </Button>
           </div>
         );
       case "PENDING":
@@ -1190,13 +1373,79 @@ const InterviewModal = () => {
             <Button size="sm" variant="outline">
               Close
             </Button>
-            <Button size="sm" variant="outline">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={async () => {
+                try {
+                  setExpiringLink(true);
+                  const { data } = await api.patch(
+                    `${endpoints.interviews["expire-interview-link"](
+                      companyId,
+                      selectedCandidate?.interview?.id
+                    )}`
+                  );
+                  if (data) {
+                    setExpiringLink(false);
+                    closeCardModal();
+                    useToastStore.getState().showToast({
+                      title: "Success",
+                      message: "Interview link has been invalidated.",
+                      type: "success",
+                    });
+                  }
+                } catch (error) {
+                  useToastStore.getState().showToast({
+                    title: "Error",
+                    message:
+                      "There's an error invalidating the interview link. Please try again.",
+                    type: "error",
+                  });
+                }
+              }}
+              disabled={expiringLink}
+            >
+              {expiringLink && <Loader className="h-4 w-4 animate-spin" />}
               Expire Link
             </Button>
-            <Button size="sm">Send Reminder</Button>
+            <Button
+              size="sm"
+              onClick={async () => {
+                try {
+                  setSendingInterviewReminder(true);
+                  const { data } = await api.patch(
+                    `${endpoints.interviews["send-interview-reminder"](
+                      companyId,
+                      selectedCandidate?.interview?.id
+                    )}`
+                  );
+                  if (data) {
+                    setSendingInterviewReminder(false);
+                    closeCardModal();
+                    useToastStore.getState().showToast({
+                      title: "Success",
+                      message: "Interview reminder has been sent.",
+                      type: "success",
+                    });
+                  }
+                } catch (error) {
+                  useToastStore.getState().showToast({
+                    title: "Error",
+                    message:
+                      "There's an error sending the interview reminder. Please try again.",
+                    type: "error",
+                  });
+                }
+              }}
+              disabled={sendingInterviewReminder}
+            >
+              {sendingInterviewReminder && (
+                <Loader className="h-4 w-4 animate-spin" />
+              )}
+              Send Reminder
+            </Button>
           </div>
         );
-      case "IN_PROGRESS":
       case "SUBMITTED":
       case "PROCESSING":
         return (
@@ -1212,7 +1461,7 @@ const InterviewModal = () => {
             <Button size="sm" variant="outline">
               Close
             </Button>
-            <Button
+            {/* <Button
               size="sm"
               onClick={async () => {
                 const x = await api.post(
@@ -1222,14 +1471,22 @@ const InterviewModal = () => {
               }}
             >
               Reprocess
-            </Button>
+            </Button> */}
             <Button
               size="sm"
               onClick={async () => {
-                const x = await api.post(
+                closeCardModal();
+                useCompanyStore.setState((state) => ({
+                  ...state,
+                  interviews: state.interviews.map((interview) =>
+                    interview.id === selectedCandidate.interview.id
+                      ? { ...interview, status: InterviewStatus.PROCESSING }
+                      : interview
+                  ),
+                }));
+                await api.post(
                   `interviews/${selectedCandidate.interview.id}/evaluation/reevaluate`
                 );
-                console.log(x);
               }}
             >
               Reevaluate
@@ -1268,7 +1525,7 @@ const InterviewModal = () => {
         <div className="mx-2 my-5 flex">
           <div className="flex-shrink-0">
             <div
-              className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl text-white aspect-square ${generateColorFromName(
+              className={`h-[65px] w-[65px] rounded-full flex items-center justify-center text-2xl aspect-square ${generateColorFromName(
                 selectedCandidate?.candidate.firstName +
                   selectedCandidate?.candidate.lastName
               )}`}

@@ -39,7 +39,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
       // Automatically fetch user info after login
       await useAuthStore.getState().checkAuth();
-
+      console.log("hello")
       return true;
     } catch (error) {
       return false;

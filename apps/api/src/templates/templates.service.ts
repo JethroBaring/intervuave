@@ -93,6 +93,12 @@ export class TemplatesService {
             deleteMany: {},
             create: metrics,
           },
+          responseQualityWeight: updateDto.responseQualityWeight,
+          cultureFitWeight: updateDto.cultureFitWeight,
+          missionWeight: updateDto.missionWeight,
+          visionWeight: updateDto.visionWeight,
+          cultureWeight: updateDto.cultureWeight,
+          coreValuesWeight: updateDto.coreValuesWeight
         },
         select: {
           id: true,

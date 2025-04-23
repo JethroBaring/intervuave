@@ -71,15 +71,15 @@ const Candidates = () => {
         interviews: state.interviews.filter((i) => i.candidateId !== candidateId),
       }));
       showToast({
-        title: "Success",
-        message: "Candidate deleted successfully",
+        title: "Candidate Deleted",
+        message: "The new candidate was successfully deleted.",
         type: "success",
       });
     } catch (error) {
       console.error("Failed to delete candidate:", error);
       showToast({
-        title: "Error",
-        message: "Failed to delete candidate",
+        title: "Error deleting candidate",
+        message: "There's an error deleting the candidate. Please try again.",
         type: "error",
       });
     }
@@ -110,16 +110,15 @@ const Candidates = () => {
         interviews: state.interviews.map((i) => i.candidateId === candidateToEdit!.id ? { ...i, candidate: { ...i.candidate, ...editedCandidate } } : i),
       }))
       showToast({
-        title: "Success",
-        message: "Candidate updated successfully",
+        title: "Candidate Updated",
+        message: "The candidate has been successfuly updated.",
         type: "success",
       });
       setIsEditModalOpen(false);
     } catch (error) {
-      console.error("Failed to update candidate:", error);
       showToast({
-        title: "Error",
-        message: "Failed to update candidate",
+        title: "Error updating candidate",
+        message: "There's an error updating the candidate. Please try again.",
         type: "error",
       });
     }
@@ -152,15 +151,14 @@ const Candidates = () => {
       
       setIsAddModalOpen(false);
       showToast({
-        title: "Success",
-        message: "Candidate added successfully",
+        title: "Candidate Created",
+        message: "The new candidate has been successfully created.",
         type: "success",
       });
     } catch (error) {
-      console.error("Failed to add candidate:", error);
       showToast({
-        title: "Error",
-        message: "Failed to add candidate",
+        title: "Error creating candidate",
+        message: "There's an error creating the candidate. Please try again.",
         type: "error",
       });
     }

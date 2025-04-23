@@ -27,6 +27,7 @@ import KanbanScrollWrapper from "./kanbanscrollwrapper";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { API_URL } from "@/lib/constants";
 import InterviewModal from "./InterviewModal";
+import { useToastStore } from "@/stores/useToastStore";
 const systemLockedStatuses = [
   "in_progress",
   "processing",
@@ -118,8 +119,14 @@ export function Board({ initial }: { initial: TBoard }) {
             if (!destination) {
               return;
             }
-            console.log({HANNAH: home.id})
+
             if (home.id === "draft" && destination.id !== "pending") {
+              console.log("SHOW TOAST!!!")
+              return;
+            }
+
+            // disallow moving from pending back into draft
+            if (home.id === "pending" && destination.id === "draft") {
               console.log("SHOW TOAST!!!")
               return;
             }
@@ -177,6 +184,12 @@ export function Board({ initial }: { initial: TBoard }) {
             }
             
             if (home.id === "draft" && destination.id !== "pending") {
+              console.log("SHOW TOAST!!!")
+              return;
+            }
+
+            // disallow moving from pending back into draft
+            if (home.id === "pending" && destination.id === "draft") {
               console.log("SHOW TOAST!!!")
               return;
             }
@@ -411,7 +424,11 @@ export function Board({ initial }: { initial: TBoard }) {
       if (!res.ok) {
         throw new Error("Failed to update interview status");
       }
-
+      useToastStore.getState().showToast({
+        title: "Success",
+        message: "Interview link has been sent",
+        type: "success"
+      })
       return await res.json();
     } catch (err) {
       console.error(err);

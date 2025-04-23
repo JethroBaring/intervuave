@@ -93,6 +93,7 @@ const Templates: React.FC<TemplatesProps> = () => {
     setVisionWeight,
     setCultureWeight,
     setCoreValuesWeight,
+    alignedWiths,
   } = useTemplateForm(selectedTemplate!);
 
   const { templates, coreValues } = useCompanyStore(
@@ -299,12 +300,42 @@ const Templates: React.FC<TemplatesProps> = () => {
                   openViewTemplateModal();
                 }}
                 onEdit={() => {
-                  setSelectedTemplate(template);
-                  openEditTemplateModal();
+                  const statuses = ["PENDING", "SUBMITTED", "PROCESSING", "EVALUATED"];
+                  const count =
+                    template.interviews?.filter((interview) =>
+                      statuses.includes(interview.status)
+                    ).length || 0;
+
+                  if (count > 0) {
+                    useToastStore.getState().showToast({
+                      title: "Edit disabled",
+                      message:
+                        "This template cannot be edited because it's linked to existing interviews. Creating a new template instead.",
+                      type: "warning",
+                    });
+                  } else {
+                    setSelectedTemplate(template);
+                    openEditTemplateModal();
+                  }
                 }}
                 onDelete={() => {
-                  openWarningModal();
-                  setSelectedTemplate(template);
+                  const statuses = ["PENDING", "SUBMITTED", "PROCESSING", "EVALUATED"];
+                  const count =
+                    template.interviews?.filter((interview) =>
+                      statuses.includes(interview.status)
+                    ).length || 0;
+
+                  if (count > 0) {
+                    useToastStore.getState().showToast({
+                      title: "Delete disabled",
+                      message:
+                        "This template cannot be deleted because it contains linked interview data. This restriction preserves the integrity of your interview records.",
+                      type: "warning",
+                    });
+                  } else {
+                    openWarningModal();
+                    setSelectedTemplate(template);
+                  }
                 }}
               />
             ))}
@@ -457,6 +488,179 @@ const Templates: React.FC<TemplatesProps> = () => {
 
               <div className="px-2 flex flex-col gap-3">
                 <div>
+                  <Label className="text-base">
+                    Culture Fit Composite Weights
+                  </Label>
+                  {isEditTemplateModalOpen && (
+                    <Label>
+                      Adjust the importance of each metric. Total should equal
+                      100%.
+                    </Label>
+                  )}
+                </div>
+                {alignedWiths.includes("MISSION") && (
+                  <div className="w-full flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1 justify-center">
+                        <Label className="m-0">Mission Alignment</Label>
+                        <Label className="m-0 font-normal text-xs">
+                          Describes the quality of the candidate's response.
+                        </Label>
+                      </div>
+                      <div className="relative w-[70px]">
+                        <Input
+                          className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={missionWeight}
+                          onChange={(e) =>
+                            setMissionWeight(parseInt(e.target.value))
+                          }
+                          disabled={isViewTemplateModalOpen}
+                        />
+                        <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      className="accent-brand-500 [&:disabled]:accent-brand-500"
+                      value={missionWeight}
+                      onChange={(e) =>
+                        setMissionWeight(parseInt(e.target.value))
+                      }
+                      disabled={isViewTemplateModalOpen}
+                    />
+                  </div>
+                )}
+                {alignedWiths.includes("VISION") && (
+                  <div className="w-full flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1 justify-center">
+                        <Label className="m-0">Vision Alignment</Label>
+                        <Label className="m-0 font-normal text-xs">
+                          Describes the cultural fit of the candidate.
+                        </Label>
+                      </div>
+                      <div className="relative w-[70px]">
+                        <Input
+                          className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={visionWeight}
+                          onChange={(e) =>
+                            setVisionWeight(parseInt(e.target.value))
+                          }
+                          disabled={isViewTemplateModalOpen}
+                        />
+                        <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      className="accent-brand-500 [&:disabled]:accent-brand-500"
+                      value={visionWeight}
+                      onChange={(e) =>
+                        setVisionWeight(parseInt(e.target.value))
+                      }
+                      disabled={isViewTemplateModalOpen}
+                    />
+                  </div>
+                )}
+                {alignedWiths.includes("CULTURE") && (
+                  <div className="w-full flex flex-col gap-3">
+                    <div className="flex items-center justify-between">
+                      <div className="flex flex-col gap-1 justify-center">
+                        <Label className="m-0">Culture Alignment</Label>
+                        <Label className="m-0 font-normal text-xs">
+                          Describes the cultural fit of the candidate.
+                        </Label>
+                      </div>
+                      <div className="relative w-[70px]">
+                        <Input
+                          className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                          type="number"
+                          min="0"
+                          max="100"
+                          value={cultureWeight}
+                          onChange={(e) =>
+                            setCultureWeight(parseInt(e.target.value))
+                          }
+                          disabled={isViewTemplateModalOpen}
+                        />
+                        <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                      </div>
+                    </div>
+                    <input
+                      type="range"
+                      min={0}
+                      max={100}
+                      className="accent-brand-500 [&:disabled]:accent-brand-500"
+                      value={cultureWeight}
+                      onChange={(e) =>
+                        setCultureWeight(parseInt(e.target.value))
+                      }
+                      disabled={isViewTemplateModalOpen}
+                    />
+                  </div>
+                )}
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Core Values Alignment</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Describes the cultural fit of the candidate.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={coreValuesWeight}
+                        onChange={(e) =>
+                          setCoreValuesWeight(parseInt(e.target.value))
+                        }
+                        disabled={isViewTemplateModalOpen}
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
+                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    className="accent-brand-500 [&:disabled]:accent-brand-500"
+                    value={coreValuesWeight}
+                    onChange={(e) =>
+                      setCoreValuesWeight(parseInt(e.target.value))
+                    }
+                    disabled={isViewTemplateModalOpen}
+                  />
+                </div>
+                {isEditTemplateModalOpen && (
+                  <p
+                    className={`mb-1.5 block text-sm font-medium  px-2 ${
+                      totalCultureFitCompositeWeight !== 100
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }`}
+                  >
+                    {totalCultureFitCompositeWeight !== 100
+                      ? `Total weight is ${totalCultureFitCompositeWeight}%. Please make sure it adds up to 100%.`
+                      : "All good! Metric weights are properly distributed."}
+                  </p>
+                )}
+              </div>
+
+              <div className="px-2 flex flex-col gap-3">
+                <div>
                   <Label className="text-base">Overall Fit Score Weights</Label>
                   {isEditTemplateModalOpen && (
                     <Label>
@@ -535,20 +739,20 @@ const Templates: React.FC<TemplatesProps> = () => {
                     disabled={isViewTemplateModalOpen}
                   />
                 </div>
+                {isEditTemplateModalOpen && (
+                  <p
+                    className={`mb-1.5 block text-sm font-medium  px-2 ${
+                      totalOverallFitWeight !== 100
+                        ? "text-red-500"
+                        : "text-green-500"
+                    }`}
+                  >
+                    {totalOverallFitWeight !== 100
+                      ? `Total weight is ${totalOverallFitWeight}%. Please make sure it adds up to 100%.`
+                      : "All good! Metric weights are properly distributed."}
+                  </p>
+                )}
               </div>
-              {isEditTemplateModalOpen && (
-                <p
-                  className={`mb-1.5 block text-sm font-medium  px-2 ${
-                    totalOverallFitWeight !== 100
-                      ? "text-red-500"
-                      : "text-green-500"
-                  }`}
-                >
-                  {totalOverallFitWeight !== 100
-                    ? `Total weight is ${totalOverallFitWeight}%. Please make sure it adds up to 100%.`
-                    : "All good! Metric weights are properly distributed."}
-                </p>
-              )}
 
               <div className="flex items-center gap-3 px-2 lg:justify-end">
                 <Button size="sm" variant="outline" onClick={clearState}>
@@ -838,71 +1042,75 @@ const Templates: React.FC<TemplatesProps> = () => {
                   Customize how much each metric affects candidate evaluation
                 </Label>
               </div>
-              <div className="w-full flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1 justify-center">
-                    <Label className="m-0">Mission</Label>
-                    <Label className="m-0 font-normal text-xs">
-                      Aligns with the company's mission.
-                    </Label>
+              {alignedWiths.includes("MISSION") && (
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Mission</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Aligns with the company's mission.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={missionWeight}
+                        onChange={(e) =>
+                          setMissionWeight(parseInt(e.target.value))
+                        }
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
                   </div>
-                  <div className="relative w-[70px]">
-                    <Input
-                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={missionWeight}
-                      onChange={(e) =>
-                        setMissionWeight(parseInt(e.target.value))
-                      }
-                    />
-                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
-                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="accent-brand-500"
+                    value={missionWeight}
+                    onChange={(e) => setMissionWeight(parseInt(e.target.value))}
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="accent-brand-500"
-                  value={missionWeight}
-                  onChange={(e) => setMissionWeight(parseInt(e.target.value))}
-                />
-              </div>
-              <div className="w-full flex flex-col gap-3">
-                <div className="flex items-center justify-between">
-                  <div className="flex flex-col gap-1 justify-center">
-                    <Label className="m-0">Vision</Label>
-                    <Label className="m-0 font-normal text-xs">
-                      Aligns with the company's vision.
-                    </Label>
+              )}
+              {alignedWiths.includes("VISION") && (
+                <div className="w-full flex flex-col gap-3">
+                  <div className="flex items-center justify-between">
+                    <div className="flex flex-col gap-1 justify-center">
+                      <Label className="m-0">Vision</Label>
+                      <Label className="m-0 font-normal text-xs">
+                        Aligns with the company's vision.
+                      </Label>
+                    </div>
+                    <div className="relative w-[70px]">
+                      <Input
+                        className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
+                        type="number"
+                        min="0"
+                        max="100"
+                        value={visionWeight}
+                        onChange={(e) =>
+                          setVisionWeight(parseInt(e.target.value))
+                        }
+                      />
+                      <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
+                    </div>
                   </div>
-                  <div className="relative w-[70px]">
-                    <Input
-                      className="pr-8 text-right appearance-none [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
-                      type="number"
-                      min="0"
-                      max="100"
-                      value={visionWeight}
-                      onChange={(e) =>
-                        setVisionWeight(parseInt(e.target.value))
-                      }
-                    />
-                    <Percent className="h-4 w-4 absolute right-2 top-1/2 -translate-y-1/2 text-gray-500 text-sm pointer-events-none" />
-                  </div>
+                  <input
+                    type="range"
+                    min={0}
+                    max={100}
+                    step={5}
+                    className="accent-brand-500"
+                    value={visionWeight}
+                    onChange={(e) => setVisionWeight(parseInt(e.target.value))}
+                  />
                 </div>
-                <input
-                  type="range"
-                  min={0}
-                  max={100}
-                  step={5}
-                  className="accent-brand-500"
-                  value={visionWeight}
-                  onChange={(e) => setVisionWeight(parseInt(e.target.value))}
-                />
-              </div>
-              {culture && (
+              )}
+              {alignedWiths.includes("CULTURE") && (
                 <div className="w-full flex flex-col gap-3">
                   <div className="flex items-center justify-between">
                     <div className="flex flex-col gap-1 justify-center">
@@ -1200,9 +1408,15 @@ const Templates: React.FC<TemplatesProps> = () => {
                       options={[
                         { value: "MISSION", label: "Mission" },
                         { value: "VISION", label: "Vision" },
-                        culture
-                          ? { value: "CULTURE", label: "Culture" }
-                          : undefined,
+                        {
+                          value: "CULTURE",
+                          label: `Culture${
+                            !culture
+                              ? " (Set company culture on settings to select this.)"
+                              : ""
+                          }`,
+                          disabled: !culture,
+                        },
                       ].filter(
                         (option): option is { value: string; label: string } =>
                           option !== undefined
@@ -1319,7 +1533,10 @@ const Templates: React.FC<TemplatesProps> = () => {
       </Modal>
       <Modal
         isOpen={isGenerateQuestionsModalOpen}
-        onClose={closeGenerateQuestionsModal}
+        onClose={() => {
+          closeGenerateQuestionsModal();
+          setNumberOfQuestions(1);
+        }}
         className="max-w-[700px] m-4"
       >
         <div className="relative w-full p-4 overflow-y-auto bg-white no-scrollbar rounded-xl dark:bg-gray-900 lg:p-11">
@@ -1335,15 +1552,39 @@ const Templates: React.FC<TemplatesProps> = () => {
           <div className="flex flex-col gap-6">
             <div className="px-2 overflow-y-auto custom-scrollbar">
               <div>
-                <Label>Number of Questions</Label>
+                <Label>Number of Questions (10)</Label>
                 <Input
                   type="number"
                   min="1"
                   max="10"
                   value={numberOfQuestions}
-                  onChange={(e) =>
-                    setNumberOfQuestions(parseInt(e.target.value))
-                  }
+                  onChange={(e) => {
+                    const value = e.target.value;
+
+                    // 1. Explicitly check if the input field has been cleared
+                    if (value === "") {
+                      // 2. Set the state to a sensible default (e.g., 0)
+                      // This prevents the state from being stuck on the previous value
+                      // or becoming inconsistent with the empty input.
+                      setNumberOfQuestions(1);
+
+                      // --- Alternative: Set to null ---
+                      // If you prefer the state to be null when empty, use this instead:
+                      // setNumberOfQuestions(null);
+                      // Make sure the rest of your component logic can handle null.
+                    } else {
+                      // 3. If not empty, proceed with parsing and validation
+                      const number = parseInt(value, 10); // Use radix 10
+
+                      // 4. Update state only if it's a valid number
+                      // (Add other checks like number >= 0 if necessary)
+                      if (!Number.isNaN(number)) {
+                        setNumberOfQuestions(number);
+                      }
+                      // If input is not empty but invalid (e.g., "abc"),
+                      // NaN is produced, and the state won't update here.
+                    }
+                  }}
                 />
               </div>
             </div>

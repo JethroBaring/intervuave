@@ -2,10 +2,11 @@ import { Body, Controller, Post, Res, UseGuards } from '@nestjs/common';
 import { LocalAuthGuard } from './guards/local-auth.guard';
 import { CurrentUser } from './current-user.decorator';
 import { User } from '@prisma/client';
-import { Response } from 'express';
+import { response, Response } from 'express';
 import { AuthService } from './auth.service';
 import { JwtRefreshAuthGuard } from './guards/jwt-refresh-auth.guard';
 import { CreateUserDto } from '../users/dto/create-user.dto';
+import { JwtAuthGuard } from './guards/jwt-auth.guard';
 
 @Controller({ path: 'auth', version: '1' })
 export class AuthController {
@@ -18,6 +19,8 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     await this.authService.login(user, response);
+
+    return { success: true, message: 'Login successful' };
   }
 
   @Post('signup')
@@ -32,5 +35,15 @@ export class AuthController {
     @Res({ passthrough: true }) response: Response,
   ) {
     await this.authService.login(user, response);
+  }
+
+  @Post('signout')
+  @UseGuards(JwtAuthGuard)
+  async signout(
+    @CurrentUser() user: User,
+    @Res({ passthrough: true }) response: Response,
+  ) {
+    console.log(user);
+    return this.authService.signout(user.id, response);
   }
 }

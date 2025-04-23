@@ -41,6 +41,7 @@ export interface InterviewTemplate {
   questions?: Question[];
   metrics?: Metric[];
   roles?: Role[];
+  interviews?: Interview[]
 }
 
 export interface CoreValue {
@@ -176,7 +177,6 @@ export enum CallStatus {
 export enum InterviewStatus {
   DRAFT = "DRAFT",
   PENDING = "PENDING",
-  IN_PROGRESS = "IN_PROGRESS",
   COMPLETED = "COMPLETED",
   PROCESSING = "PROCESSING",
   EVALUATED = "EVALUATED",

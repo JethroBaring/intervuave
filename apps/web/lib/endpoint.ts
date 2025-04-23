@@ -3,6 +3,7 @@ export const endpoints = {
     login: "/auth/login",
     refresh: "/auth/refresh",
     signup: "/auth/signup",
+    signout: "/auth/signout",
   },
 
   users: {
@@ -69,6 +70,9 @@ export const endpoints = {
     delete: (candidateId: string, interviewId: string) =>
       `/candidates/${candidateId}/interviews/${interviewId}`,
     'view-url': (companyId: string, interviewId: string) => `companies/${companyId}/interviews/${interviewId}/view-url`,
+    'send-interview-link': (companyId: string, interviewId: string) => `companies/${companyId}/interviews/${interviewId}/send-interview-link`,
+    'expire-interview-link': (companyId: string, interviewId: string) => `companies/${companyId}/interviews/${interviewId}/expire-interview-link`,
+    'send-interview-reminder': (companyId: string, interviewId: string) => `companies/${companyId}/interviews/${interviewId}/send-interview-reminder`,
   },
 
   evaluations: {
@@ -80,6 +84,7 @@ export const endpoints = {
   feedback: {
     create: (evaluationId: string) => `/evaluations/${evaluationId}/feedback`,
     find: (evaluationId: string) => `/evaluations/${evaluationId}/feedback`,
+    update: (evaluationId: string) => `/evaluations/${evaluationId}/feedback`,
   },
 
   upload: {

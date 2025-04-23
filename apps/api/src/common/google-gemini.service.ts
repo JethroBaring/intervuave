@@ -234,34 +234,10 @@ export class GeminiService {
     const critiquePrompt = `
       You are a self-critic. Review the following evaluation result based on the expected schema. If there are any mistakes, inconsistencies, or errors, correct them to strictly adhere to the schema. Otherwise, return the corrected JSON using the function call.
       
-      Expected JSON Schema:
-      \`\`\`json
-      {
-        "perQuestionResults": [
-          {
-            "questionId": "string",
-            "questionText": "string",
-            "cultureFitComposite": {
-              "valuesFit": [
-                {
-                  "coreValue": "string",
-                  "score": number
-                }
-              ],
-              "missionAlignment": number,
-              "visionAlignment": number,
-              "cultureFit": number
-            },
-            "feedback": "string"
-          }
-        ]
-      }
-      \`\`\`
-      
-      Evaluation JSON:
+      This is the initial evaluation.
       ${JSON.stringify(initialEvaluation)}
       
-    You must return the corrected JSON by making a function call to 'returnCulturalFitEvaluation' and populating its arguments according to the function schema.
+      Please return the evaluation using the returnCulturalFitEvaluation function call schema.
   `.trim();
 
     const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
@@ -329,7 +305,6 @@ export class GeminiService {
               },
               required: [
                 'questionId',
-                'questionText',
                 'cultureFitComposite',
                 'feedback',
               ],
@@ -371,11 +346,7 @@ export class GeminiService {
       }
 
       try {
-        const parsedArgs =
-          typeof functionCall.args === 'string'
-            ? (JSON.parse(functionCall.args as string) as CulturalFitEvaluation)
-            : (functionCall.args as unknown as CulturalFitEvaluation);
-
+        const parsedArgs = functionCall.args as CulturalFitEvaluation;
         return parsedArgs;
       } catch (err) {
         this.logger.error(

@@ -5,7 +5,7 @@ import Label from "@/components/ui/form/Label";
 import Button from "@/components/ui/button/Button";
 import { ChevronLeftIcon, EyeCloseIcon, EyeIcon } from "@/icons";
 import Link from "next/link";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { useToastStore } from "@/stores/useToastStore";
 import { Loader } from "lucide-react";
 import { useAuthStore } from "@/stores/useAuthStore";
@@ -13,13 +13,27 @@ import { useRouter } from "next/navigation";
 
 export default function SignInForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const { isAuthenticated, checkAuth, login } = useAuthStore();
 
   const [email, setEmail] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [password, setPassword] = useState("");
-  const login = useAuthStore((state) => state.login);
   const showToast = useToastStore((state) => state.showToast);
   const router = useRouter();
+
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    // Only redirect if the user *is* authenticated
+    if (isAuthenticated) {
+      console.log("User authenticated, redirecting to /templates..."); // Optional: for debugging
+      router.push('/templates');
+    }
+    // This effect should run when `isAuthenticated` changes or `router` instance changes
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -111,9 +125,9 @@ export default function SignInForm() {
                   </Link>
                 </div>
                 <div>
-                  <Button className="w-full" size="sm" disabled={isLoggingIn}>
+                  <Button className="w-full" size="sm" disabled={isLoggingIn || !email || !password}>
                     {isLoggingIn && <Loader className="h-5 w-5 animate-spin" />}
-                    Sign in
+                    Sign In
                   </Button>
                 </div>
               </div>

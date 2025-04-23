@@ -61,4 +61,31 @@ export class InterviewsController {
   ) {
     return this.service.getInterviewViewUrl(companyId, interviewId);
   }
+
+  @Patch(':interviewId/send-interview-link')
+  @UseGuards(JwtAuthGuard)
+  sendInterviewLink(
+    @Param('companyId') companyId: string,
+    @Param('interviewId') interviewId: string,
+  ) {
+    return this.service.sendInterviewLink(companyId, interviewId);
+  }
+
+  @Patch(':interviewId/expire-interview-link')
+  @UseGuards(JwtAuthGuard)
+  expireInterviewLink(
+    @Param('companyId') companyId: string,
+    @Param('interviewId') interviewId: string,
+  ) {
+    return this.service.expireInterviewLink(companyId, interviewId);
+  }
+
+  @Patch(':interviewId/send-interview-reminder')
+  @UseGuards(JwtAuthGuard)
+  sendInterviewReminder(
+    @Param('companyId') companyId: string,
+    @Param('interviewId') interviewId: string,
+  ) {
+    return this.service.sendInterviewReminder(companyId, interviewId);
+  }
 }

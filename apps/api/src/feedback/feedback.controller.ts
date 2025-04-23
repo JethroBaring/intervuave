@@ -1,4 +1,12 @@
-import { Controller, Post, Get, Param, Body, UseGuards } from '@nestjs/common';
+import {
+  Controller,
+  Post,
+  Get,
+  Param,
+  Body,
+  UseGuards,
+  Patch,
+} from '@nestjs/common';
 import { FeedbackService } from './feedback.service';
 import { CreateFeedbackDto } from './dto/create-feedback.dto';
 import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
@@ -20,5 +28,11 @@ export class FeedbackController {
   @UseGuards(JwtAuthGuard)
   findOne(@Param('evaluationId') id: string) {
     return this.service.findOne(id);
+  }
+
+  @Patch()
+  @UseGuards(JwtAuthGuard)
+  update(@Param('evaluationId') id: string, @Body() dto: CreateFeedbackDto) {
+    return this.service.update(id, dto);
   }
 }

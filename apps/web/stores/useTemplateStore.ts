@@ -70,6 +70,10 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
         metrics: data.metrics,
         responseQualityWeight: data.responseQualityWeight,
         cultureFitWeight: data.cultureFitWeight,
+        missionWeight: data.missionWeight,
+        visionWeight: data.visionWeight,
+        cultureWeight: data.cultureWeight,
+        coreValuesWeight: data.coreValuesWeight
       });
       console.log("Template created:", res.data);
       set({ isNewTemplateModalOpen: false });
@@ -82,7 +86,12 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
         type: "success",
       });
     } catch (error) {
-      console.error("Failed to create template", error);
+      // console.error("Failed to create template", error);
+      useToastStore.getState().showToast({
+        title: "Error creating template",
+        message: "There's an error creating the template. Please try again.",
+        type: "error",
+      });
     }
   },
 
@@ -117,7 +126,11 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
         type: "success",
       });
     } catch (error) {
-      console.error("Failed to update template", error);
+      useToastStore.getState().showToast({
+        title: "Error updating template",
+        message: "There's an error updating the template. Please try again.",
+        type: "error",
+      });
     }
   },
 
@@ -133,11 +146,15 @@ export const useTemplateStore = create<TemplateStore>((set, get) => ({
       }));
       useToastStore.getState().showToast({
         title: "Template Deleted",
-        message: "The new interview template was successfully created.",
+        message: "The new interview template was successfully deleted.",
         type: "success",
       });
     } catch (error) {
-      console.error("Failed to delete template", error);
+      useToastStore.getState().showToast({
+        title: "Error deleting template",
+        message: "There's an error deleting the template. Please try again.",
+        type: "error",
+      });
     }
   },
 

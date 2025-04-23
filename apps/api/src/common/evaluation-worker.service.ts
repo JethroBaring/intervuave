@@ -211,9 +211,23 @@ export class EvaluationWorkerService {
         correctedEvaluation,
       );
 
-      await this.prisma.evaluation.create({
-        data: calculatedEvaluation,
+      // Check if an evaluation already exists for this interview
+      const existingEvaluation = await this.prisma.evaluation.findUnique({
+        where: { interviewId },
       });
+
+      if (existingEvaluation) {
+        // Update existing evaluation
+        await this.prisma.evaluation.update({
+          where: { interviewId },
+          data: calculatedEvaluation,
+        });
+      } else {
+        // Create new evaluation if none exists
+        await this.prisma.evaluation.create({
+          data: calculatedEvaluation,
+        });
+      }
 
       await this.prisma.interview.update({
         where: { id: interviewId },
@@ -296,10 +310,8 @@ export class EvaluationWorkerService {
             visionWeight: true,
             coreValuesWeight: true,
             cultureWeight: true,
+            metrics: true
           },
-          // include: {
-          //   metrics: true,
-          // },
         },
       },
     });
@@ -314,29 +326,25 @@ export class EvaluationWorkerService {
     const visionWeight = interviewTemplate.visionWeight ?? 30;
     const coreValuesWeight = interviewTemplate.coreValuesWeight ?? 30;
     const cultureWeight = interviewTemplate.cultureWeight ?? 40;
-    const confidenceWeight = 20;
-    const speechClarityWeight = 20;
-    const emotionalToneWeight = 20;
-    const engagementWeight = 20;
-    const bodyLanguageWeight = 20;
-    // const confidenceWeight =
-    //   interviewTemplate.metrics.find((metric) => metric.name === 'Confidence')
-    //     ?.weight ?? 20;
-    // const speechClarityWeight =
-    //   interviewTemplate.metrics.find(
-    //     (metric) => metric.name === 'Speech Clarity',
-    //   )?.weight ?? 20;
-    // const emotionalToneWeight =
-    //   interviewTemplate.metrics.find(
-    //     (metric) => metric.name === 'Emotional Tone',
-    //   )?.weight ?? 20;
-    // const engagementWeight =
-    //   interviewTemplate.metrics.find((metric) => metric.name === 'Engagement')
-    //     ?.weight ?? 20;
-    // const bodyLanguageWeight =
-    //   interviewTemplate.metrics.find(
-    //     (metric) => metric.name === 'Body Language',
-    //   )?.weight ?? 20;
+
+    const confidenceWeight =
+      interviewTemplate.metrics.find((metric) => metric.name === 'Confidence')
+        ?.weight ?? 20;
+    const speechClarityWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Speech Clarity',
+      )?.weight ?? 20;
+    const emotionalToneWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Emotional Tone',
+      )?.weight ?? 20;
+    const engagementWeight =
+      interviewTemplate.metrics.find((metric) => metric.name === 'Engagement')
+        ?.weight ?? 20;
+    const bodyLanguageWeight =
+      interviewTemplate.metrics.find(
+        (metric) => metric.name === 'Body Language',
+      )?.weight ?? 20;
 
     const metricsByQuestionId = new Map<string, any>();
     for (const response of responses) {

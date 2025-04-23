@@ -12,7 +12,6 @@ export default function Kanban() {
     const columns: TColumn[] = [
       { id: "draft", title: "Draft", cards: [], canAdd: true },
       { id: "pending", title: "Pending", cards: [] },
-      { id: "in_progress", title: "In Progress", cards: [] },
       { id: "submitted", title: "Submitted", cards: [] },
       { id: "processing", title: "Processing", cards: [] },
       { id: "evaluated", title: "Evaluated", cards: [] },

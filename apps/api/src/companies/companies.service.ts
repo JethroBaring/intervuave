@@ -46,6 +46,7 @@ export class CompaniesService {
             include: {
               metrics: true,
               questions: true,
+              interviews: true
             },
           },
           candidates: true,
@@ -57,7 +58,11 @@ export class CompaniesService {
                   question: true,
                 },
               },
-              evaluation: true,
+              evaluation: {
+                include: {
+                  feedback: true
+                }
+              }
             },
           },
         },

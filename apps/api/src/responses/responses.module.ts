@@ -9,9 +9,7 @@ import { EvaluationWorkerService } from "src/common/evaluation-worker.service";
   controllers: [ResponsesController],
   providers: [
     ResponsesService,
-    GeminiService,
     ConfigService,
-    EvaluationWorkerService,
   ],
 })
 export class ResponsesModule {}

@@ -159,16 +159,6 @@ export class InterviewsService {
     }
   }
 
-  // async sendInterviewLink(interviewId: string) {
-  //   try {
-
-  //   } catch (error) {
-  //     this.logger.error('Failed to send interview link', error);
-  //     throw new InternalServerErrorException('Failed to send interview link');
-
-  //   }
-  // }
-
   async getInterviewViewUrl(companyId: string, interviewId: string) {
     try {
       // Get the interview to find the video path
@@ -188,6 +178,75 @@ export class InterviewsService {
     } catch (error) {
       this.logger.error('Failed to generate view URL', error);
       throw new InternalServerErrorException('Failed to generate view URL');
+    }
+  }
+
+  async sendInterviewLink(companyId: string, interviewId: string) {
+    return await this.update(companyId, interviewId, {status: 'PENDING'})
+  }
+
+  async expireInterviewLink(companyId: string, interviewId: string) {
+    try {
+      const interview = await this.prisma.interview.findUnique({
+        where: { id: interviewId, companyId },
+      });
+
+      if (!interview) {
+        throw new Error('Interview not found');
+      }
+
+      return await this.prisma.interview.update({
+        where: { id: interviewId, companyId },
+        data: {
+          expiresAt: getPrismaDateTimeNow(), // Set expiry to current time
+          status: InterviewStatus.EXPIRED,
+        },
+      });
+    } catch (error) {
+      this.logger.error('Failed to expire interview link', error);
+      throw new InternalServerErrorException('Failed to expire interview link');
+    }
+  }
+
+  async sendInterviewReminder(companyId: string, interviewId: string) {
+    try {
+      const interview = await this.prisma.interview.findUnique({
+        where: { id: interviewId, companyId },
+        include: {
+          candidate: true,
+          company: true,
+        },
+      });
+
+      if (!interview) {
+        throw new Error('Interview not found');
+      }
+
+      if (!interview.interviewLink || !interview.expiresAt) {
+        throw new Error('Interview link not generated yet');
+      }
+
+      // Update the emailSentAt timestamp
+      await this.prisma.interview.update({
+        where: { id: interviewId, companyId },
+        data: {
+          emailSentAt: getPrismaDateTimeNow(),
+        },
+      });
+      
+      // Send reminder email
+      await this.mailer.sendReminderMail({
+        candidateName: interview.candidate.firstName,
+        candidateEmail: interview.candidate.email,
+        companyName: interview.company.name,
+        roleName: interview.position,
+        interviewLink: interview.interviewLink,
+      });
+
+      return { success: true };
+    } catch (error) {
+      this.logger.error('Failed to send interview reminder', error);
+      throw new InternalServerErrorException('Failed to send interview reminder');
     }
   }
 }

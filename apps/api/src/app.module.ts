@@ -15,6 +15,8 @@ import { MailModule } from './mail/mail.module';
 import { PublicModule } from './public/public.module';
 import { ResponsesModule } from './responses/responses.module';
 import { ScheduleModule } from '@nestjs/schedule';
+import { EvaluationsModule } from "./evaluations/evaluations.module";
+import { CommonModule } from "./common/common.module";
 
 @Module({
   imports: [
@@ -40,6 +42,8 @@ import { ScheduleModule } from '@nestjs/schedule';
     UploadModule,
     PublicModule,
     ResponsesModule,
+    EvaluationsModule,
+    CommonModule
   ],
   controllers: [AppController],
   providers: [AppService],

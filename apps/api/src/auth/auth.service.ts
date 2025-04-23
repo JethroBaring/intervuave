@@ -101,4 +101,20 @@ export class AuthService {
       throw new UnauthorizedException('Refresh token is not valid.');
     }
   }
+
+  async signout(userId: string, response: Response): Promise<void> {
+    try {
+        await this.usersService.update(userId, { refreshToken: null });
+    } catch(error) {
+        console.error(`Failed to clear refresh token for user ${userId}:`, error);
+    }
+
+    const commonCookieOptions = {
+        httpOnly: true,
+        path: '/',
+    }
+
+    response.clearCookie('Authentication', commonCookieOptions);
+    response.clearCookie('Refresh', commonCookieOptions);
+  }
 }

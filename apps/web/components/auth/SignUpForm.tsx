@@ -8,20 +8,34 @@ import { useToastStore } from "@/stores/useToastStore";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
+import Button from "../ui/button/Button";
 
 export default function SignUpForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
+  const { isAuthenticated, checkAuth, register } = useAuthStore();
 
   const [companyName, setCompanyName] = useState("");
   const [isLoggingIn, setIsLoggingIn] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const register = useAuthStore((state) => state.register);
   const registerError = useAuthStore((state) => state.registerError);
   const showToast = useToastStore((state) => state.showToast);
   const router = useRouter();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  useEffect(() => {
+    // Only redirect if the user *is* authenticated
+    if (isAuthenticated) {
+      console.log("User authenticated, redirecting to /templates..."); // Optional: for debugging
+      router.push("/templates");
+    }
+    // This effect should run when `isAuthenticated` changes or `router` instance changes
+  }, [isAuthenticated, router]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -123,7 +137,7 @@ export default function SignUpForm() {
                   </div>
                 </div>
                 {/* <!-- Checkbox --> */}
-                <div className="flex items-center gap-3">
+                {/* <div className="flex items-center gap-3">
                   <Checkbox
                     className="w-5 h-5"
                     checked={isChecked}
@@ -139,13 +153,20 @@ export default function SignUpForm() {
                       Privacy Policy
                     </span>
                   </p>
-                </div>
+                </div> */}
                 {/* <!-- Button --> */}
                 <div>
-                  <button className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600">
+                <Button className="w-full" size="sm" disabled={isLoggingIn || !companyName || !email || !password}>
                     {isLoggingIn && <Loader className="h-5 w-5 animate-spin" />}
                     Sign Up
-                  </button>
+                  </Button>
+                  {/* <button
+                    className="flex items-center justify-center w-full px-4 py-3 text-sm font-medium text-white transition rounded-lg bg-brand-500 shadow-theme-xs hover:bg-brand-600"
+                    disabled={true}
+                  >
+                    {isLoggingIn && <Loader className="h-5 w-5 animate-spin" />}
+                    Sign Up
+                  </button> */}
                 </div>
               </div>
             </form>

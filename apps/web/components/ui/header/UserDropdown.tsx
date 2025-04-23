@@ -7,7 +7,9 @@ import { DropdownItem } from "../dropdown/DropdownItem";
 import { useCompanyStore } from "@/stores/useCompanyStore";
 import { useAuthStore } from "@/stores/useAuthStore";
 import { generateColorFromName } from "@/lib/avatar-color";
-
+import api from "@/lib/axios";
+import { endpoints } from "@/lib/endpoint";
+import { useRouter } from "next/navigation";
 
 export default function UserDropdown() {
   const [isOpen, setIsOpen] = useState(false);
@@ -21,8 +23,9 @@ export default function UserDropdown() {
     setIsOpen(false);
   }
 
-  const companyName = useCompanyStore((state) => state.name)
-  const email = useAuthStore((state) => state.user?.email)
+  const companyName = useCompanyStore((state) => state.name);
+  const email = useAuthStore((state) => state.user?.email);
+  const router = useRouter();
   return (
     <div className="relative">
       <button
@@ -30,12 +33,21 @@ export default function UserDropdown() {
         className="flex items-center text-gray-700 dark:text-gray-400 dropdown-toggle"
       >
         <span className="mr-3 overflow-hidden rounded-full h-11 w-11">
-          <div className={`w-11 h-11 flex items-center justify-center text-2xl font-bold text-black dark:text-white ${generateColorFromName(companyName)}`}>
-            {companyName.split(" ").map((name) => name.charAt(0).toUpperCase()).join("")}
+          <div
+            className={`w-11 h-11 flex items-center justify-center text-xl font-bold ${generateColorFromName(
+              companyName
+            )}`}
+          >
+            {companyName
+              .split(" ")
+              .map((name) => name.charAt(0).toUpperCase())
+              .join("")}
           </div>
         </span>
 
-        <span className="block mr-1 font-medium text-theme-sm">{companyName}</span>
+        <span className="block mr-1 font-medium text-theme-sm">
+          {companyName}
+        </span>
 
         <svg
           className={`stroke-gray-500 dark:stroke-gray-400 transition-transform duration-200 ${
@@ -62,7 +74,7 @@ export default function UserDropdown() {
         onClose={closeDropdown}
         className="absolute right-0 mt-[17px] flex w-[260px] flex-col rounded-2xl border border-gray-200 bg-white p-3 shadow-theme-lg dark:border-gray-800 dark:bg-gray-dark"
       >
-        <div> 
+        <div>
           <span className="block font-medium text-gray-700 text-theme-sm dark:text-gray-400">
             {companyName}
           </span>
@@ -71,8 +83,14 @@ export default function UserDropdown() {
           </span>
         </div>
 
-        <Link
-          href="/signin"
+        <button
+          onClick={async () => {
+            try {
+              await api.post(`${endpoints.auth.signout}`);
+              useAuthStore.setState({ user: null, isAuthenticated: false });
+              router.push("/signin");
+            } catch (error) {}
+          }}
           className="flex items-center gap-3 px-3 py-2 mt-3 font-medium text-gray-700 rounded-lg group text-theme-sm hover:bg-gray-100 hover:text-gray-700 dark:text-gray-400 dark:hover:bg-white/5 dark:hover:text-gray-300"
         >
           <svg
@@ -91,7 +109,7 @@ export default function UserDropdown() {
             />
           </svg>
           Sign out
-        </Link>
+        </button>
       </Dropdown>
     </div>
   );
