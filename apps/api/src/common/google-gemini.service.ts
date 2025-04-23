@@ -275,7 +275,7 @@ export class GeminiService {
       INITIAL EVALUATION:
       ${JSON.stringify(initialEvaluation, null, 2)}
 
-      After reviewing, return the corrected evaluation using the returnCulturalFitEvaluation function call schema. If the initial evaluation is correctly formatted, return it unchanged.
+      Please return the evaluation using the returnCulturalFitEvaluation function call schema.
       `.trim();
 
     const model = this.genAI.getGenerativeModel({
