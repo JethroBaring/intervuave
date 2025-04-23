@@ -23,6 +23,8 @@ import {
   Star,
   MessageCircle,
   Loader,
+  Copy,
+  Check,
 } from "lucide-react";
 import BarChartHorizontal from "../charts/bar/BarChartHorizontal";
 import PieChartComponent from "../charts/pie/PieChart";
@@ -60,7 +62,8 @@ const TABS = [
   },
 ];
 
-export const InterviewTimeline = ({ steps }: { steps: any[] }) => {
+export const InterviewTimeline = ({ steps, link }: { steps: any[], link: string }) => {
+  const [isCopied, setIsCopied] = useState(false);
   return (
     <div className="flex flex-col">
       {steps.map((step, index) => (
@@ -83,6 +86,31 @@ export const InterviewTimeline = ({ steps }: { steps: any[] }) => {
             <p className="text-sm text-gray-500 dark:text-gray-400">
               {step.description}
             </p>
+            {step.title === "Interview Email Sent" && (
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(link);
+                  setIsCopied(true);
+                  useToastStore.getState().showToast({
+                    title: "Link Copied!",
+                    message:
+                      "The interview link has been copied to your clipboard.",
+                    type: "success",
+                  });
+                  setTimeout(() => {
+                    setIsCopied(false);
+                  }, 2000);
+                }}
+                className="bg-brand-500/30 w-fit px-3 py-2 rounded-xl border border-brand-500 text-brand-500 flex items-center justify-between gap-3 my-1"
+              >
+                Copy interview link
+                {isCopied ? (
+                  <Check className="h-4 w-4" />
+                ) : (
+                  <Copy className="h-4 w-4" />
+                )}
+              </button>
+            )}
             <p className="text-xs text-gray-400 mt-1">{step.time}</p>
           </div>
         </div>
@@ -1055,8 +1083,7 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                     await api.patch(
                       `${endpoints.feedback.update(evaluation?.feedback?.id)}`,
                       {
-                        agreement:
-                          feedbackDecision,
+                        agreement: feedbackDecision,
                         comment: feedbackReason,
                       }
                     );
@@ -1268,6 +1295,7 @@ const InterviewModal = () => {
         return (
           <InterviewTimeline
             steps={getTimeline(selectedCandidate?.interview)}
+            link={selectedCandidate?.interview?.interviewLink}
           />
         );
 
