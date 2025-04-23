@@ -76,37 +76,62 @@ export class GeminiService {
     } = companyProfile;
 
     const prompt = `
-      You are an expert cultural fit evaluator for hiring purposes.
+      You are an expert HR cultural fit evaluator who specializes in objective assessment of candidates.
 
-      For each candidate response, evaluate how well their answer aligns with:
-      - Each of the assigned Core Values (based on the company's definitions provided).
-      - One of Mission, Vision, or Culture (based on what the question is aligned with).
+      TASK:
+      Analyze each candidate response against two criteria:
+      1. Alignment with specific Core Values assigned to that question
+      2. Alignment with either Mission, Vision, or Culture (depending on the question's focus)
 
-      Return a JSON object with a "perQuestionResults" field, using the provided function schema.
+      COMPANY PROFILE:
+      - Core Values: ${JSON.stringify(companyCoreValues, null, 2)}
+      - Mission: "${mission}"
+      - Vision: "${vision}"
+      - Culture: "${culture}"
 
-      Company Core Value Definitions:
-      ${JSON.stringify(companyCoreValues, null, 2)}
-
-      Candidate Responses:
+      CANDIDATE RESPONSES:
       ${JSON.stringify(responses, null, 2)}
 
-      Use the company's provided Core Value definitions, Mission ("${mission}"), Vision ("${vision}"), and Culture ("${culture}") when reasoning.
-      Scoring Guide for all evaluations:
-      - 1.0 = Perfect fit
-      - 0.8 = Strong fit
-      - 0.5 = Moderate fit
-      - 0.2 = Weak fit
-      - 0.0 = No fit
+      IMPORTANT EVALUATION GUIDELINES:
+      - Focus ONLY on content and ideas, NOT on grammar, writing style, or language proficiency
+      - Evaluate actual alignment with values and company direction, not presentation quality
+      - Be fair to non-native speakers and those with different communication styles
+      - Look for substance over form - a poorly worded response that demonstrates alignment should score higher than a well-written response with poor alignment
 
-      Be strict and realistic when scoring.
+      SCORING RUBRIC:
+      - Use a continuous scale from 0.0 to 1.0 where:
+        - 1.0 = Perfect fit (Demonstrates complete understanding and embodiment of values/mission/vision/culture)
+        - 0.75-0.99 = Strong fit (Shows clear alignment with most aspects)
+        - 0.5-0.74 = Moderate fit (Partially aligns but lacks depth or completeness)
+        - 0.25-0.49 = Weak fit (Minimally addresses values/mission/vision/culture)
+        - 0.01-0.24 = Very weak fit (Has minimal evidence of alignment)
+        - 0.0 = No fit (Does not demonstrate any alignment)
 
-      Core Values Scoring:
-      Score each core value (valuesFit) individually based on how much the candidate's response reflects that value. Use the same 0.0-1.0 scale.
+      Feel free to use any decimal value between 0.0 and 1.0 that accurately reflects the degree of alignment.
 
-      Please return the evaluation using the returnCulturalFitEvaluation function call schema.
+      SCORING GUIDELINES:
+      - Be objective and consistent across all evaluations
+      - Consider both explicit and implicit demonstrations of values
+      - For Core Values: Score each value individually based on how specifically the response aligns
+      - For Mission/Vision/Culture: Consider holistic alignment with the company's direction
+
+      EXAMPLE EVALUATION:
+      For a response showing strong understanding of company values despite grammatical errors:
+      - valuesFit: [{"coreValue": "Innovation", "score": 0.8}]
+      - visionAlignment: 0.5
+      - feedback: "Candidate demonstrates strong alignment with our Innovation value through their examples of creative problem-solving. Their understanding of our long-term vision is moderate but shows potential."
+
+      Use the returnCulturalFitEvaluation function to provide your assessment.
       `.trim();
 
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+    const model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      generationConfig: {
+        temperature: 0.2, // Lower temperature for more consistent evaluations
+        topP: 0.95, // Optional - controls diversity
+        topK: 40, // Optional - limits token selection pool
+      },
+    });
 
     const functionSchema = {
       name: 'returnCulturalFitEvaluation',
@@ -232,15 +257,33 @@ export class GeminiService {
     }
 
     const critiquePrompt = `
-      You are a self-critic. Review the following evaluation result based on the expected schema. If there are any mistakes, inconsistencies, or errors, correct them to strictly adhere to the schema. Otherwise, return the corrected JSON using the function call.
-      
-      This is the initial evaluation.
-      ${JSON.stringify(initialEvaluation)}
-      
-      Please return the evaluation using the returnCulturalFitEvaluation function call schema.
-  `.trim();
+      You are a quality assurance expert specializing in HR evaluation data. Your task is to review and correct the following cultural fit evaluation for accuracy, completeness, and adherence to schema requirements.
 
-    const model = this.genAI.getGenerativeModel({ model: 'gemini-2.0-flash' });
+      REVIEW OBJECTIVES:
+      1. Ensure all required fields are present (questionId, cultureFitComposite, feedback)
+      2. Verify all scores are valid decimal values between 0.0 and 1.0 inclusive
+      3. Check that each question has appropriate valuesFit entries with valid core values
+      4. Confirm feedback is constructive, specific, and reflects the numerical scores
+      5. Ensure questionText is included where available
+
+      VALIDATION CRITERIA:
+      - Required fields cannot be null or missing
+      - Scores must be decimal values between 0.0-1.0
+      - Each valuesFit item needs both coreValue (string) and score (number)
+      - Feedback should be informative and match the scores given
+
+      INITIAL EVALUATION:
+      ${JSON.stringify(initialEvaluation, null, 2)}
+
+      After reviewing, return the corrected evaluation using the returnCulturalFitEvaluation function call schema. If the initial evaluation is correctly formatted, return it unchanged.
+      `.trim();
+
+    const model = this.genAI.getGenerativeModel({
+      model: 'gemini-2.0-flash',
+      generationConfig: {
+        temperature: 0.1, // Using very low temperature for consistency in validation tasks
+      },
+    });
 
     const functionSchema = {
       name: 'returnCulturalFitEvaluation',
@@ -303,11 +346,7 @@ export class GeminiService {
                   description: 'Brief feedback for the question',
                 },
               },
-              required: [
-                'questionId',
-                'cultureFitComposite',
-                'feedback',
-              ],
+              required: ['questionId', 'cultureFitComposite', 'feedback'],
             },
           },
         },
