@@ -147,7 +147,7 @@ export default function Interview() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+      <div className="hidden relative lg:flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
         <GridShape />
         {currentStep === 0 && (
           <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
@@ -274,8 +274,7 @@ export default function Interview() {
             {currentStep === 4 && (
               <Card className="flex-auto h-full flex flex-col gap-5 text-gray-500 dark:text-gray-400 relative">
                 <div className="absolute left-5 top-5">
-                  {candidate?.firstName} {candidate?.lastName} (You){" "}
-                  {currentQuestionIndex + 1} {questions.length}
+                  {candidate?.firstName} {candidate?.lastName} (You)
                 </div>
 
                 {isRecording && (
@@ -313,12 +312,12 @@ export default function Interview() {
                     {countdown}
                   </div>
                 )}
-                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-999">
+                <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex flex-col items-center gap-3 z-999 w-[90%]">
                   {isRecording &&
                     questions[currentQuestionIndex] &&
                     !nextDisable && (
                       <div className="text-center text-xl font-medium text-gray-700 dark:text-white">
-                        {questions[currentQuestionIndex].questionText}
+                        ({currentQuestionIndex + 1}/{questions.length}). {questions[currentQuestionIndex].questionText}
                       </div>
                     )}
                   <div className="flex gap-3">
@@ -374,6 +373,17 @@ export default function Interview() {
           </>
         )}
 
+        <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
+          &copy; {new Date().getFullYear()} - Intervuave
+        </p>
+      </div>
+      <div className="relative flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+        <GridShape />
+          <div className="lg:hidden mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
+            <h1 className="mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
+              Use desktop/laptop for better experience.
+            </h1>
+          </div>
         <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
           &copy; {new Date().getFullYear()} - Intervuave
         </p>

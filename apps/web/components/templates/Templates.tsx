@@ -230,7 +230,7 @@ const Templates: React.FC<TemplatesProps> = () => {
                     fill=""
                   />
                 </svg>
-                Create New Template
+                New Interview Template
               </button>
             </div>
           ) : (
