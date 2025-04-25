@@ -50,7 +50,7 @@ const OnBoarding = () => {
 
   useEffect(() => {
     if (!isOnboarding) {
-      router.push("/dashboard");
+      router.push("/templates");
     }
   }, [isOnboarding]);
 
