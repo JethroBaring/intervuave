@@ -280,6 +280,9 @@ export function Column({ column }: { column: TColumn }) {
         candidate,
         position,
         interviewTemplateId,
+      },
+      {
+        withCredentials: true
       }
     );
     useCompanyStore.setState((state) => ({
