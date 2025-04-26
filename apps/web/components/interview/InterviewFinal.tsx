@@ -147,7 +147,7 @@ export default function Interview() {
 
   return (
     <Suspense fallback={<div>Loading...</div>}>
-      <div className="relative lg:flex flex-col items-center justify-center min-h-screen p-6 overflow-hidden z-1">
+      <div className="relative flex flex-col items-center justify-center min-h-screen p-4 sm:p-6 overflow-hidden z-1">
         <GridShape />
         {currentStep === 0 && (
           <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
@@ -164,12 +164,12 @@ export default function Interview() {
         )}
 
         {currentStep === 1 && (
-          <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
+          <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px] md:py-0 md:max-w-[700px] max-h-screen sm:max-h-none">
             <h1 className="mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
               Privacy and Consent
             </h1>
-            <div className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 sm:text-lg w-fit mx-auto">
-              <div className="flex items-center gap-3">
+            <div className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 text-sm sm:text-lg w-fit mx-auto">
+              <div className="flex items-start sm:items-center gap-3">
                 <Checkbox
                   checked={consent.videoAndAudio}
                   onChange={() =>
@@ -179,11 +179,11 @@ export default function Interview() {
                     }))
                   }
                 />
-                <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
+                <span className="block text-base sm:text-lg font-medium text-gray-700 dark:text-gray-400 text-left">
                   I consent to video and audio recording of the interview
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-start sm:items-center gap-3">
                 <Checkbox
                   checked={consent.aiAnalysis}
                   onChange={() =>
@@ -193,11 +193,11 @@ export default function Interview() {
                     }))
                   }
                 />
-                <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
+                <span className="block text-base sm:text-lg font-medium text-gray-700 dark:text-gray-400 text-left">
                   I understand my interview will be analyzed by AI
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-start sm:items-center gap-3">
                 <Checkbox
                   checked={consent.personalInfo}
                   onChange={() =>
@@ -207,11 +207,11 @@ export default function Interview() {
                     }))
                   }
                 />
-                <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
+                <span className="block text-base sm:text-lg font-medium text-gray-700 dark:text-gray-400 text-left">
                   I consent to processing of my personal information
                 </span>
               </div>
-              <div className="flex items-center gap-3">
+              <div className="flex items-start sm:items-center gap-3">
                 <Checkbox
                   checked={consent.privacyTerms}
                   onChange={() =>
@@ -221,7 +221,7 @@ export default function Interview() {
                     }))
                   }
                 />
-                <span className="block text-lg font-medium text-gray-700 dark:text-gray-400">
+                <span className="block text-base sm:text-lg font-medium text-gray-700 dark:text-gray-400 text-left">
                   I have read and agree to the privacy terms
                 </span>
               </div>
@@ -245,7 +245,7 @@ export default function Interview() {
             className={`${
               currentStep === 3
                 ? "mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]"
-                : "h-[700px] w-[1200px] flex gap-5"
+                : "h-full w-full max-h-[700px] max-w-[1200px] flex gap-5 md:h-[700px] md:w-[1200px]"
             }`}
           >
             {currentStep === 3 && (
@@ -253,7 +253,7 @@ export default function Interview() {
                 <h1 className="mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
                   Camera Preview
                 </h1>
-                <Card className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 sm:text-lg w-full h-[400px]">
+                <Card className="mt-6 mb-10 flex flex-col gap-3 text-gray-700 dark:text-gray-400 sm:text-lg w-full h-[300px] sm:h-[400px]">
                   <video
                     ref={videoRef}
                     autoPlay
@@ -273,25 +273,25 @@ export default function Interview() {
 
             {currentStep === 4 && (
               <Card className="flex-auto h-full flex flex-col gap-5 text-gray-500 dark:text-gray-400 relative">
-                <div className="absolute left-5 top-5">
+                <div className="absolute left-2 sm:left-5 top-2 sm:top-5 text-xs sm:text-base">
                   {candidate?.firstName} {candidate?.lastName} (You)
                 </div>
 
                 {isRecording && (
-                  <div className="absolute top-12 left-5 flex items-center gap-2">
-                    <span className="animate-pulse w-3 h-3 bg-red-500 rounded-full"></span>
-                    <p className="text-red-500 font-medium">Recording</p>
+                  <div className="absolute top-8 sm:top-12 left-2 sm:left-5 flex items-center gap-2">
+                    <span className="animate-pulse w-2 sm:w-3 h-2 sm:h-3 bg-red-500 rounded-full"></span>
+                    <p className="text-red-500 font-medium text-xs sm:text-base">Recording</p>
                   </div>
                 )}
 
-                <div className="absolute top-5 right-5">
-                  <div className="flex-1 p-3 relative h-[100px] w-[100px] flex items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-slate-800">
+                <div className="absolute top-2 sm:top-5 right-2 sm:right-5">
+                  <div className="flex-1 p-2 sm:p-3 relative h-[60px] w-[60px] sm:h-[100px] sm:w-[100px] flex items-center justify-center rounded-xl border border-gray-200 bg-white dark:border-gray-800 dark:bg-slate-800">
                     <Image
                       src="/images/interview-bot.png"
-                      width={80}
-                      height={80}
+                      width={50}
+                      height={50}
                       alt="interview_bot"
-                      className="object-cover rounded-full"
+                      className="object-cover rounded-full sm:w-[80px] sm:h-[80px]"
                     />
                     {isSpeaking && <span className="animate-speak" />}
                   </div>
@@ -308,7 +308,7 @@ export default function Interview() {
                 />
 
                 {countdown > 0 && (
-                  <div className="h-full w-full flex items-center justify-center absolute text-[100px]">
+                  <div className="h-full w-full flex items-center justify-center absolute text-[60px] sm:text-[100px]">
                     {countdown}
                   </div>
                 )}
@@ -316,7 +316,7 @@ export default function Interview() {
                   {isRecording &&
                     questions[currentQuestionIndex] &&
                     !nextDisable && (
-                      <div className="text-center text-xl font-medium text-gray-700 dark:text-white">
+                      <div className="text-center text-sm sm:text-xl font-medium text-gray-700 dark:text-white">
                         ({currentQuestionIndex + 1}/{questions.length}). {questions[currentQuestionIndex].questionText}
                       </div>
                     )}
@@ -327,7 +327,7 @@ export default function Interview() {
                         disabled={isSubmitting || countdown > 0 || nextDisable}
                       >
                         {isSubmitting && (
-                          <Loader className="h-5 w-5 animate-spin" />
+                          <Loader className="h-4 w-4 sm:h-5 sm:w-5 animate-spin" />
                         )}
                         {currentQuestionIndex + 1 === questions.length
                           ? "Finish Interview"
@@ -344,9 +344,9 @@ export default function Interview() {
         {currentStep === 5 && (
           <>
             {isSubmitting ? (
-              <Loader className="h-40 w-40 text-brand-400 animate-spin" />
+              <Loader className="h-24 w-24 sm:h-40 sm:w-40 text-brand-400 animate-spin" />
             ) : (
-              <Check className="text-brand-400 h-48 w-48" />
+              <Check className="text-brand-400 h-32 w-32 sm:h-48 sm:w-48" />
             )}
             <div className="mx-auto w-full max-w-[274px] text-center sm:max-w-[700px]">
               <h1 className="mt-6 mb-2 font-bold text-gray-800 text-title-md dark:text-white/90 xl:text-title-xl">
@@ -367,13 +367,13 @@ export default function Interview() {
                 </>
               )}
             </div>
-            <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
+            <p className="absolute text-xs sm:text-sm text-center text-gray-500 -translate-x-1/2 bottom-3 sm:bottom-6 left-1/2 dark:text-gray-400">
               &copy; {new Date().getFullYear()} - Intervuave
             </p>
           </>
         )}
 
-        <p className="absolute text-sm text-center text-gray-500 -translate-x-1/2 bottom-6 left-1/2 dark:text-gray-400">
+        <p className="absolute text-xs sm:text-sm text-center text-gray-500 -translate-x-1/2 bottom-3 sm:bottom-6 left-1/2 dark:text-gray-400">
           &copy; {new Date().getFullYear()} - Intervuave
         </p>
       </div>
