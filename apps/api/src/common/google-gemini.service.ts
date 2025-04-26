@@ -474,6 +474,7 @@ export class GeminiService {
       3.  Be open-ended and behavioral (asking for past experiences or hypothetical scenarios related to the values/aspects).
       4.  Be professional, clear, concise, and appropriate for a job interview setting.
       5.  Do NOT ask generic questions. Each question should be tailored to the provided company information.
+      6.  Consider that some candidates may be fresh graduates with limited professional experience. Create questions that allow them to draw from academic projects, internships, volunteer work, or other relevant non-professional experiences.
 
       Company Information:
       - Mission: "${companyProfile.mission}"
