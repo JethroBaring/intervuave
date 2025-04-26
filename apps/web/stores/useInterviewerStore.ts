@@ -113,22 +113,40 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       const devices = await navigator.mediaDevices.enumerateDevices();
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
-
-      const selectedCameraId = cameraStream?.getVideoTracks()[0].getSettings().deviceId;
-      const selectedMicrophoneId = audioStream?.getAudioTracks()[0].getSettings().deviceId;
-
-      const selectedCamera = videoDevices.find(device => device.deviceId === selectedCameraId);
-
-
-      const selectedMicrophone = audioDevices.find(device => device.deviceId === selectedMicrophoneId);
-
+  
+      // Get the camera and microphone IDs from the active streams
+      let cameraType = 'BUILT_IN'; // Default value
+      let micType = 'BUILT_IN';    // Default value
+  
+      if (cameraStream && cameraStream.getVideoTracks().length > 0) {
+        const selectedCameraId = cameraStream.getVideoTracks()[0].getSettings().deviceId;
+        // Check if the camera is external by looking at its label
+        const selectedCamera = videoDevices.find(device => device.deviceId === selectedCameraId);
+        if (selectedCamera && selectedCamera.label) {
+          // Devices with "USB" or "External" in their name are likely external
+          cameraType = selectedCamera.label.match(/USB|External|Logitech|webcam/i) ? 'EXTERNAL' : 'BUILT_IN';
+        }
+      }
+  
+      if (audioStream && audioStream.getAudioTracks().length > 0) {
+        const selectedMicrophoneId = audioStream.getAudioTracks()[0].getSettings().deviceId;
+        // Check if the microphone is external by looking at its label
+        const selectedMicrophone = audioDevices.find(device => device.deviceId === selectedMicrophoneId);
+        if (selectedMicrophone && selectedMicrophone.label) {
+          // Devices with "USB" or "External" in their name are likely external
+          micType = selectedMicrophone.label.match(/USB|External|Headset|Mic|Microphone/i) ? 'EXTERNAL' : 'BUILT_IN';
+        }
+      }
+  
+      // Determine device type based on screen width
       const deviceType = window.innerWidth <= 768 ? 'MOBILE' : 
                         window.innerWidth <= 1024 ? 'TABLET' : 
                         'DESKTOP';
-
+  
+      // Store the detected device information
       set({
-        cameraType: selectedCamera ? 'EXTERNAL' : 'BUILT_IN',
-        micType: selectedMicrophone ? 'EXTERNAL' : 'BUILT_IN',
+        cameraType: cameraType as 'EXTERNAL' | 'BUILT_IN',
+        micType: micType as 'EXTERNAL' | 'BUILT_IN',
         deviceType
       });
     } catch (error) {
