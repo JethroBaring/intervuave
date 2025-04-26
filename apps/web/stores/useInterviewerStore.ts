@@ -30,8 +30,8 @@ interface InterviewState {
   isSubmitting: boolean;
   currentStep: number;
   nextDisable: boolean;
-  cameraType: 'BUILT_IN' | 'EXTERNAL' | null;
-  micType: 'BUILT_IN' | 'EXTERNAL' | null;
+  cameraType: 'EXTERNAL' | 'BUILT_IN' | null;
+  micType: 'EXTERNAL' | 'BUILT_IN' | null;
   deviceType: 'DESKTOP' | 'TABLET' | 'MOBILE' | null;
   setCurrentStep: (step: number) => void;
   startInterview: () => Promise<void>;
@@ -114,31 +114,21 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
       const videoDevices = devices.filter(device => device.kind === 'videoinput');
       const audioDevices = devices.filter(device => device.kind === 'audioinput');
 
-      const videoTrack = cameraStream?.getVideoTracks()[0];
-      const audioTrack = audioStream?.getAudioTracks()[0];
+      const selectedCameraId = cameraStream?.getVideoTracks()[0].getSettings().deviceId;
+      const selectedMicrophoneId = audioStream?.getAudioTracks()[0].getSettings().deviceId;
 
-      const videoDevice = videoDevices.find(device => 
-        device.label.includes(videoTrack?.label || '') || 
-        device.label === videoTrack?.label
-      );
+      const selectedCamera = videoDevices.find(device => device.deviceId === selectedCameraId);
 
-      const audioDevice = audioDevices.find(device => 
-        device.label.includes(audioTrack?.label || '') || 
-        device.label === audioTrack?.label
-      );
 
-      const isBuiltInCamera = videoDevice?.label.toLowerCase().includes('built-in') || 
-                             videoDevice?.label.toLowerCase().includes('integrated');
-      const isBuiltInMic = audioDevice?.label.toLowerCase().includes('built-in') || 
-                          audioDevice?.label.toLowerCase().includes('integrated');
+      const selectedMicrophone = audioDevices.find(device => device.deviceId === selectedMicrophoneId);
 
       const deviceType = window.innerWidth <= 768 ? 'MOBILE' : 
                         window.innerWidth <= 1024 ? 'TABLET' : 
                         'DESKTOP';
 
       set({
-        cameraType: isBuiltInCamera ? 'BUILT_IN' : 'EXTERNAL',
-        micType: isBuiltInMic ? 'BUILT_IN' : 'EXTERNAL',
+        cameraType: selectedCamera ? 'EXTERNAL' : 'BUILT_IN',
+        micType: selectedMicrophone ? 'EXTERNAL' : 'BUILT_IN',
         deviceType
       });
     } catch (error) {
@@ -198,7 +188,7 @@ export const useInterviewerStore = create<InterviewState>((set, get) => ({
 
         await api.patch(
           `${endpoints.public.submitInterview(encodeURIComponent(get().interviewToken!))}`,
-          { timestamps: get().timestamps }
+          { timestamps: get().timestamps, deviceType: get().deviceType, cameraType: get().cameraType, micType: get().micType }
         );
         set({ isSubmitting: false });
       } catch (err) {

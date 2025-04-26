@@ -15,8 +15,8 @@ export class PublicInterviewController {
   }
 
   @Patch(':token/submit')
-  submitInterview(@Param('token') token: string, @Body() timestamps: any) {
-    return this.publicInterviewSerivice.submitInterview(token, timestamps);
+  submitInterview(@Param('token') token: string, @Body() dto: any) {
+    return this.publicInterviewSerivice.submitInterview(token, dto);
   }
 
   @Patch(':interviewId/process')

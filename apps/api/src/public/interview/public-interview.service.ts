@@ -60,7 +60,7 @@ export class PublicInterviewService {
     }
   }
 
-  async submitInterview(token: string, timestamps: any) {
+  async submitInterview(token: string, dto: any) {
     try {
       const decrypted = this.crypto.decrypt(decodeURIComponent(token));
       const { id, expiresAt } = JSON.parse(decrypted);
@@ -68,6 +68,18 @@ export class PublicInterviewService {
       if (new Date() > new Date(expiresAt)) {
         return { valid: false, reason: 'expired' };
       }
+
+      await this.prisma.interview.update({
+        where: { id },
+        data: {
+          status: 'SUBMITTED',
+          timestamps: (dto.timestamps ?? []) as Prisma.JsonArray,
+          cameraType: dto.cameraType,
+          micType: dto.micType,
+          deviceType: dto.deviceType,
+          submittedAt: getPrismaDateTimeNow(),
+        },
+      });
 
       await this.processingWorker.addTask(id);
 
