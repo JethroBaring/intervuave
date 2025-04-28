@@ -1118,6 +1118,9 @@ const EvaluationTab = ({ evaluation }: { evaluation: any }) => {
                         agreement:
                           feedbackDecision === "Yes" ? "AGREE" : "DISAGREE",
                         comment: feedbackReason,
+                      },
+                      {
+                        withCredentials: true
                       }
                     );
                     useToastStore.getState().showToast({
